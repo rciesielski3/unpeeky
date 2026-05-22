@@ -7,7 +7,12 @@ export const strings = {
     childNamePlaceholder: "Imie dziecka",
     rewardNamePlaceholder: "Nazwa nagrody",
     tileCountLabel: "Liczba kafelkow",
-    photoPlaceholder: "Zdjecie nagrody dodamy w kolejnym kroku",
+    photoStepLabel: "1. Zdjecie nagrody",
+    photoPlaceholder: "Zrob zdjecie lub wybierz z galerii",
+    cameraButton: "Zrob zdjecie",
+    galleryButton: "Wybierz z galerii",
+    cameraPermissionDenied: "Aparat wymaga zgody w ustawieniach telefonu.",
+    galleryPermissionDenied: "Galeria wymaga zgody w ustawieniach telefonu.",
     saveButton: "Zapisz cel",
     backButton: "Wroc"
   },

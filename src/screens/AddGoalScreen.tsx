@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import * as ImagePicker from "expo-image-picker";
+import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
-import { assets } from "../config/assets";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -18,18 +18,68 @@ type AddGoalScreenProps = {
 export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
   const [childName, setChildName] = useState("");
   const [rewardName, setRewardName] = useState("");
+  const [imageUri, setImageUri] = useState<string | null>(null);
+  const [imageError, setImageError] = useState<string | null>(null);
   const [totalTasks, setTotalTasks] = useState<TileCount>(DEFAULT_TILE_COUNT);
-  const canSave = childName.trim().length > 0 && rewardName.trim().length > 0;
+  const canSave = childName.trim().length > 0 && rewardName.trim().length > 0 && imageUri !== null;
+
+  async function pickFromCamera() {
+    const permission = await ImagePicker.requestCameraPermissionsAsync();
+
+    if (!permission.granted) {
+      setImageError(strings.addGoal.cameraPermissionDenied);
+      return;
+    }
+
+    const result = await ImagePicker.launchCameraAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      quality: 0.85
+    });
+
+    savePickedImage(result);
+  }
+
+  async function pickFromGallery() {
+    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
+
+    if (!permission.granted) {
+      setImageError(strings.addGoal.galleryPermissionDenied);
+      return;
+    }
+
+    const result = await ImagePicker.launchImageLibraryAsync({
+      allowsEditing: true,
+      aspect: [1, 1],
+      mediaTypes: ImagePicker.MediaTypeOptions.Images,
+      quality: 0.85
+    });
+
+    savePickedImage(result);
+  }
+
+  function savePickedImage(result: ImagePicker.ImagePickerResult) {
+    if (result.canceled) {
+      return;
+    }
+
+    const [asset] = result.assets;
+
+    if (asset) {
+      setImageUri(asset.uri);
+      setImageError(null);
+    }
+  }
 
   function handleSave() {
-    if (!canSave) {
+    if (!canSave || !imageUri) {
       return;
     }
 
     onSave({
       childName: childName.trim(),
       rewardName: rewardName.trim(),
-      imageUri: assets.placeholderRewardImageUri,
+      imageUri,
       totalTasks,
       avatarId: DEFAULT_AVATAR_ID
     });
@@ -40,6 +90,22 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
       <Text style={styles.title}>{strings.addGoal.title}</Text>
 
       <View style={styles.form}>
+        <View>
+          <Text style={styles.label}>{strings.addGoal.photoStepLabel}</Text>
+          <View style={styles.photoBox}>
+            {imageUri ? (
+              <Image source={{ uri: imageUri }} style={styles.photoPreview} />
+            ) : (
+              <Text style={styles.photoIcon}>PHOTO</Text>
+            )}
+            <Text style={styles.photoText}>{strings.addGoal.photoPlaceholder}</Text>
+            <View style={styles.photoActions}>
+              <Button label={strings.addGoal.cameraButton} onPress={pickFromCamera} variant="ghost" />
+              <Button label={strings.addGoal.galleryButton} onPress={pickFromGallery} variant="ghost" />
+            </View>
+          </View>
+          {imageError ? <Text style={styles.errorText}>{imageError}</Text> : null}
+        </View>
         <TextInput
           onChangeText={setChildName}
           placeholder={strings.addGoal.childNamePlaceholder}
@@ -66,9 +132,6 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
               </Pressable>
             ))}
           </View>
-        </View>
-        <View style={styles.photoBox}>
-          <Text style={styles.photoText}>{strings.addGoal.photoPlaceholder}</Text>
         </View>
       </View>
 
@@ -137,18 +200,39 @@ const styles = StyleSheet.create({
   },
   photoBox: {
     alignItems: "center",
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.primary,
+    backgroundColor: "#FFFBEB",
+    borderColor: colors.warning,
     borderRadius: 8,
     borderStyle: "dashed",
     borderWidth: 1,
-    minHeight: 96,
+    gap: spacing.sm,
     justifyContent: "center",
+    minHeight: 168,
     padding: spacing.md
   },
+  photoPreview: {
+    aspectRatio: 1,
+    borderRadius: 8,
+    width: 112
+  },
+  photoIcon: {
+    color: colors.warning,
+    fontSize: 18,
+    fontWeight: "800"
+  },
   photoText: {
-    color: colors.primaryDark,
+    color: colors.text,
+    fontWeight: "700",
     textAlign: "center"
+  },
+  photoActions: {
+    gap: spacing.sm,
+    width: "100%"
+  },
+  errorText: {
+    color: colors.warning,
+    fontSize: 13,
+    marginTop: spacing.sm
   },
   actions: {
     gap: spacing.sm,
