@@ -3,7 +3,7 @@ import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
-import { FREE_GOAL_LIMIT, getGoalProgress } from "../domain/goal";
+import { FREE_GOAL_LIMIT, getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
@@ -17,7 +17,7 @@ type GoalsScreenProps = {
 };
 
 export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSettings }: GoalsScreenProps) {
-  const activeGoalsCount = goals.filter((goal) => !goal.completed).length;
+  const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
   const hasReachedFreeLimit = !isPremium && activeGoalsCount >= FREE_GOAL_LIMIT;
 
   return (
@@ -41,8 +41,14 @@ export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSet
         data={goals}
         keyExtractor={(goal) => goal.id}
         renderItem={({ item }) => {
+          const isCompleted = isGoalComplete(item);
+
           return (
-            <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.card}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => onOpenGoal(item.id)}
+              style={[styles.card, isCompleted && styles.completedCard]}
+            >
               <View style={styles.cardHeader}>
                 <Image
                   accessibilityLabel={strings.goals.thumbnailLabel(item.rewardName)}
@@ -51,7 +57,14 @@ export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSet
                   style={styles.thumbnail}
                 />
                 <View style={styles.cardCopy}>
-                  <Text style={styles.cardTitle}>{item.rewardName}</Text>
+                  <View style={styles.titleRow}>
+                    <Text style={styles.cardTitle}>{item.rewardName}</Text>
+                    {isCompleted ? (
+                      <View style={styles.completedBadge}>
+                        <Text style={styles.completedBadgeText}>{strings.goals.completedBadge}</Text>
+                      </View>
+                    ) : null}
+                  </View>
                   <View style={styles.childRow}>
                     <AvatarBadge avatarId={item.avatarId} size="sm" />
                     <Text style={styles.meta}>
@@ -135,6 +148,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.lg
   },
+  completedCard: {
+    backgroundColor: colors.successSurface,
+    borderColor: colors.successBorder
+  },
   cardHeader: {
     alignItems: "center",
     flexDirection: "row",
@@ -150,6 +167,12 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: spacing.xs
   },
+  titleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
   childRow: {
     alignItems: "center",
     flexDirection: "row",
@@ -163,6 +186,17 @@ const styles = StyleSheet.create({
   meta: {
     color: colors.textMuted,
     fontSize: 14
+  },
+  completedBadge: {
+    backgroundColor: colors.accent,
+    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs
+  },
+  completedBadgeText: {
+    color: colors.surface,
+    fontSize: 12,
+    fontWeight: "800"
   },
   footer: {
     paddingTop: spacing.md

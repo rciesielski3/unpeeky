@@ -66,6 +66,7 @@ export const strings = {
     freeLimitText: (goalLimit: number) =>
       `Darmowa wersja pozwala mieć ${goalLimit} aktywne cele. Włącz Premium w ustawieniach, żeby dodać więcej.`,
     freeLimitButton: "Otwórz ustawienia",
+    completedBadge: "Ukończone",
     thumbnailLabel: (rewardName: string) => `Zdjęcie nagrody: ${rewardName}`,
     cardProgress: (childName: string, completedTasks: number, totalTasks: number) =>
       `${childName} - ${completedTasks}/${totalTasks}`
