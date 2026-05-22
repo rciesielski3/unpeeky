@@ -7,36 +7,52 @@ import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { completeTask, createGoal } from "./src/domain/goal";
-import type { Goal, GoalDraft } from "./src/domain/goal";
+import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
-import { loadGoals, saveGoals } from "./src/storage/appStorage";
+import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
 import { colors } from "./src/ui/theme";
 
 export default function App() {
   const [route, setRoute] = useState<AppRoute>("goals");
   const [goals, setGoals] = useState<Goal[]>([]);
+  const [settings, setSettings] = useState<AppSettings | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
-  const shouldSkipNextSave = useRef(true);
+  const shouldSkipNextGoalsSave = useRef(true);
+  const shouldSkipNextSettingsSave = useRef(true);
   const activeGoal = useMemo(() => goals.find((goal) => goal.id === selectedGoalId), [goals, selectedGoalId]);
 
   useEffect(() => {
-    loadGoals()
-      .then(setGoals)
+    Promise.all([loadGoals(), loadSettings()])
+      .then(([storedGoals, storedSettings]) => {
+        setGoals(storedGoals);
+        setSettings(storedSettings);
+      })
       .finally(() => setIsHydrated(true));
   }, []);
 
   useEffect(() => {
     if (isHydrated) {
-      if (shouldSkipNextSave.current) {
-        shouldSkipNextSave.current = false;
+      if (shouldSkipNextGoalsSave.current) {
+        shouldSkipNextGoalsSave.current = false;
         return;
       }
 
       void saveGoals(goals);
     }
   }, [goals, isHydrated]);
+
+  useEffect(() => {
+    if (isHydrated && settings) {
+      if (shouldSkipNextSettingsSave.current) {
+        shouldSkipNextSettingsSave.current = false;
+        return;
+      }
+
+      void saveSettings(settings);
+    }
+  }, [isHydrated, settings]);
 
   function handleCreateGoal(draft: GoalDraft) {
     const goal = createGoal(draft);
@@ -55,7 +71,13 @@ export default function App() {
     setGoals((currentGoals) => currentGoals.map((goal) => (goal.id === goalId ? completeTask(goal) : goal)));
   }
 
-  if (!isHydrated) {
+  function handleResetGoals() {
+    setGoals([]);
+    setSelectedGoalId(null);
+    setRoute("goals");
+  }
+
+  if (!isHydrated || !settings) {
     return (
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
@@ -86,7 +108,14 @@ export default function App() {
             onCompleteTask={() => handleCompleteTask(activeGoal.id)}
           />
         ) : null}
-        {route === "settings" ? <SettingsScreen onBack={() => setRoute("goals")} /> : null}
+        {route === "settings" ? (
+          <SettingsScreen
+            onBack={() => setRoute("goals")}
+            onResetGoals={handleResetGoals}
+            onSettingsChange={setSettings}
+            settings={settings}
+          />
+        ) : null}
       </View>
     </SafeAreaView>
   );
