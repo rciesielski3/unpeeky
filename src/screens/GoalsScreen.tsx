@@ -42,7 +42,11 @@ export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSet
         keyExtractor={(goal) => goal.id}
         renderItem={({ item }) => {
           return (
-            <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.card}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => onOpenGoal(item.id)}
+              style={[styles.card, item.completed && styles.completedCard]}
+            >
               <View style={styles.cardHeader}>
                 <Image
                   accessibilityLabel={strings.goals.thumbnailLabel(item.rewardName)}
@@ -51,7 +55,14 @@ export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSet
                   style={styles.thumbnail}
                 />
                 <View style={styles.cardCopy}>
-                  <Text style={styles.cardTitle}>{item.rewardName}</Text>
+                  <View style={styles.titleRow}>
+                    <Text style={styles.cardTitle}>{item.rewardName}</Text>
+                    {item.completed ? (
+                      <View style={styles.completedBadge}>
+                        <Text style={styles.completedBadgeText}>{strings.goals.completedBadge}</Text>
+                      </View>
+                    ) : null}
+                  </View>
                   <View style={styles.childRow}>
                     <AvatarBadge avatarId={item.avatarId} size="sm" />
                     <Text style={styles.meta}>
@@ -135,6 +146,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm,
     padding: spacing.lg
   },
+  completedCard: {
+    backgroundColor: colors.successSurface,
+    borderColor: colors.successBorder
+  },
   cardHeader: {
     alignItems: "center",
     flexDirection: "row",
@@ -150,6 +165,12 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: spacing.xs
   },
+  titleRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
   childRow: {
     alignItems: "center",
     flexDirection: "row",
@@ -163,6 +184,17 @@ const styles = StyleSheet.create({
   meta: {
     color: colors.textMuted,
     fontSize: 14
+  },
+  completedBadge: {
+    backgroundColor: colors.accent,
+    borderRadius: 8,
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs
+  },
+  completedBadgeText: {
+    color: colors.surface,
+    fontSize: 12,
+    fontWeight: "800"
   },
   footer: {
     paddingTop: spacing.md
