@@ -117,52 +117,53 @@ export default function App() {
     );
   }
 
+  const screen = !settings.appMode ? (
+    <ModeSelectionScreen initialMode={settings.appMode} onSelectMode={handleSelectMode} />
+  ) : (
+    <>
+      {route === "goals" ? (
+        <GoalsScreen
+          goals={goals}
+          onAddGoal={() => setRoute("addGoal")}
+          onOpenGoal={handleOpenGoal}
+          onOpenSettings={() => setRoute("settings")}
+        />
+      ) : null}
+      {route === "addGoal" ? <AddGoalScreen onBack={() => setRoute("goals")} onSave={handleCreateGoal} /> : null}
+      {route === "approveTask" && activeGoal ? (
+        <ApproveTaskScreen
+          goal={activeGoal}
+          onApproveTask={() => {
+            handleCompleteTask(activeGoal.id);
+            setRoute("child");
+          }}
+          onBack={() => setRoute("goals")}
+          onOpenChildView={() => setRoute("child")}
+          parentPin={settings.parentPin}
+        />
+      ) : null}
+      {route === "child" && activeGoal ? (
+        <ChildScreen
+          goal={activeGoal}
+          onBack={() => setRoute("approveTask")}
+          onCompleteTask={() => setRoute("approveTask")}
+        />
+      ) : null}
+      {route === "settings" ? (
+        <SettingsScreen
+          onBack={() => setRoute("goals")}
+          onResetGoals={handleResetGoals}
+          onSettingsChange={setSettings}
+          settings={settings}
+        />
+      ) : null}
+    </>
+  );
+
   return (
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
-      <View style={styles.app}>
-        {!settings.appMode ? (
-          <ModeSelectionScreen initialMode={settings.appMode} onSelectMode={handleSelectMode} />
-        ) : null}
-        {settings.appMode && route === "goals" ? (
-          <GoalsScreen
-            goals={goals}
-            onAddGoal={() => setRoute("addGoal")}
-            onOpenGoal={handleOpenGoal}
-            onOpenSettings={() => setRoute("settings")}
-          />
-        ) : null}
-        {settings.appMode && route === "addGoal" ? (
-          <AddGoalScreen onBack={() => setRoute("goals")} onSave={handleCreateGoal} />
-        ) : null}
-        {settings.appMode && route === "approveTask" && activeGoal ? (
-          <ApproveTaskScreen
-            goal={activeGoal}
-            onApproveTask={() => {
-              handleCompleteTask(activeGoal.id);
-              setRoute("child");
-            }}
-            onBack={() => setRoute("goals")}
-            onOpenChildView={() => setRoute("child")}
-            parentPin={settings.parentPin}
-          />
-        ) : null}
-        {settings.appMode && route === "child" && activeGoal ? (
-          <ChildScreen
-            goal={activeGoal}
-            onBack={() => setRoute("approveTask")}
-            onCompleteTask={() => setRoute("approveTask")}
-          />
-        ) : null}
-        {settings.appMode && route === "settings" ? (
-          <SettingsScreen
-            onBack={() => setRoute("goals")}
-            onResetGoals={handleResetGoals}
-            onSettingsChange={setSettings}
-            settings={settings}
-          />
-        ) : null}
-      </View>
+      <View style={styles.app}>{screen}</View>
     </SafeAreaView>
   );
 }
