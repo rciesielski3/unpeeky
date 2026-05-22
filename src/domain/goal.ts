@@ -24,12 +24,14 @@ export type AppSettings = {
   isPremium: boolean;
   notificationTime: string;
   childName: string;
+  parentPin: string;
 };
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   isPremium: false,
   notificationTime: "18:00",
-  childName: ""
+  childName: "",
+  parentPin: "1234"
 };
 
 export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;

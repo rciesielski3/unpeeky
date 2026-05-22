@@ -126,6 +126,7 @@ export default function App() {
             onApproveTask={() => handleCompleteTask(activeGoal.id)}
             onBack={() => setRoute("goals")}
             onOpenChildView={() => setRoute("child")}
+            parentPin={settings.parentPin}
           />
         ) : null}
         {route === "child" && activeGoal ? (

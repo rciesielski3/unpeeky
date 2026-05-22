@@ -1,4 +1,5 @@
-import { Image, StyleSheet, Text, View } from "react-native";
+import { useState } from "react";
+import { Image, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -13,11 +14,14 @@ type ApproveTaskScreenProps = {
   onApproveTask: () => void;
   onBack: () => void;
   onOpenChildView: () => void;
+  parentPin: string;
 };
 
-export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView }: ApproveTaskScreenProps) {
+export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView, parentPin }: ApproveTaskScreenProps) {
+  const [pinDraft, setPinDraft] = useState("");
   const isComplete = goal.completed;
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
+  const canApprove = !isComplete && pinDraft === parentPin;
 
   return (
     <View style={styles.screen}>
@@ -48,9 +52,30 @@ export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView
         {!isComplete && <Text style={styles.remainingText}>{strings.approveTask.remaining(remainingTasks)}</Text>}
       </View>
 
+      {!isComplete ? (
+        <View style={styles.pinBlock}>
+          <View>
+            <Text style={styles.pinTitle}>{strings.approveTask.pinTitle}</Text>
+            <Text style={styles.pinMeta}>{strings.approveTask.pinMeta}</Text>
+          </View>
+          <TextInput
+            keyboardType="number-pad"
+            maxLength={4}
+            onChangeText={(text) => setPinDraft(text.replace(/\D/g, "").slice(0, 4))}
+            placeholder={strings.approveTask.pinPlaceholder}
+            secureTextEntry
+            style={[styles.pinInput, pinDraft.length === 4 && !canApprove && styles.invalidPinInput]}
+            value={pinDraft}
+          />
+          {pinDraft.length === 4 && !canApprove ? (
+            <Text style={styles.errorText}>{strings.approveTask.pinError}</Text>
+          ) : null}
+        </View>
+      ) : null}
+
       <View style={styles.actions}>
         <Button
-          disabled={isComplete}
+          disabled={!canApprove}
           label={isComplete ? strings.approveTask.completeButton : strings.approveTask.approveButton}
           onPress={onApproveTask}
           variant="secondary"
@@ -128,6 +153,44 @@ const styles = StyleSheet.create({
   remainingText: {
     color: colors.textMuted,
     fontSize: 14
+  },
+  pinBlock: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: spacing.sm,
+    padding: spacing.lg
+  },
+  pinTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "700"
+  },
+  pinMeta: {
+    color: colors.textMuted,
+    fontSize: 13,
+    marginTop: spacing.xs
+  },
+  pinInput: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: "800",
+    letterSpacing: 4,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    textAlign: "center"
+  },
+  invalidPinInput: {
+    borderColor: colors.warning
+  },
+  errorText: {
+    color: colors.warning,
+    fontSize: 13
   },
   actions: {
     gap: spacing.sm,

@@ -56,5 +56,6 @@ npm run format
 - Reward photo selection
 - Avatar selection
 - Persistent task progress
+- Parent PIN for task approval
 - Animated tile reveal grid
 - Child reward progress and completion state
