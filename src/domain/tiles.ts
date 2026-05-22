@@ -25,6 +25,37 @@ export function getRevealedTileIds(revealOrder: number[], revealedCount: number)
   return new Set(revealOrder.slice(0, Math.max(0, revealedCount)));
 }
 
+export type TileGridLayout = {
+  columns: number;
+  rows: number;
+};
+
+export function getTileGridLayout(totalTiles: number): TileGridLayout {
+  const safeTileCount = Math.max(1, totalTiles);
+  let bestColumns = safeTileCount;
+  let bestRows = 1;
+  let bestScore = Number.POSITIVE_INFINITY;
+
+  for (let rows = 1; rows <= safeTileCount; rows += 1) {
+    const columns = Math.ceil(safeTileCount / rows);
+    const slotCount = rows * columns;
+    const emptySlots = slotCount - safeTileCount;
+    const shapeDelta = Math.abs(columns - rows);
+    const score = emptySlots * safeTileCount + shapeDelta;
+
+    if (score < bestScore) {
+      bestColumns = columns;
+      bestRows = rows;
+      bestScore = score;
+    }
+  }
+
+  return {
+    columns: bestColumns,
+    rows: bestRows
+  };
+}
+
 export function normalizeRevealOrder(totalTiles: number, revealOrder?: number[]): number[] {
   const tileIds = createTileIds(totalTiles);
 
