@@ -4,7 +4,7 @@ import { ImageBackground, StyleSheet, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 import { DEFAULT_TILE_COUNT } from "../domain/goal";
-import { createTileIds, getRevealedTileIds } from "../domain/tiles";
+import { createTileIds, getRevealedTileIds, getTileGridLayout } from "../domain/tiles";
 import { colors } from "../ui/theme";
 
 type TileGridProps = {
@@ -17,15 +17,16 @@ type TileGridProps = {
 export function TileGrid({ imageUri, totalTiles = DEFAULT_TILE_COUNT, revealedCount, revealOrder }: TileGridProps) {
   const tiles = useMemo(() => createTileIds(totalTiles), [totalTiles]);
   const revealedTileIds = useMemo(() => getRevealedTileIds(revealOrder, revealedCount), [revealOrder, revealedCount]);
-  const columns = Math.max(1, Math.ceil(Math.sqrt(totalTiles)));
-  const tileBasis = `${100 / columns}%` as DimensionValue;
+  const layout = useMemo(() => getTileGridLayout(totalTiles), [totalTiles]);
+  const tileBasis = `${100 / layout.columns}%` as DimensionValue;
+  const tileHeight = `${100 / layout.rows}%` as DimensionValue;
 
   return (
     <ImageBackground source={{ uri: imageUri }} resizeMode="cover" style={styles.image} imageStyle={styles.imageRadius}>
       <View style={styles.grid}>
         {tiles.map((tile) => {
           return (
-            <View key={tile} style={[styles.tileSlot, { flexBasis: tileBasis }]}>
+            <View key={tile} style={[styles.tileSlot, { flexBasis: tileBasis, height: tileHeight }]}>
               <AnimatedTile isRevealed={revealedTileIds.has(tile)} />
             </View>
           );
@@ -77,7 +78,6 @@ const styles = StyleSheet.create({
     padding: 3
   },
   tileSlot: {
-    aspectRatio: 1,
     padding: 1.5
   },
   tile: {
