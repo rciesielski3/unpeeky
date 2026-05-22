@@ -4,7 +4,7 @@ import { Switch, StyleSheet, Text, TextInput, View } from "react-native";
 import { Button } from "../components/Button";
 import type { AppSettings } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { scheduleDaily } from "../notifications/scheduleDaily";
+import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
 import { colors, spacing } from "../ui/theme";
 
 type SettingsScreenProps = {
@@ -17,7 +17,7 @@ type SettingsScreenProps = {
 export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, settings }: SettingsScreenProps) {
   const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);
   const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
-  const isNotificationTimeValid = isValidNotificationTime(notificationTimeDraft);
+  const isNotificationTimeValid = parseNotificationTime(notificationTimeDraft) !== null;
 
   useEffect(() => {
     setNotificationTimeDraft(settings.notificationTime);
@@ -64,7 +64,10 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
           keyboardType="numbers-and-punctuation"
           maxLength={5}
           onBlur={() => void handleNotificationTimeBlur()}
-          onChangeText={setNotificationTimeDraft}
+          onChangeText={(text) => {
+            setNotificationTimeDraft(text);
+            setNotificationMessage(null);
+          }}
           placeholder={strings.settings.notificationTimePlaceholder}
           style={[styles.timeInput, !isNotificationTimeValid && styles.invalidTimeInput]}
           value={notificationTimeDraft}
@@ -155,10 +158,6 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   }
 });
-
-function isValidNotificationTime(notificationTime: string): boolean {
-  return /^([01]\d|2[0-3]):[0-5]\d$/.test(notificationTime);
-}
 
 function getNotificationMessage(scheduleResult: Awaited<ReturnType<typeof scheduleDaily>>): string {
   if (scheduleResult === "scheduled") {

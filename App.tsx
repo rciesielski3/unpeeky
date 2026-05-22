@@ -6,7 +6,7 @@ import { AddGoalScreen } from "./src/screens/AddGoalScreen";
 import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
-import { completeTask, createGoal } from "./src/domain/goal";
+import { completeTask, createGoal, DEFAULT_APP_SETTINGS } from "./src/domain/goal";
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
@@ -24,12 +24,21 @@ export default function App() {
   const activeGoal = useMemo(() => goals.find((goal) => goal.id === selectedGoalId), [goals, selectedGoalId]);
 
   useEffect(() => {
-    Promise.all([loadGoals(), loadSettings()])
-      .then(([storedGoals, storedSettings]) => {
+    async function hydrateApp() {
+      try {
+        const [storedGoals, storedSettings] = await Promise.all([loadGoals(), loadSettings()]);
+
         setGoals(storedGoals);
         setSettings(storedSettings);
-      })
-      .finally(() => setIsHydrated(true));
+      } catch {
+        setGoals([]);
+        setSettings(DEFAULT_APP_SETTINGS);
+      } finally {
+        setIsHydrated(true);
+      }
+    }
+
+    void hydrateApp();
   }, []);
 
   useEffect(() => {

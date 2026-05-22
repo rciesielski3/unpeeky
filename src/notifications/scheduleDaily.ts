@@ -9,6 +9,8 @@ type ParsedTime = {
   minute: number;
 };
 
+const DAILY_REMINDER_IDENTIFIER = "daily-reminder";
+
 export async function scheduleDaily(notificationTime: string): Promise<ScheduleDailyResult> {
   const parsedTime = parseNotificationTime(notificationTime);
 
@@ -23,8 +25,8 @@ export async function scheduleDaily(notificationTime: string): Promise<ScheduleD
       return "denied";
     }
 
-    await Notifications.cancelAllScheduledNotificationsAsync();
     await Notifications.scheduleNotificationAsync({
+      identifier: DAILY_REMINDER_IDENTIFIER,
       content: {
         body: strings.notifications.body,
         sound: true,
