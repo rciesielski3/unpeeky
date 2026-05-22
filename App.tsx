@@ -7,7 +7,7 @@ import { ApproveTaskScreen } from "./src/screens/ApproveTaskScreen";
 import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
-import { completeTask, createGoal, DEFAULT_APP_SETTINGS } from "./src/domain/goal";
+import { completeTask, createGoal, normalizeSettings } from "./src/domain/goal";
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
@@ -33,7 +33,7 @@ export default function App() {
         setSettings(storedSettings);
       } catch {
         setGoals([]);
-        setSettings(DEFAULT_APP_SETTINGS);
+        setSettings(normalizeSettings(null));
       } finally {
         setIsHydrated(true);
       }
@@ -123,16 +123,20 @@ export default function App() {
         {route === "approveTask" && activeGoal ? (
           <ApproveTaskScreen
             goal={activeGoal}
-            onApproveTask={() => handleCompleteTask(activeGoal.id)}
+            onApproveTask={() => {
+              handleCompleteTask(activeGoal.id);
+              setRoute("child");
+            }}
             onBack={() => setRoute("goals")}
             onOpenChildView={() => setRoute("child")}
+            parentPin={settings.parentPin}
           />
         ) : null}
         {route === "child" && activeGoal ? (
           <ChildScreen
             goal={activeGoal}
             onBack={() => setRoute("approveTask")}
-            onCompleteTask={() => handleCompleteTask(activeGoal.id)}
+            onCompleteTask={() => setRoute("approveTask")}
           />
         ) : null}
         {route === "settings" ? (

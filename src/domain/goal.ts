@@ -24,12 +24,14 @@ export type AppSettings = {
   isPremium: boolean;
   notificationTime: string;
   childName: string;
+  parentPin: string;
 };
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   isPremium: false,
   notificationTime: "18:00",
-  childName: ""
+  childName: "",
+  parentPin: ""
 };
 
 export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;
@@ -58,10 +60,23 @@ export function normalizeGoal(goal: PersistedGoal): Goal {
 }
 
 export function normalizeSettings(settings: Partial<AppSettings> | null | undefined): AppSettings {
-  return {
+  const nextSettings = {
     ...DEFAULT_APP_SETTINGS,
     ...settings
   };
+
+  return {
+    ...nextSettings,
+    parentPin: isParentPinValid(nextSettings.parentPin) ? nextSettings.parentPin : generateParentPin()
+  };
+}
+
+export function generateParentPin(): string {
+  return `${Math.floor(1000 + Math.random() * 9000)}`;
+}
+
+export function isParentPinValid(parentPin: string): boolean {
+  return /^\d{4}$/.test(parentPin);
 }
 
 export function getGoalProgress(goal: Pick<Goal, "completedTasks" | "totalTasks">): number {

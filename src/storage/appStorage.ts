@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { DEFAULT_APP_SETTINGS, normalizeGoal, normalizeSettings } from "../domain/goal";
+import { normalizeGoal, normalizeSettings } from "../domain/goal";
 import type { AppSettings, Goal, PersistedGoal } from "../domain/goal";
 
 const STORAGE_KEYS = {
@@ -29,9 +29,14 @@ export async function saveGoals(goals: Goal[]): Promise<void> {
 }
 
 export async function loadSettings(): Promise<AppSettings> {
-  const settings = await readJson<Partial<AppSettings> | null>(STORAGE_KEYS.settings, DEFAULT_APP_SETTINGS);
+  const settings = await readJson<Partial<AppSettings> | null>(STORAGE_KEYS.settings, null);
+  const normalizedSettings = normalizeSettings(settings);
 
-  return normalizeSettings(settings);
+  if (JSON.stringify(settings) !== JSON.stringify(normalizedSettings)) {
+    await saveSettings(normalizedSettings);
+  }
+
+  return normalizedSettings;
 }
 
 export async function saveSettings(settings: AppSettings): Promise<void> {
