@@ -1,9 +1,9 @@
 import { useEffect, useState } from "react";
-import { Switch, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, Switch, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
 import { generateParentPin, isParentPinValid as validateParentPin } from "../domain/goal";
-import type { AppSettings } from "../domain/goal";
+import type { AppMode, AppSettings } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
 import { colors, spacing } from "../ui/theme";
@@ -14,6 +14,8 @@ type SettingsScreenProps = {
   onSettingsChange: (settings: AppSettings) => void;
   settings: AppSettings;
 };
+
+const MODE_OPTIONS: AppMode[] = ["singleDevice", "twoDevices"];
 
 export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, settings }: SettingsScreenProps) {
   const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);
@@ -64,6 +66,10 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
 
     setParentPinDraft(parentPin);
     updateSettings({ parentPin });
+  }
+
+  function handleChangeMode(appMode: AppMode) {
+    updateSettings({ appMode });
   }
 
   return (
@@ -118,6 +124,30 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
         </View>
       </View>
       {!isParentPinValid ? <Text style={styles.errorText}>{strings.settings.parentPinError}</Text> : null}
+
+      <View style={styles.resetRow}>
+        <View>
+          <Text style={styles.rowTitle}>{strings.settings.appModeTitle}</Text>
+          <Text style={styles.rowMeta}>{strings.settings.appModeMeta}</Text>
+        </View>
+        <View style={styles.modeOptions}>
+          {MODE_OPTIONS.map((appMode) => {
+            const isSelected = settings.appMode === appMode;
+
+            return (
+              <Pressable
+                accessibilityRole="button"
+                key={appMode}
+                onPress={() => handleChangeMode(appMode)}
+                style={[styles.modeOption, isSelected && styles.selectedModeOption]}
+              >
+                <Text style={[styles.modeTitle, isSelected && styles.selectedModeText]}>{getModeTitle(appMode)}</Text>
+                <Text style={[styles.modeMeta, isSelected && styles.selectedModeMeta]}>{getModeMeta(appMode)}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
 
       <View style={styles.resetRow}>
         <View style={styles.resetCopy}>
@@ -192,6 +222,36 @@ const styles = StyleSheet.create({
   pinControls: {
     gap: spacing.sm
   },
+  modeOptions: {
+    gap: spacing.sm
+  },
+  modeOption: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: spacing.xs,
+    padding: spacing.md
+  },
+  selectedModeOption: {
+    backgroundColor: colors.primary,
+    borderColor: colors.primary
+  },
+  modeTitle: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "800"
+  },
+  modeMeta: {
+    color: colors.textMuted,
+    fontSize: 13
+  },
+  selectedModeText: {
+    color: colors.surface
+  },
+  selectedModeMeta: {
+    color: colors.surfaceMuted
+  },
   resetRow: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -204,6 +264,14 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   }
 });
+
+function getModeTitle(appMode: AppMode): string {
+  return appMode === "singleDevice" ? strings.settings.appModeSingleDevice : strings.settings.appModeTwoDevices;
+}
+
+function getModeMeta(appMode: AppMode): string {
+  return appMode === "singleDevice" ? strings.settings.appModeSingleDeviceMeta : strings.settings.appModeTwoDevicesMeta;
+}
 
 function getNotificationMessage(scheduleResult: Awaited<ReturnType<typeof scheduleDaily>>): string {
   if (scheduleResult === "scheduled") {

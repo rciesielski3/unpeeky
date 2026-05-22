@@ -6,6 +6,7 @@ export const TILE_OPTIONS = [8, 12, 16, 20, 24, 28, 32, 36] as const;
 export const DEFAULT_TILE_COUNT = 16;
 
 export type TileCount = (typeof TILE_OPTIONS)[number];
+export type AppMode = "singleDevice" | "twoDevices";
 
 export type Goal = {
   id: string;
@@ -25,13 +26,15 @@ export type AppSettings = {
   notificationTime: string;
   childName: string;
   parentPin: string;
+  appMode: AppMode | null;
 };
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   isPremium: false,
   notificationTime: "18:00",
   childName: "",
-  parentPin: ""
+  parentPin: "",
+  appMode: null
 };
 
 export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;
@@ -67,6 +70,7 @@ export function normalizeSettings(settings: Partial<AppSettings> | null | undefi
 
   return {
     ...nextSettings,
+    appMode: isAppMode(nextSettings.appMode) ? nextSettings.appMode : null,
     parentPin: isParentPinValid(nextSettings.parentPin) ? nextSettings.parentPin : generateParentPin()
   };
 }
@@ -77,6 +81,10 @@ export function generateParentPin(): string {
 
 export function isParentPinValid(parentPin: string): boolean {
   return /^\d{4}$/.test(parentPin);
+}
+
+export function isAppMode(appMode: unknown): appMode is AppMode {
+  return appMode === "singleDevice" || appMode === "twoDevices";
 }
 
 export function getGoalProgress(goal: Pick<Goal, "completedTasks" | "totalTasks">): number {

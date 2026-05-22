@@ -55,6 +55,7 @@ npm run format
 - Local goal creation
 - Reward photo selection
 - Avatar selection
+- First-run mode selection
 - Persistent task progress
 - Parent PIN for task approval
 - Animated tile reveal grid
