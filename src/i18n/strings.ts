@@ -2,6 +2,16 @@ export const strings = {
   app: {
     loading: "Ładowanie..."
   },
+  modeSelection: {
+    title: "Jak będzie działać Unpeeky?",
+    subtitle: "Wybierz tryb na start. Możesz zmienić go później w ustawieniach.",
+    singleDeviceTitle: "Jeden telefon",
+    singleDeviceMeta: "Rodzic zatwierdza PIN-em, dziecko odkrywa kafelek na tym samym telefonie.",
+    twoDevicesTitle: "Dwa telefony",
+    twoDevicesMeta: "Przygotowane pod późniejszy tryb z telefonem dziecka i powiadomieniami.",
+    note: "Tryb dwóch telefonów w MVP korzysta jeszcze z lokalnego widoku dziecka.",
+    continueButton: "Kontynuuj"
+  },
   addGoal: {
     title: "Nowy cel",
     childNamePlaceholder: "Imię dziecka",
@@ -69,6 +79,9 @@ export const strings = {
     parentPinPlaceholder: "PIN",
     parentPinError: "PIN musi mieć dokładnie 4 cyfry.",
     generateParentPinButton: "Nowy PIN",
+    appModeTitle: "Tryb działania",
+    appModeSingleDevice: "Jeden telefon",
+    appModeTwoDevices: "Dwa telefony",
     resetTitle: "Reset danych",
     resetMeta: "Usuń lokalne cele i postępy",
     resetButton: "Resetuj cele",

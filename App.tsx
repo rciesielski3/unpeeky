@@ -6,6 +6,7 @@ import { AddGoalScreen } from "./src/screens/AddGoalScreen";
 import { ApproveTaskScreen } from "./src/screens/ApproveTaskScreen";
 import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
+import { ModeSelectionScreen } from "./src/screens/ModeSelectionScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { completeTask, createGoal, normalizeSettings } from "./src/domain/goal";
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
@@ -96,6 +97,15 @@ export default function App() {
     ]);
   }
 
+  function handleSelectMode(appMode: AppSettings["appMode"]) {
+    if (!appMode) {
+      return;
+    }
+
+    setSettings((currentSettings) => (currentSettings ? { ...currentSettings, appMode } : currentSettings));
+    setRoute("goals");
+  }
+
   if (!isHydrated || !settings) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -111,7 +121,10 @@ export default function App() {
     <SafeAreaView style={styles.safeArea}>
       <StatusBar style="dark" />
       <View style={styles.app}>
-        {route === "goals" ? (
+        {!settings.appMode ? (
+          <ModeSelectionScreen initialMode={settings.appMode} onSelectMode={handleSelectMode} />
+        ) : null}
+        {settings.appMode && route === "goals" ? (
           <GoalsScreen
             goals={goals}
             onAddGoal={() => setRoute("addGoal")}
@@ -119,8 +132,10 @@ export default function App() {
             onOpenSettings={() => setRoute("settings")}
           />
         ) : null}
-        {route === "addGoal" ? <AddGoalScreen onBack={() => setRoute("goals")} onSave={handleCreateGoal} /> : null}
-        {route === "approveTask" && activeGoal ? (
+        {settings.appMode && route === "addGoal" ? (
+          <AddGoalScreen onBack={() => setRoute("goals")} onSave={handleCreateGoal} />
+        ) : null}
+        {settings.appMode && route === "approveTask" && activeGoal ? (
           <ApproveTaskScreen
             goal={activeGoal}
             onApproveTask={() => {
@@ -132,14 +147,14 @@ export default function App() {
             parentPin={settings.parentPin}
           />
         ) : null}
-        {route === "child" && activeGoal ? (
+        {settings.appMode && route === "child" && activeGoal ? (
           <ChildScreen
             goal={activeGoal}
             onBack={() => setRoute("approveTask")}
             onCompleteTask={() => setRoute("approveTask")}
           />
         ) : null}
-        {route === "settings" ? (
+        {settings.appMode && route === "settings" ? (
           <SettingsScreen
             onBack={() => setRoute("goals")}
             onResetGoals={handleResetGoals}

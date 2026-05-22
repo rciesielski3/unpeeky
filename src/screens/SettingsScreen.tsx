@@ -3,7 +3,7 @@ import { Switch, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
 import { generateParentPin, isParentPinValid as validateParentPin } from "../domain/goal";
-import type { AppSettings } from "../domain/goal";
+import type { AppMode, AppSettings } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
 import { colors, spacing } from "../ui/theme";
@@ -66,6 +66,10 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
     updateSettings({ parentPin });
   }
 
+  function handleChangeMode(appMode: AppMode) {
+    updateSettings({ appMode });
+  }
+
   return (
     <View style={styles.screen}>
       <Text style={styles.title}>{strings.settings.title}</Text>
@@ -118,6 +122,22 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
         </View>
       </View>
       {!isParentPinValid ? <Text style={styles.errorText}>{strings.settings.parentPinError}</Text> : null}
+
+      <View style={styles.resetRow}>
+        <Text style={styles.rowTitle}>{strings.settings.appModeTitle}</Text>
+        <View style={styles.modeActions}>
+          <Button
+            label={strings.settings.appModeSingleDevice}
+            onPress={() => handleChangeMode("singleDevice")}
+            variant={settings.appMode === "singleDevice" ? "primary" : "ghost"}
+          />
+          <Button
+            label={strings.settings.appModeTwoDevices}
+            onPress={() => handleChangeMode("twoDevices")}
+            variant={settings.appMode === "twoDevices" ? "primary" : "ghost"}
+          />
+        </View>
+      </View>
 
       <View style={styles.resetRow}>
         <View style={styles.resetCopy}>
@@ -190,6 +210,9 @@ const styles = StyleSheet.create({
     marginTop: -spacing.sm
   },
   pinControls: {
+    gap: spacing.sm
+  },
+  modeActions: {
     gap: spacing.sm
   },
   resetRow: {
