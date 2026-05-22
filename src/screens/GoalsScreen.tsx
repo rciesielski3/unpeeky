@@ -17,7 +17,8 @@ type GoalsScreenProps = {
 };
 
 export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSettings }: GoalsScreenProps) {
-  const hasReachedFreeLimit = !isPremium && goals.length >= FREE_GOAL_LIMIT;
+  const activeGoalsCount = goals.filter((goal) => !goal.completed).length;
+  const hasReachedFreeLimit = !isPremium && activeGoalsCount >= FREE_GOAL_LIMIT;
 
   return (
     <View style={styles.screen}>
