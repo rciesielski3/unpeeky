@@ -37,7 +37,10 @@ export const strings = {
     settingsButton: "Ustawienia",
     emptyTitle: "Brak celów",
     emptyText: "Dodaj pierwszy cel i sprawdź pełną pętlę lokalnie.",
-    newGoalButton: "Nowy cel"
+    newGoalButton: "Nowy cel",
+    thumbnailLabel: (rewardName: string) => `Zdjęcie nagrody: ${rewardName}`,
+    cardProgress: (childName: string, completedTasks: number, totalTasks: number) =>
+      `${childName} - ${completedTasks}/${totalTasks}`
   },
   settings: {
     title: "Ustawienia",
