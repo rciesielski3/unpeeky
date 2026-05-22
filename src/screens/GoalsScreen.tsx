@@ -40,13 +40,18 @@ export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: Go
           return (
             <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.card}>
               <View style={styles.cardHeader}>
-                <Image source={{ uri: item.imageUri }} style={styles.thumbnail} />
+                <Image
+                  accessibilityLabel={strings.goals.thumbnailLabel(item.rewardName)}
+                  accessibilityRole="image"
+                  source={{ uri: item.imageUri }}
+                  style={styles.thumbnail}
+                />
                 <View style={styles.cardCopy}>
                   <Text style={styles.cardTitle}>{item.rewardName}</Text>
                   <View style={styles.childRow}>
                     <AvatarBadge avatarId={item.avatarId} size="sm" />
                     <Text style={styles.meta}>
-                      {item.childName} - {item.completedTasks}/{item.totalTasks}
+                      {strings.goals.cardProgress(item.childName, item.completedTasks, item.totalTasks)}
                     </Text>
                   </View>
                 </View>
