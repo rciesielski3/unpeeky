@@ -18,8 +18,8 @@
       [
         "expo-image-picker",
         {
-          "photosPermission": "Pozwol Unpeeky wybrac zdjecie nagrody z galerii.",
-          "cameraPermission": "Pozwol Unpeeky zrobic zdjecie nagrody."
+          "photosPermission": "Pozwól Unpeeky wybrać zdjęcie nagrody z galerii.",
+          "cameraPermission": "Pozwól Unpeeky zrobić zdjęcie nagrody."
         }
       ]
     ]

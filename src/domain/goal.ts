@@ -1,4 +1,6 @@
 import { normalizeRevealOrder, shuffleTileIds } from "./tiles";
+import { DEFAULT_AVATAR_ID, getAvatar } from "./avatar";
+import type { AvatarId } from "./avatar";
 
 export const TILE_OPTIONS = [8, 12, 16, 20, 24, 28, 32, 36] as const;
 export const DEFAULT_TILE_COUNT = 16;
@@ -13,7 +15,7 @@ export type Goal = {
   totalTasks: TileCount;
   completedTasks: number;
   revealOrder: number[];
-  avatarId: string;
+  avatarId: AvatarId;
   createdAt: string;
   completed: boolean;
 };
@@ -25,7 +27,10 @@ export type AppSettings = {
 };
 
 export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;
-export type PersistedGoal = Omit<Goal, "revealOrder"> & Partial<Pick<Goal, "revealOrder">>;
+export type PersistedGoal = Omit<Goal, "avatarId" | "revealOrder"> &
+  Partial<Pick<Goal, "revealOrder">> & {
+    avatarId?: string;
+  };
 
 export function createGoal(draft: GoalDraft, now = new Date()): Goal {
   return {
@@ -41,6 +46,7 @@ export function createGoal(draft: GoalDraft, now = new Date()): Goal {
 export function normalizeGoal(goal: PersistedGoal): Goal {
   return {
     ...goal,
+    avatarId: goal.avatarId ? getAvatar(goal.avatarId).id : DEFAULT_AVATAR_ID,
     revealOrder: normalizeRevealOrder(goal.totalTasks, goal.revealOrder)
   };
 }

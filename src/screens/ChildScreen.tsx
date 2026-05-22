@@ -1,5 +1,6 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
 import { TileGrid } from "../components/TileGrid";
@@ -19,7 +20,8 @@ export function ChildScreen({ goal, onBack, onCompleteTask }: ChildScreenProps) 
 
   return (
     <View style={styles.screen}>
-      <View>
+      <View style={styles.profile}>
+        <AvatarBadge avatarId={goal.avatarId} size="lg" />
         <Text style={styles.greeting}>{strings.child.greeting(goal.childName)}</Text>
         <Text style={styles.subtitle}>{strings.child.reward(goal.rewardName)}</Text>
       </View>
@@ -53,6 +55,9 @@ const styles = StyleSheet.create({
     gap: spacing.lg,
     justifyContent: "center",
     padding: spacing.lg
+  },
+  profile: {
+    alignItems: "center"
   },
   greeting: {
     color: colors.text,

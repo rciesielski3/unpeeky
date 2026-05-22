@@ -1,5 +1,6 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
 import { getGoalProgress } from "../domain/goal";
@@ -35,15 +36,22 @@ export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: Go
         contentContainerStyle={styles.list}
         data={goals}
         keyExtractor={(goal) => goal.id}
-        renderItem={({ item }) => (
-          <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.card}>
-            <Text style={styles.cardTitle}>{item.rewardName}</Text>
-            <Text style={styles.meta}>
-              {item.childName} - {item.completedTasks}/{item.totalTasks}
-            </Text>
-            <ProgressBar progress={getGoalProgress(item)} />
-          </Pressable>
-        )}
+        renderItem={({ item }) => {
+          return (
+            <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.card}>
+              <View style={styles.cardHeader}>
+                <AvatarBadge avatarId={item.avatarId} />
+                <View style={styles.cardCopy}>
+                  <Text style={styles.cardTitle}>{item.rewardName}</Text>
+                  <Text style={styles.meta}>
+                    {item.childName} - {item.completedTasks}/{item.totalTasks}
+                  </Text>
+                </View>
+              </View>
+              <ProgressBar progress={getGoalProgress(item)} />
+            </Pressable>
+          );
+        }}
       />
 
       <View style={styles.footer}>
@@ -106,6 +114,15 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: spacing.sm,
     padding: spacing.lg
+  },
+  cardHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md
+  },
+  cardCopy: {
+    flex: 1,
+    gap: spacing.xs
   },
   cardTitle: {
     color: colors.text,
