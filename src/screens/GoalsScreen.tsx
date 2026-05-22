@@ -24,6 +24,12 @@ export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: Go
       </View>
 
       <FlatList
+        ListEmptyComponent={
+          <View style={styles.empty}>
+            <Text style={styles.emptyTitle}>Brak celow</Text>
+            <Text style={styles.emptyText}>Dodaj pierwszy cel i sprawdz pelna petle lokalnie.</Text>
+          </View>
+        }
         contentContainerStyle={styles.list}
         data={goals}
         keyExtractor={(goal) => goal.id}
@@ -67,7 +73,29 @@ const styles = StyleSheet.create({
     marginTop: spacing.xs
   },
   list: {
+    flexGrow: 1,
     gap: spacing.md
+  },
+  empty: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: spacing.sm,
+    justifyContent: "center",
+    minHeight: 220,
+    padding: spacing.lg
+  },
+  emptyTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  emptyText: {
+    color: colors.textMuted,
+    fontSize: 14,
+    textAlign: "center"
   },
   card: {
     backgroundColor: colors.surface,

@@ -9,9 +9,12 @@ import { colors, spacing } from "../ui/theme";
 type ChildScreenProps = {
   goal: Goal;
   onBack: () => void;
+  onCompleteTask: () => void;
 };
 
-export function ChildScreen({ goal, onBack }: ChildScreenProps) {
+export function ChildScreen({ goal, onBack, onCompleteTask }: ChildScreenProps) {
+  const isComplete = goal.completedTasks >= goal.totalTasks;
+
   return (
     <View style={styles.screen}>
       <View>
@@ -28,6 +31,7 @@ export function ChildScreen({ goal, onBack }: ChildScreenProps) {
         </Text>
       </View>
 
+      <Button disabled={isComplete} label={isComplete ? "Nagroda gotowa" : "Zatwierdz zadanie"} onPress={onCompleteTask} variant="secondary" />
       <Button label="Wroc do rodzica" onPress={onBack} variant="ghost" />
     </View>
   );
