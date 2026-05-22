@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
@@ -18,6 +18,7 @@ export default function App() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
+  const shouldSkipNextSave = useRef(true);
   const activeGoal = useMemo(() => goals.find((goal) => goal.id === selectedGoalId), [goals, selectedGoalId]);
 
   useEffect(() => {
@@ -28,10 +29,14 @@ export default function App() {
 
   useEffect(() => {
     if (isHydrated) {
+      if (shouldSkipNextSave.current) {
+        shouldSkipNextSave.current = false;
+        return;
+      }
+
       void saveGoals(goals);
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [goals]);
+  }, [goals, isHydrated]);
 
   function handleCreateGoal(draft: GoalDraft) {
     const goal = createGoal(draft);

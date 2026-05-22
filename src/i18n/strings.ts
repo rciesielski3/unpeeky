@@ -9,10 +9,12 @@ export const strings = {
     tileCountLabel: "Liczba kafelków",
     photoStepLabel: "1. Zdjęcie nagrody",
     photoPlaceholder: "Zrób zdjęcie lub wybierz z galerii",
+    photoEmptyLabel: "Zdjęcie",
     cameraButton: "Zrób zdjęcie",
     galleryButton: "Wybierz z galerii",
     cameraPermissionDenied: "Aparat wymaga zgody w ustawieniach telefonu.",
     galleryPermissionDenied: "Galeria wymaga zgody w ustawieniach telefonu.",
+    imagePickerError: "Nie udało się wybrać zdjęcia. Spróbuj ponownie.",
     avatarLabel: "Wybierz avatar",
     saveButton: "Zapisz cel",
     backButton: "Wróć"
@@ -40,5 +42,19 @@ export const strings = {
     notificationTitle: "Powiadomienie",
     notificationMeta: "18:00 codziennie",
     backButton: "Wróć"
+  },
+  avatars: {
+    dino: "Dino",
+    unicorn: "Jednorożec",
+    rocket: "Rakieta",
+    panda: "Panda",
+    lion: "Lew",
+    fox: "Lis",
+    rabbit: "Królik",
+    frog: "Żaba",
+    dolphin: "Delfin",
+    butterfly: "Motyl",
+    star: "Gwiazdka",
+    rainbow: "Tęcza"
   }
 } as const;

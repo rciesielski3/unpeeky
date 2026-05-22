@@ -1,9 +1,9 @@
 import { StyleSheet, Text, View } from "react-native";
 
+import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
 import { TileGrid } from "../components/TileGrid";
-import { getAvatar } from "../domain/avatar";
 import { getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -17,14 +17,11 @@ type ChildScreenProps = {
 
 export function ChildScreen({ goal, onBack, onCompleteTask }: ChildScreenProps) {
   const isComplete = goal.completedTasks >= goal.totalTasks;
-  const avatar = getAvatar(goal.avatarId);
 
   return (
     <View style={styles.screen}>
       <View style={styles.profile}>
-        <View style={[styles.avatarSwatch, { backgroundColor: avatar.color }]}>
-          <Text style={styles.avatarInitial}>{avatar.label.slice(0, 1)}</Text>
-        </View>
+        <AvatarBadge avatarId={goal.avatarId} size="lg" />
         <Text style={styles.greeting}>{strings.child.greeting(goal.childName)}</Text>
         <Text style={styles.subtitle}>{strings.child.reward(goal.rewardName)}</Text>
       </View>
@@ -61,21 +58,6 @@ const styles = StyleSheet.create({
   },
   profile: {
     alignItems: "center"
-  },
-  avatarSwatch: {
-    alignItems: "center",
-    borderColor: colors.surface,
-    borderRadius: 999,
-    borderWidth: 4,
-    height: 76,
-    justifyContent: "center",
-    marginBottom: spacing.sm,
-    width: 76
-  },
-  avatarInitial: {
-    color: colors.surface,
-    fontSize: 28,
-    fontWeight: "800"
   },
   greeting: {
     color: colors.text,

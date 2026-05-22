@@ -1,8 +1,8 @@
 import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
+import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
-import { getAvatar } from "../domain/avatar";
 import { getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -37,14 +37,10 @@ export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: Go
         data={goals}
         keyExtractor={(goal) => goal.id}
         renderItem={({ item }) => {
-          const avatar = getAvatar(item.avatarId);
-
           return (
             <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.card}>
               <View style={styles.cardHeader}>
-                <View style={[styles.avatarSwatch, { backgroundColor: avatar.color }]}>
-                  <Text style={styles.avatarInitial}>{avatar.label.slice(0, 1)}</Text>
-                </View>
+                <AvatarBadge avatarId={item.avatarId} />
                 <View style={styles.cardCopy}>
                   <Text style={styles.cardTitle}>{item.rewardName}</Text>
                   <Text style={styles.meta}>
@@ -123,18 +119,6 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     gap: spacing.md
-  },
-  avatarSwatch: {
-    alignItems: "center",
-    borderRadius: 999,
-    height: 42,
-    justifyContent: "center",
-    width: 42
-  },
-  avatarInitial: {
-    color: colors.surface,
-    fontSize: 16,
-    fontWeight: "800"
   },
   cardCopy: {
     flex: 1,

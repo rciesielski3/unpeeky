@@ -2,6 +2,7 @@ import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
+import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { AVATARS, DEFAULT_AVATAR_ID } from "../domain/avatar";
 import type { AvatarId } from "../domain/avatar";
@@ -9,6 +10,8 @@ import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
+
+type ImageSource = "camera" | "gallery";
 
 type AddGoalScreenProps = {
   onBack: () => void;
@@ -24,39 +27,37 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
   const [avatarId, setAvatarId] = useState<AvatarId>(DEFAULT_AVATAR_ID);
   const canSave = childName.trim().length > 0 && rewardName.trim().length > 0 && imageUri !== null;
 
-  async function pickFromCamera() {
-    const permission = await ImagePicker.requestCameraPermissionsAsync();
+  async function pickImage(source: ImageSource) {
+    try {
+      const permission =
+        source === "camera"
+          ? await ImagePicker.requestCameraPermissionsAsync()
+          : await ImagePicker.requestMediaLibraryPermissionsAsync();
 
-    if (!permission.granted) {
-      setImageError(strings.addGoal.cameraPermissionDenied);
-      return;
+      if (!permission.granted) {
+        setImageError(
+          source === "camera" ? strings.addGoal.cameraPermissionDenied : strings.addGoal.galleryPermissionDenied
+        );
+        return;
+      }
+
+      const pickerOptions: ImagePicker.ImagePickerOptions = {
+        allowsEditing: true,
+        aspect: [1, 1],
+        quality: 0.85
+      };
+      const result =
+        source === "camera"
+          ? await ImagePicker.launchCameraAsync(pickerOptions)
+          : await ImagePicker.launchImageLibraryAsync({
+              ...pickerOptions,
+              mediaTypes: ImagePicker.MediaTypeOptions.Images
+            });
+
+      savePickedImage(result);
+    } catch {
+      setImageError(strings.addGoal.imagePickerError);
     }
-
-    const result = await ImagePicker.launchCameraAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      quality: 0.85
-    });
-
-    savePickedImage(result);
-  }
-
-  async function pickFromGallery() {
-    const permission = await ImagePicker.requestMediaLibraryPermissionsAsync();
-
-    if (!permission.granted) {
-      setImageError(strings.addGoal.galleryPermissionDenied);
-      return;
-    }
-
-    const result = await ImagePicker.launchImageLibraryAsync({
-      allowsEditing: true,
-      aspect: [1, 1],
-      mediaTypes: ImagePicker.MediaTypeOptions.Images,
-      quality: 0.85
-    });
-
-    savePickedImage(result);
   }
 
   function savePickedImage(result: ImagePicker.ImagePickerResult) {
@@ -97,12 +98,12 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
             {imageUri ? (
               <Image source={{ uri: imageUri }} style={styles.photoPreview} />
             ) : (
-              <Text style={styles.photoIcon}>PHOTO</Text>
+              <Text style={styles.photoIcon}>{strings.addGoal.photoEmptyLabel}</Text>
             )}
             <Text style={styles.photoText}>{strings.addGoal.photoPlaceholder}</Text>
             <View style={styles.photoActions}>
-              <Button label={strings.addGoal.cameraButton} onPress={pickFromCamera} variant="ghost" />
-              <Button label={strings.addGoal.galleryButton} onPress={pickFromGallery} variant="ghost" />
+              <Button label={strings.addGoal.cameraButton} onPress={() => void pickImage("camera")} variant="ghost" />
+              <Button label={strings.addGoal.galleryButton} onPress={() => void pickImage("gallery")} variant="ghost" />
             </View>
           </View>
           {imageError ? <Text style={styles.errorText}>{imageError}</Text> : null}
@@ -124,15 +125,13 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
           <View style={styles.avatarOptions}>
             {AVATARS.map((avatar) => (
               <Pressable
-                accessibilityLabel={avatar.label}
+                accessibilityLabel={strings.avatars[avatar.labelKey]}
                 accessibilityRole="button"
                 key={avatar.id}
                 onPress={() => setAvatarId(avatar.id)}
                 style={[styles.avatarOption, avatar.id === avatarId && styles.selectedAvatar]}
               >
-                <View style={[styles.avatarSwatch, { backgroundColor: avatar.color }]}>
-                  <Text style={styles.avatarInitial}>{avatar.label.slice(0, 1)}</Text>
-                </View>
+                <AvatarBadge avatarId={avatar.id} size="sm" />
               </Pressable>
             ))}
           </View>
@@ -235,18 +234,6 @@ const styles = StyleSheet.create({
   selectedAvatar: {
     borderColor: colors.primary,
     borderWidth: 2
-  },
-  avatarSwatch: {
-    alignItems: "center",
-    borderRadius: 999,
-    height: 36,
-    justifyContent: "center",
-    width: 36
-  },
-  avatarInitial: {
-    color: colors.surface,
-    fontSize: 15,
-    fontWeight: "800"
   },
   photoBox: {
     alignItems: "center",
