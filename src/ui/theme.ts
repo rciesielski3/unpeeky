@@ -9,7 +9,13 @@ export const colors = {
   text: "#111827",
   textMuted: "#6B7280",
   border: "#D1D5DB",
-  tile: "#6366F1"
+  tile: "#6366F1",
+  successSurface: "#ECFDF5",
+  successBorder: "#86EFAC",
+  confettiYellow: "#FACC15",
+  confettiBlue: "#60A5FA",
+  confettiPink: "#F472B6",
+  confettiGreen: "#34D399"
 } as const;
 
 export const spacing = {

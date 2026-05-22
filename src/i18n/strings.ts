@@ -25,7 +25,6 @@ export const strings = {
     progress: (completedTasks: number, totalTasks: number) => `${completedTasks} z ${totalTasks} kafelków odkrytych`,
     remaining: (remainingTasks: number) => `Jeszcze ${remainingTasks} i nagroda Twoja!`,
     encouragementTitle: "Jeszcze trochę!",
-    encouragementBody: "Dasz radę!",
     completedTitle: "Brawo!",
     completedBody: "Nagroda jest odkryta. Czas świętować!",
     completeButton: "Nagroda gotowa",

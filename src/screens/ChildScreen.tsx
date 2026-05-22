@@ -101,8 +101,8 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   completedCard: {
-    backgroundColor: "#ECFDF5",
-    borderColor: "#86EFAC"
+    backgroundColor: colors.successSurface,
+    borderColor: colors.successBorder
   },
   messageTitle: {
     color: colors.text,
@@ -127,10 +127,10 @@ const styles = StyleSheet.create({
 function ConfettiDots() {
   return (
     <View pointerEvents="none" style={styles.confettiLayer}>
-      <View style={[styles.confettiDot, { backgroundColor: "#FACC15", left: 18, top: 12 }]} />
-      <View style={[styles.confettiDot, { backgroundColor: "#60A5FA", right: 28, top: 18 }]} />
-      <View style={[styles.confettiDot, { backgroundColor: "#F472B6", bottom: 14, left: 48 }]} />
-      <View style={[styles.confettiDot, { backgroundColor: "#34D399", bottom: 20, right: 52 }]} />
+      <View style={[styles.confettiDot, { backgroundColor: colors.confettiYellow, left: 18, top: 12 }]} />
+      <View style={[styles.confettiDot, { backgroundColor: colors.confettiBlue, right: 28, top: 18 }]} />
+      <View style={[styles.confettiDot, { backgroundColor: colors.confettiPink, bottom: 14, left: 48 }]} />
+      <View style={[styles.confettiDot, { backgroundColor: colors.confettiGreen, bottom: 20, right: 52 }]} />
     </View>
   );
 }
