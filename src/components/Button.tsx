@@ -8,11 +8,17 @@ type ButtonProps = {
   label: string;
   onPress: () => void;
   variant?: ButtonVariant;
+  disabled?: boolean;
 };
 
-export function Button({ label, onPress, variant = "primary" }: ButtonProps) {
+export function Button({ label, onPress, variant = "primary", disabled = false }: ButtonProps) {
   return (
-    <Pressable accessibilityRole="button" onPress={onPress} style={({ pressed }) => [styles.button, styles[variant], pressed && styles.pressed]}>
+    <Pressable
+      accessibilityRole="button"
+      disabled={disabled}
+      onPress={onPress}
+      style={({ pressed }) => [styles.button, styles[variant], pressed && styles.pressed, disabled && styles.disabled]}
+    >
       <Text style={[styles.label, variant === "ghost" && styles.ghostLabel]}>{label}</Text>
     </Pressable>
   );
@@ -46,5 +52,8 @@ const styles = StyleSheet.create({
   },
   pressed: {
     opacity: 0.78
+  },
+  disabled: {
+    opacity: 0.45
   }
 });
