@@ -67,6 +67,9 @@ export const strings = {
       `Darmowa wersja pozwala mieć ${goalLimit} aktywne cele. Włącz Premium w ustawieniach, żeby dodać więcej.`,
     freeLimitButton: "Otwórz ustawienia",
     completedBadge: "Ukończone",
+    deleteButton: "Usuń",
+    deleteTitle: "Usunąć cel?",
+    deleteMeta: (rewardName: string) => `Cel "${rewardName}" i jego postęp zostaną usunięte z tego telefonu.`,
     thumbnailLabel: (rewardName: string) => `Zdjęcie nagrody: ${rewardName}`,
     cardProgress: (childName: string, completedTasks: number, totalTasks: number) =>
       `${childName} - ${completedTasks}/${totalTasks}`

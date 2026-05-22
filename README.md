@@ -58,6 +58,7 @@ npm run format
 - First-run mode selection
 - Free goal limit with Premium toggle
 - Persistent task progress
+- Single-goal deletion
 - Parent PIN for task approval
 - Animated tile reveal grid
 - Child reward progress and completion state

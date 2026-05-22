@@ -12,11 +12,19 @@ type GoalsScreenProps = {
   goals: Goal[];
   isPremium: boolean;
   onAddGoal: () => void;
+  onDeleteGoal: (goalId: string) => void;
   onOpenGoal: (goalId: string) => void;
   onOpenSettings: () => void;
 };
 
-export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSettings }: GoalsScreenProps) {
+export function GoalsScreen({
+  goals,
+  isPremium,
+  onAddGoal,
+  onDeleteGoal,
+  onOpenGoal,
+  onOpenSettings
+}: GoalsScreenProps) {
   const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
   const hasReachedFreeLimit = !isPremium && activeGoalsCount >= FREE_GOAL_LIMIT;
 
@@ -44,37 +52,36 @@ export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSet
           const isCompleted = isGoalComplete(item);
 
           return (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => onOpenGoal(item.id)}
-              style={[styles.card, isCompleted && styles.completedCard]}
-            >
-              <View style={styles.cardHeader}>
-                <Image
-                  accessibilityLabel={strings.goals.thumbnailLabel(item.rewardName)}
-                  accessibilityRole="image"
-                  source={{ uri: item.imageUri }}
-                  style={styles.thumbnail}
-                />
-                <View style={styles.cardCopy}>
-                  <View style={styles.titleRow}>
-                    <Text style={styles.cardTitle}>{item.rewardName}</Text>
-                    {isCompleted ? (
-                      <View style={styles.completedBadge}>
-                        <Text style={styles.completedBadgeText}>{strings.goals.completedBadge}</Text>
-                      </View>
-                    ) : null}
-                  </View>
-                  <View style={styles.childRow}>
-                    <AvatarBadge avatarId={item.avatarId} size="sm" />
-                    <Text style={styles.meta}>
-                      {strings.goals.cardProgress(item.childName, item.completedTasks, item.totalTasks)}
-                    </Text>
+            <View style={[styles.card, isCompleted && styles.completedCard]}>
+              <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.cardContent}>
+                <View style={styles.cardHeader}>
+                  <Image
+                    accessibilityLabel={strings.goals.thumbnailLabel(item.rewardName)}
+                    accessibilityRole="image"
+                    source={{ uri: item.imageUri }}
+                    style={styles.thumbnail}
+                  />
+                  <View style={styles.cardCopy}>
+                    <View style={styles.titleRow}>
+                      <Text style={styles.cardTitle}>{item.rewardName}</Text>
+                      {isCompleted ? (
+                        <View style={styles.completedBadge}>
+                          <Text style={styles.completedBadgeText}>{strings.goals.completedBadge}</Text>
+                        </View>
+                      ) : null}
+                    </View>
+                    <View style={styles.childRow}>
+                      <AvatarBadge avatarId={item.avatarId} size="sm" />
+                      <Text style={styles.meta}>
+                        {strings.goals.cardProgress(item.childName, item.completedTasks, item.totalTasks)}
+                      </Text>
+                    </View>
                   </View>
                 </View>
-              </View>
-              <ProgressBar progress={getGoalProgress(item)} />
-            </Pressable>
+                <ProgressBar progress={getGoalProgress(item)} />
+              </Pressable>
+              <Button label={strings.goals.deleteButton} onPress={() => onDeleteGoal(item.id)} variant="ghost" />
+            </View>
           );
         }}
       />
@@ -147,6 +154,9 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: spacing.sm,
     padding: spacing.lg
+  },
+  cardContent: {
+    gap: spacing.sm
   },
   completedCard: {
     backgroundColor: colors.successSurface,
