@@ -26,6 +26,12 @@ export type AppSettings = {
   childName: string;
 };
 
+export const DEFAULT_APP_SETTINGS: AppSettings = {
+  isPremium: false,
+  notificationTime: "18:00",
+  childName: ""
+};
+
 export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;
 export type PersistedGoal = Omit<Goal, "avatarId" | "revealOrder"> &
   Partial<Pick<Goal, "revealOrder">> & {
@@ -48,6 +54,13 @@ export function normalizeGoal(goal: PersistedGoal): Goal {
     ...goal,
     avatarId: goal.avatarId ? getAvatar(goal.avatarId).id : DEFAULT_AVATAR_ID,
     revealOrder: normalizeRevealOrder(goal.totalTasks, goal.revealOrder)
+  };
+}
+
+export function normalizeSettings(settings: Partial<AppSettings> | null | undefined): AppSettings {
+  return {
+    ...DEFAULT_APP_SETTINGS,
+    ...settings
   };
 }
 

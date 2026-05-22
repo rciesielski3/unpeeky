@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
 import { AddGoalScreen } from "./src/screens/AddGoalScreen";
@@ -72,9 +72,18 @@ export default function App() {
   }
 
   function handleResetGoals() {
-    setGoals([]);
-    setSelectedGoalId(null);
-    setRoute("goals");
+    Alert.alert(strings.settings.resetTitle, strings.settings.resetMeta, [
+      { text: strings.settings.backButton, style: "cancel" },
+      {
+        text: strings.settings.resetButton,
+        style: "destructive",
+        onPress: () => {
+          setGoals([]);
+          setSelectedGoalId(null);
+          setRoute("goals");
+        }
+      }
+    ]);
   }
 
   if (!isHydrated || !settings) {

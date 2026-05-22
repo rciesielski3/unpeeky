@@ -46,6 +46,7 @@ export const strings = {
     notificationTitle: "Powiadomienie",
     notificationMeta: "Codzienna godzina przypomnienia",
     notificationTimePlaceholder: "HH:MM",
+    notificationTimeError: "Wpisz godzinę w formacie HH:MM.",
     resetTitle: "Reset danych",
     resetMeta: "Usuń lokalne cele i postępy",
     resetButton: "Resetuj cele",

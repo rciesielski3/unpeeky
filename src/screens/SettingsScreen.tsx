@@ -1,3 +1,4 @@
+import { useEffect, useState } from "react";
 import { Switch, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
@@ -13,11 +14,27 @@ type SettingsScreenProps = {
 };
 
 export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, settings }: SettingsScreenProps) {
+  const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);
+  const isNotificationTimeValid = isValidNotificationTime(notificationTimeDraft);
+
+  useEffect(() => {
+    setNotificationTimeDraft(settings.notificationTime);
+  }, [settings.notificationTime]);
+
   function updateSettings(nextSettings: Partial<AppSettings>) {
     onSettingsChange({
       ...settings,
       ...nextSettings
     });
+  }
+
+  function handleNotificationTimeBlur() {
+    if (isNotificationTimeValid) {
+      updateSettings({ notificationTime: notificationTimeDraft });
+      return;
+    }
+
+    setNotificationTimeDraft(settings.notificationTime);
   }
 
   return (
@@ -39,12 +56,15 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
         </View>
         <TextInput
           keyboardType="numbers-and-punctuation"
-          onChangeText={(notificationTime) => updateSettings({ notificationTime })}
+          maxLength={5}
+          onBlur={handleNotificationTimeBlur}
+          onChangeText={setNotificationTimeDraft}
           placeholder={strings.settings.notificationTimePlaceholder}
-          style={styles.timeInput}
-          value={settings.notificationTime}
+          style={[styles.timeInput, !isNotificationTimeValid && styles.invalidTimeInput]}
+          value={notificationTimeDraft}
         />
       </View>
+      {!isNotificationTimeValid ? <Text style={styles.errorText}>{strings.settings.notificationTimeError}</Text> : null}
 
       <View style={styles.resetRow}>
         <View style={styles.resetCopy}>
@@ -103,6 +123,14 @@ const styles = StyleSheet.create({
     paddingVertical: spacing.sm,
     textAlign: "center"
   },
+  invalidTimeInput: {
+    borderColor: colors.warning
+  },
+  errorText: {
+    color: colors.warning,
+    fontSize: 13,
+    marginTop: -spacing.sm
+  },
   resetRow: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -115,3 +143,7 @@ const styles = StyleSheet.create({
     gap: spacing.xs
   }
 });
+
+function isValidNotificationTime(notificationTime: string): boolean {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(notificationTime);
+}
