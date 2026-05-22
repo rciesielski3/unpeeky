@@ -23,6 +23,10 @@ export const strings = {
     greeting: (childName: string) => `Hej, ${childName}!`,
     reward: (rewardName: string) => `Nagroda: ${rewardName}`,
     progress: (completedTasks: number, totalTasks: number) => `${completedTasks} z ${totalTasks} kafelków odkrytych`,
+    remaining: (remainingTasks: number) => `Jeszcze ${remainingTasks} i nagroda Twoja!`,
+    encouragementTitle: "Jeszcze trochę!",
+    completedTitle: "Brawo!",
+    completedBody: "Nagroda jest odkryta. Czas świętować!",
     completeButton: "Nagroda gotowa",
     approveTaskButton: "Zatwierdź zadanie",
     backToParentButton: "Wróć do rodzica"
