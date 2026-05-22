@@ -13,6 +13,7 @@ export const strings = {
     galleryButton: "Wybierz z galerii",
     cameraPermissionDenied: "Aparat wymaga zgody w ustawieniach telefonu.",
     galleryPermissionDenied: "Galeria wymaga zgody w ustawieniach telefonu.",
+    avatarLabel: "Wybierz avatar",
     saveButton: "Zapisz cel",
     backButton: "Wróć"
   },

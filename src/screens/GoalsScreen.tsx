@@ -2,6 +2,7 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
+import { getAvatar } from "../domain/avatar";
 import { getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -35,15 +36,26 @@ export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: Go
         contentContainerStyle={styles.list}
         data={goals}
         keyExtractor={(goal) => goal.id}
-        renderItem={({ item }) => (
-          <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.card}>
-            <Text style={styles.cardTitle}>{item.rewardName}</Text>
-            <Text style={styles.meta}>
-              {item.childName} - {item.completedTasks}/{item.totalTasks}
-            </Text>
-            <ProgressBar progress={getGoalProgress(item)} />
-          </Pressable>
-        )}
+        renderItem={({ item }) => {
+          const avatar = getAvatar(item.avatarId);
+
+          return (
+            <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.card}>
+              <View style={styles.cardHeader}>
+                <View style={[styles.avatarSwatch, { backgroundColor: avatar.color }]}>
+                  <Text style={styles.avatarInitial}>{avatar.label.slice(0, 1)}</Text>
+                </View>
+                <View style={styles.cardCopy}>
+                  <Text style={styles.cardTitle}>{item.rewardName}</Text>
+                  <Text style={styles.meta}>
+                    {item.childName} - {item.completedTasks}/{item.totalTasks}
+                  </Text>
+                </View>
+              </View>
+              <ProgressBar progress={getGoalProgress(item)} />
+            </Pressable>
+          );
+        }}
       />
 
       <View style={styles.footer}>
@@ -106,6 +118,27 @@ const styles = StyleSheet.create({
     borderWidth: 1,
     gap: spacing.sm,
     padding: spacing.lg
+  },
+  cardHeader: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md
+  },
+  avatarSwatch: {
+    alignItems: "center",
+    borderRadius: 999,
+    height: 42,
+    justifyContent: "center",
+    width: 42
+  },
+  avatarInitial: {
+    color: colors.surface,
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  cardCopy: {
+    flex: 1,
+    gap: spacing.xs
   },
   cardTitle: {
     color: colors.text,

@@ -3,12 +3,12 @@ import * as ImagePicker from "expo-image-picker";
 import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
+import { AVATARS, DEFAULT_AVATAR_ID } from "../domain/avatar";
+import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
-
-const DEFAULT_AVATAR_ID = "dino";
 
 type AddGoalScreenProps = {
   onBack: () => void;
@@ -21,6 +21,7 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
   const [imageUri, setImageUri] = useState<string | null>(null);
   const [imageError, setImageError] = useState<string | null>(null);
   const [totalTasks, setTotalTasks] = useState<TileCount>(DEFAULT_TILE_COUNT);
+  const [avatarId, setAvatarId] = useState<AvatarId>(DEFAULT_AVATAR_ID);
   const canSave = childName.trim().length > 0 && rewardName.trim().length > 0 && imageUri !== null;
 
   async function pickFromCamera() {
@@ -81,7 +82,7 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
       rewardName: rewardName.trim(),
       imageUri,
       totalTasks,
-      avatarId: DEFAULT_AVATAR_ID
+      avatarId
     });
   }
 
@@ -118,6 +119,24 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
           style={styles.input}
           value={rewardName}
         />
+        <View>
+          <Text style={styles.label}>{strings.addGoal.avatarLabel}</Text>
+          <View style={styles.avatarOptions}>
+            {AVATARS.map((avatar) => (
+              <Pressable
+                accessibilityLabel={avatar.label}
+                accessibilityRole="button"
+                key={avatar.id}
+                onPress={() => setAvatarId(avatar.id)}
+                style={[styles.avatarOption, avatar.id === avatarId && styles.selectedAvatar]}
+              >
+                <View style={[styles.avatarSwatch, { backgroundColor: avatar.color }]}>
+                  <Text style={styles.avatarInitial}>{avatar.label.slice(0, 1)}</Text>
+                </View>
+              </Pressable>
+            ))}
+          </View>
+        </View>
         <View>
           <Text style={styles.label}>{strings.addGoal.tileCountLabel}</Text>
           <View style={styles.tileOptions}>
@@ -196,6 +215,37 @@ const styles = StyleSheet.create({
   },
   selectedTileText: {
     color: colors.surface,
+    fontWeight: "800"
+  },
+  avatarOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
+  avatarOption: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 999,
+    borderWidth: 1,
+    height: 48,
+    justifyContent: "center",
+    width: 48
+  },
+  selectedAvatar: {
+    borderColor: colors.primary,
+    borderWidth: 2
+  },
+  avatarSwatch: {
+    alignItems: "center",
+    borderRadius: 999,
+    height: 36,
+    justifyContent: "center",
+    width: 36
+  },
+  avatarInitial: {
+    color: colors.surface,
+    fontSize: 15,
     fontWeight: "800"
   },
   photoBox: {
