@@ -1,6 +1,7 @@
 import { Switch, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "../components/Button";
+import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
 
 type SettingsScreenProps = {
@@ -10,24 +11,24 @@ type SettingsScreenProps = {
 export function SettingsScreen({ onBack }: SettingsScreenProps) {
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>Ustawienia</Text>
+      <Text style={styles.title}>{strings.settings.title}</Text>
 
       <View style={styles.row}>
         <View>
-          <Text style={styles.rowTitle}>Premium</Text>
-          <Text style={styles.rowMeta}>Reklamy beda tylko w widoku rodzica</Text>
+          <Text style={styles.rowTitle}>{strings.settings.premiumTitle}</Text>
+          <Text style={styles.rowMeta}>{strings.settings.premiumMeta}</Text>
         </View>
         <Switch value={false} />
       </View>
 
       <View style={styles.row}>
         <View>
-          <Text style={styles.rowTitle}>Powiadomienie</Text>
-          <Text style={styles.rowMeta}>18:00 codziennie</Text>
+          <Text style={styles.rowTitle}>{strings.settings.notificationTitle}</Text>
+          <Text style={styles.rowMeta}>{strings.settings.notificationMeta}</Text>
         </View>
       </View>
 
-      <Button label="Wroc" onPress={onBack} variant="ghost" />
+      <Button label={strings.settings.backButton} onPress={onBack} variant="ghost" />
     </View>
   );
 }

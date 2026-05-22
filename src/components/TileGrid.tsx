@@ -1,27 +1,24 @@
-import { useEffect, useMemo, useState } from "react";
-import { DimensionValue, ImageBackground, StyleSheet, View } from "react-native";
+import { useEffect, useMemo } from "react";
+import type { DimensionValue } from "react-native";
+import { ImageBackground, StyleSheet, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 import { DEFAULT_TILE_COUNT } from "../domain/goal";
-import { createTileIds, getRevealedTileIds, shuffleTileIds } from "../domain/tiles";
+import { createTileIds, getRevealedTileIds } from "../domain/tiles";
 import { colors } from "../ui/theme";
 
 type TileGridProps = {
   imageUri: string;
   totalTiles?: number;
   revealedCount: number;
+  revealOrder: number[];
 };
 
-export function TileGrid({ imageUri, totalTiles = DEFAULT_TILE_COUNT, revealedCount }: TileGridProps) {
-  const [revealOrder, setRevealOrder] = useState(() => shuffleTileIds(totalTiles));
+export function TileGrid({ imageUri, totalTiles = DEFAULT_TILE_COUNT, revealedCount, revealOrder }: TileGridProps) {
   const tiles = useMemo(() => createTileIds(totalTiles), [totalTiles]);
   const revealedTileIds = useMemo(() => getRevealedTileIds(revealOrder, revealedCount), [revealOrder, revealedCount]);
   const columns = Math.max(1, Math.ceil(Math.sqrt(totalTiles)));
   const tileBasis = `${100 / columns}%` as DimensionValue;
-
-  useEffect(() => {
-    setRevealOrder(shuffleTileIds(totalTiles));
-  }, [totalTiles]);
 
   return (
     <ImageBackground source={{ uri: imageUri }} resizeMode="cover" style={styles.image} imageStyle={styles.imageRadius}>

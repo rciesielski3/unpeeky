@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { AppSettings, Goal } from "../domain/goal";
+import { normalizeGoal } from "../domain/goal";
+import type { AppSettings, Goal, PersistedGoal } from "../domain/goal";
 
 const STORAGE_KEYS = {
   goals: "goals",
@@ -8,7 +9,9 @@ const STORAGE_KEYS = {
 } as const;
 
 export async function loadGoals(): Promise<Goal[]> {
-  return readJson<Goal[]>(STORAGE_KEYS.goals, []);
+  const goals = await readJson<PersistedGoal[]>(STORAGE_KEYS.goals, []);
+
+  return goals.map(normalizeGoal);
 }
 
 export async function saveGoals(goals: Goal[]): Promise<void> {

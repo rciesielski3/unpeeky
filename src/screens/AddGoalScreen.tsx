@@ -2,10 +2,12 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
-import { DEFAULT_TILE_COUNT, GoalDraft, TileCount, TILE_OPTIONS } from "../domain/goal";
+import { assets } from "../config/assets";
+import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
+import type { GoalDraft, TileCount } from "../domain/goal";
+import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
 
-const PLACEHOLDER_IMAGE_URI = "https://images.unsplash.com/photo-1587654780291-39c9404d746b";
 const DEFAULT_AVATAR_ID = "dino";
 
 type AddGoalScreenProps = {
@@ -27,7 +29,7 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
     onSave({
       childName: childName.trim(),
       rewardName: rewardName.trim(),
-      imageUri: PLACEHOLDER_IMAGE_URI,
+      imageUri: assets.placeholderRewardImageUri,
       totalTasks,
       avatarId: DEFAULT_AVATAR_ID
     });
@@ -35,31 +37,44 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
 
   return (
     <View style={styles.screen}>
-      <Text style={styles.title}>Nowy cel</Text>
+      <Text style={styles.title}>{strings.addGoal.title}</Text>
 
       <View style={styles.form}>
-        <TextInput onChangeText={setChildName} placeholder="Imie dziecka" style={styles.input} value={childName} />
-        <TextInput onChangeText={setRewardName} placeholder="Nazwa nagrody" style={styles.input} value={rewardName} />
+        <TextInput
+          onChangeText={setChildName}
+          placeholder={strings.addGoal.childNamePlaceholder}
+          style={styles.input}
+          value={childName}
+        />
+        <TextInput
+          onChangeText={setRewardName}
+          placeholder={strings.addGoal.rewardNamePlaceholder}
+          style={styles.input}
+          value={rewardName}
+        />
         <View>
-          <Text style={styles.label}>Liczba kafelkow</Text>
+          <Text style={styles.label}>{strings.addGoal.tileCountLabel}</Text>
           <View style={styles.tileOptions}>
             {TILE_OPTIONS.map((option) => (
-              <Pressable accessibilityRole="button" key={option} onPress={() => setTotalTasks(option)} style={[styles.tileOption, option === totalTasks && styles.selectedTile]}>
-                <Text style={[styles.tileOptionText, option === totalTasks && styles.selectedTileText]}>
-                {option}
-              </Text>
+              <Pressable
+                accessibilityRole="button"
+                key={option}
+                onPress={() => setTotalTasks(option)}
+                style={[styles.tileOption, option === totalTasks && styles.selectedTile]}
+              >
+                <Text style={[styles.tileOptionText, option === totalTasks && styles.selectedTileText]}>{option}</Text>
               </Pressable>
             ))}
           </View>
         </View>
         <View style={styles.photoBox}>
-          <Text style={styles.photoText}>Zdjecie nagrody dodamy w kolejnym kroku</Text>
+          <Text style={styles.photoText}>{strings.addGoal.photoPlaceholder}</Text>
         </View>
       </View>
 
       <View style={styles.actions}>
-        <Button disabled={!canSave} label="Zapisz cel" onPress={handleSave} variant="secondary" />
-        <Button label="Wroc" onPress={onBack} variant="ghost" />
+        <Button disabled={!canSave} label={strings.addGoal.saveButton} onPress={handleSave} variant="secondary" />
+        <Button label={strings.addGoal.backButton} onPress={onBack} variant="ghost" />
       </View>
     </View>
   );

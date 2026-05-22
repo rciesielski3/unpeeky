@@ -1,3 +1,5 @@
+import { normalizeRevealOrder, shuffleTileIds } from "./tiles";
+
 export const TILE_OPTIONS = [8, 12, 16, 20, 24, 28, 32, 36] as const;
 export const DEFAULT_TILE_COUNT = 16;
 
@@ -10,6 +12,7 @@ export type Goal = {
   imageUri: string;
   totalTasks: TileCount;
   completedTasks: number;
+  revealOrder: number[];
   avatarId: string;
   createdAt: string;
   completed: boolean;
@@ -22,14 +25,23 @@ export type AppSettings = {
 };
 
 export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;
+export type PersistedGoal = Omit<Goal, "revealOrder"> & Partial<Pick<Goal, "revealOrder">>;
 
 export function createGoal(draft: GoalDraft, now = new Date()): Goal {
   return {
     ...draft,
     id: `${now.getTime()}`,
     completedTasks: 0,
+    revealOrder: shuffleTileIds(draft.totalTasks),
     createdAt: now.toISOString(),
     completed: false
+  };
+}
+
+export function normalizeGoal(goal: PersistedGoal): Goal {
+  return {
+    ...goal,
+    revealOrder: normalizeRevealOrder(goal.totalTasks, goal.revealOrder)
   };
 }
 
@@ -48,19 +60,5 @@ export function completeTask(goal: Goal): Goal {
     ...goal,
     completedTasks,
     completed: completedTasks === goal.totalTasks
-  };
-}
-
-export function createDemoGoal(): Goal {
-  return {
-    id: "demo-goal",
-    childName: "Kacper",
-    rewardName: "Lego Dinozaur",
-    imageUri: "https://images.unsplash.com/photo-1587654780291-39c9404d746b",
-    totalTasks: DEFAULT_TILE_COUNT,
-    completedTasks: 6,
-    avatarId: "dino",
-    createdAt: new Date().toISOString(),
-    completed: false
   };
 }

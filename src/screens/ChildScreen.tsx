@@ -3,7 +3,9 @@ import { StyleSheet, Text, View } from "react-native";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
 import { TileGrid } from "../components/TileGrid";
-import { Goal, getGoalProgress } from "../domain/goal";
+import { getGoalProgress } from "../domain/goal";
+import type { Goal } from "../domain/goal";
+import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
 
 type ChildScreenProps = {
@@ -18,21 +20,29 @@ export function ChildScreen({ goal, onBack, onCompleteTask }: ChildScreenProps) 
   return (
     <View style={styles.screen}>
       <View>
-        <Text style={styles.greeting}>Hej, {goal.childName}!</Text>
-        <Text style={styles.subtitle}>Nagroda: {goal.rewardName}</Text>
+        <Text style={styles.greeting}>{strings.child.greeting(goal.childName)}</Text>
+        <Text style={styles.subtitle}>{strings.child.reward(goal.rewardName)}</Text>
       </View>
 
-      <TileGrid imageUri={goal.imageUri} totalTiles={goal.totalTasks} revealedCount={goal.completedTasks} />
+      <TileGrid
+        imageUri={goal.imageUri}
+        revealOrder={goal.revealOrder}
+        revealedCount={goal.completedTasks}
+        totalTiles={goal.totalTasks}
+      />
 
       <View style={styles.progressBlock}>
         <ProgressBar progress={getGoalProgress(goal)} />
-        <Text style={styles.progressText}>
-          {goal.completedTasks} z {goal.totalTasks} kafelkow odkrytych
-        </Text>
+        <Text style={styles.progressText}>{strings.child.progress(goal.completedTasks, goal.totalTasks)}</Text>
       </View>
 
-      <Button disabled={isComplete} label={isComplete ? "Nagroda gotowa" : "Zatwierdz zadanie"} onPress={onCompleteTask} variant="secondary" />
-      <Button label="Wroc do rodzica" onPress={onBack} variant="ghost" />
+      <Button
+        disabled={isComplete}
+        label={isComplete ? strings.child.completeButton : strings.child.approveTaskButton}
+        onPress={onCompleteTask}
+        variant="secondary"
+      />
+      <Button label={strings.child.backToParentButton} onPress={onBack} variant="ghost" />
     </View>
   );
 }
