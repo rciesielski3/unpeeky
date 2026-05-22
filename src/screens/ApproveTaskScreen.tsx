@@ -16,7 +16,7 @@ type ApproveTaskScreenProps = {
 };
 
 export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView }: ApproveTaskScreenProps) {
-  const isComplete = goal.completedTasks >= goal.totalTasks;
+  const isComplete = goal.completed;
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
 
   return (
@@ -45,7 +45,7 @@ export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView
       <View style={styles.progressBlock}>
         <ProgressBar progress={getGoalProgress(goal)} />
         <Text style={styles.progressText}>{strings.approveTask.progress(goal.completedTasks, goal.totalTasks)}</Text>
-        <Text style={styles.remainingText}>{strings.approveTask.remaining(remainingTasks)}</Text>
+        {!isComplete && <Text style={styles.remainingText}>{strings.approveTask.remaining(remainingTasks)}</Text>}
       </View>
 
       <View style={styles.actions}>
