@@ -37,11 +37,14 @@ export function getTileGridLayout(totalTiles: number): TileGridLayout {
   let bestScore = Number.POSITIVE_INFINITY;
 
   for (let rows = 1; rows <= safeTileCount; rows += 1) {
-    const columns = Math.ceil(safeTileCount / rows);
-    const slotCount = rows * columns;
-    const emptySlots = slotCount - safeTileCount;
+    if (safeTileCount % rows !== 0) {
+      continue;
+    }
+
+    const columns = safeTileCount / rows;
     const shapeDelta = Math.abs(columns - rows);
-    const score = emptySlots * safeTileCount + shapeDelta;
+    const portraitPenalty = columns < rows ? safeTileCount : 0;
+    const score = shapeDelta + portraitPenalty;
 
     if (score < bestScore) {
       bestColumns = columns;

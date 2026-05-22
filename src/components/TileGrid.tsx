@@ -74,16 +74,13 @@ const styles = StyleSheet.create({
   grid: {
     flex: 1,
     flexDirection: "row",
-    flexWrap: "wrap",
-    padding: 3
+    flexWrap: "wrap"
   },
   tileSlot: {
-    padding: 1.5
+    overflow: "hidden"
   },
   tile: {
     backgroundColor: colors.tile,
-    borderRadius: 4,
-    flex: 1,
-    opacity: 0.96
+    flex: 1
   }
 });

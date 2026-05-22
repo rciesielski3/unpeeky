@@ -1,1 +1,1 @@
-export type AppRoute = "goals" | "addGoal" | "child" | "settings";
+export type AppRoute = "goals" | "addGoal" | "approveTask" | "child" | "settings";

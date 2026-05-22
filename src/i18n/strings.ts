@@ -31,6 +31,16 @@ export const strings = {
     approveTaskButton: "Zatwierdź zadanie",
     backToParentButton: "Wróć do rodzica"
   },
+  approveTask: {
+    title: "Zatwierdź zadanie",
+    subtitle: "Rodzic potwierdza postęp",
+    progress: (completedTasks: number, totalTasks: number) => `${completedTasks} z ${totalTasks} zadań`,
+    remaining: (remainingTasks: number) => `Zostało ${remainingTasks}`,
+    approveButton: "Zatwierdź zadanie",
+    childViewButton: "Pokaż widok dziecka",
+    completeButton: "Cel ukończony",
+    backButton: "Wróć"
+  },
   goals: {
     title: "Unpeeky",
     subtitle: "Cele i postępy",
