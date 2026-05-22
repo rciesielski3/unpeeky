@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { normalizeGoal } from "../domain/goal";
+import { DEFAULT_APP_SETTINGS, normalizeGoal, normalizeSettings } from "../domain/goal";
 import type { AppSettings, Goal, PersistedGoal } from "../domain/goal";
 
 const STORAGE_KEYS = {
@@ -11,7 +11,17 @@ const STORAGE_KEYS = {
 export async function loadGoals(): Promise<Goal[]> {
   const goals = await readJson<PersistedGoal[]>(STORAGE_KEYS.goals, []);
 
-  return goals.map(normalizeGoal);
+  if (!Array.isArray(goals)) {
+    return [];
+  }
+
+  return goals.flatMap((goal) => {
+    try {
+      return [normalizeGoal(goal)];
+    } catch {
+      return [];
+    }
+  });
 }
 
 export async function saveGoals(goals: Goal[]): Promise<void> {
@@ -19,11 +29,9 @@ export async function saveGoals(goals: Goal[]): Promise<void> {
 }
 
 export async function loadSettings(): Promise<AppSettings> {
-  return readJson<AppSettings>(STORAGE_KEYS.settings, {
-    isPremium: false,
-    notificationTime: "18:00",
-    childName: ""
-  });
+  const settings = await readJson<Partial<AppSettings> | null>(STORAGE_KEYS.settings, DEFAULT_APP_SETTINGS);
+
+  return normalizeSettings(settings);
 }
 
 export async function saveSettings(settings: AppSettings): Promise<void> {
@@ -31,7 +39,13 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
 }
 
 async function readJson<T>(key: string, fallback: T): Promise<T> {
-  const rawValue = await AsyncStorage.getItem(key);
+  let rawValue: string | null;
+
+  try {
+    rawValue = await AsyncStorage.getItem(key);
+  } catch {
+    return fallback;
+  }
 
   if (!rawValue) {
     return fallback;

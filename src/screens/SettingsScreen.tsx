@@ -1,14 +1,42 @@
-import { Switch, StyleSheet, Text, View } from "react-native";
+import { useEffect, useState } from "react";
+import { Switch, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
+import type { AppSettings } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
 
 type SettingsScreenProps = {
   onBack: () => void;
+  onResetGoals: () => void;
+  onSettingsChange: (settings: AppSettings) => void;
+  settings: AppSettings;
 };
 
-export function SettingsScreen({ onBack }: SettingsScreenProps) {
+export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, settings }: SettingsScreenProps) {
+  const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);
+  const isNotificationTimeValid = isValidNotificationTime(notificationTimeDraft);
+
+  useEffect(() => {
+    setNotificationTimeDraft(settings.notificationTime);
+  }, [settings.notificationTime]);
+
+  function updateSettings(nextSettings: Partial<AppSettings>) {
+    onSettingsChange({
+      ...settings,
+      ...nextSettings
+    });
+  }
+
+  function handleNotificationTimeBlur() {
+    if (isNotificationTimeValid) {
+      updateSettings({ notificationTime: notificationTimeDraft });
+      return;
+    }
+
+    setNotificationTimeDraft(settings.notificationTime);
+  }
+
   return (
     <View style={styles.screen}>
       <Text style={styles.title}>{strings.settings.title}</Text>
@@ -18,7 +46,7 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
           <Text style={styles.rowTitle}>{strings.settings.premiumTitle}</Text>
           <Text style={styles.rowMeta}>{strings.settings.premiumMeta}</Text>
         </View>
-        <Switch value={false} />
+        <Switch onValueChange={(isPremium) => updateSettings({ isPremium })} value={settings.isPremium} />
       </View>
 
       <View style={styles.row}>
@@ -26,6 +54,24 @@ export function SettingsScreen({ onBack }: SettingsScreenProps) {
           <Text style={styles.rowTitle}>{strings.settings.notificationTitle}</Text>
           <Text style={styles.rowMeta}>{strings.settings.notificationMeta}</Text>
         </View>
+        <TextInput
+          keyboardType="numbers-and-punctuation"
+          maxLength={5}
+          onBlur={handleNotificationTimeBlur}
+          onChangeText={setNotificationTimeDraft}
+          placeholder={strings.settings.notificationTimePlaceholder}
+          style={[styles.timeInput, !isNotificationTimeValid && styles.invalidTimeInput]}
+          value={notificationTimeDraft}
+        />
+      </View>
+      {!isNotificationTimeValid ? <Text style={styles.errorText}>{strings.settings.notificationTimeError}</Text> : null}
+
+      <View style={styles.resetRow}>
+        <View style={styles.resetCopy}>
+          <Text style={styles.rowTitle}>{strings.settings.resetTitle}</Text>
+          <Text style={styles.rowMeta}>{strings.settings.resetMeta}</Text>
+        </View>
+        <Button label={strings.settings.resetButton} onPress={onResetGoals} variant="ghost" />
       </View>
 
       <Button label={strings.settings.backButton} onPress={onBack} variant="ghost" />
@@ -63,5 +109,41 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 13,
     marginTop: spacing.xs
+  },
+  timeInput: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "700",
+    minWidth: 92,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm,
+    textAlign: "center"
+  },
+  invalidTimeInput: {
+    borderColor: colors.warning
+  },
+  errorText: {
+    color: colors.warning,
+    fontSize: 13,
+    marginTop: -spacing.sm
+  },
+  resetRow: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: spacing.md,
+    padding: spacing.lg
+  },
+  resetCopy: {
+    gap: spacing.xs
   }
 });
+
+function isValidNotificationTime(notificationTime: string): boolean {
+  return /^([01]\d|2[0-3]):[0-5]\d$/.test(notificationTime);
+}

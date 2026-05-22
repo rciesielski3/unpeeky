@@ -44,7 +44,12 @@ export const strings = {
     premiumTitle: "Premium",
     premiumMeta: "Reklamy będą tylko w widoku rodzica",
     notificationTitle: "Powiadomienie",
-    notificationMeta: "18:00 codziennie",
+    notificationMeta: "Codzienna godzina przypomnienia",
+    notificationTimePlaceholder: "HH:MM",
+    notificationTimeError: "Wpisz godzinę w formacie HH:MM.",
+    resetTitle: "Reset danych",
+    resetMeta: "Usuń lokalne cele i postępy",
+    resetButton: "Resetuj cele",
     backButton: "Wróć"
   },
   avatars: {
