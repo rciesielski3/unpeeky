@@ -82,6 +82,30 @@ export default function App() {
     setGoals((currentGoals) => currentGoals.map((goal) => (goal.id === goalId ? completeTask(goal) : goal)));
   }
 
+  function handleDeleteGoal(goalId: string) {
+    const goal = goals.find((currentGoal) => currentGoal.id === goalId);
+
+    if (!goal) {
+      return;
+    }
+
+    Alert.alert(strings.goals.deleteTitle, strings.goals.deleteMeta(goal.rewardName), [
+      { text: strings.settings.backButton, style: "cancel" },
+      {
+        text: strings.goals.deleteButton,
+        style: "destructive",
+        onPress: () => {
+          setGoals((currentGoals) => currentGoals.filter((currentGoal) => currentGoal.id !== goalId));
+
+          if (selectedGoalId === goalId) {
+            setSelectedGoalId(null);
+            setRoute("goals");
+          }
+        }
+      }
+    ]);
+  }
+
   function handleResetGoals() {
     Alert.alert(strings.settings.resetTitle, strings.settings.resetMeta, [
       { text: strings.settings.backButton, style: "cancel" },
@@ -126,6 +150,7 @@ export default function App() {
           goals={goals}
           isPremium={settings.isPremium}
           onAddGoal={() => setRoute("addGoal")}
+          onDeleteGoal={handleDeleteGoal}
           onOpenGoal={handleOpenGoal}
           onOpenSettings={() => setRoute("settings")}
         />
