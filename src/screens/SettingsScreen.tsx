@@ -4,6 +4,7 @@ import { Switch, StyleSheet, Text, TextInput, View } from "react-native";
 import { Button } from "../components/Button";
 import type { AppSettings } from "../domain/goal";
 import { strings } from "../i18n/strings";
+import { scheduleDaily } from "../notifications/scheduleDaily";
 import { colors, spacing } from "../ui/theme";
 
 type SettingsScreenProps = {
@@ -15,6 +16,7 @@ type SettingsScreenProps = {
 
 export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, settings }: SettingsScreenProps) {
   const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);
+  const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
   const isNotificationTimeValid = isValidNotificationTime(notificationTimeDraft);
 
   useEffect(() => {
@@ -28,13 +30,17 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
     });
   }
 
-  function handleNotificationTimeBlur() {
+  async function handleNotificationTimeBlur() {
     if (isNotificationTimeValid) {
       updateSettings({ notificationTime: notificationTimeDraft });
+      const scheduleResult = await scheduleDaily(notificationTimeDraft);
+
+      setNotificationMessage(getNotificationMessage(scheduleResult));
       return;
     }
 
     setNotificationTimeDraft(settings.notificationTime);
+    setNotificationMessage(null);
   }
 
   return (
@@ -57,7 +63,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
         <TextInput
           keyboardType="numbers-and-punctuation"
           maxLength={5}
-          onBlur={handleNotificationTimeBlur}
+          onBlur={() => void handleNotificationTimeBlur()}
           onChangeText={setNotificationTimeDraft}
           placeholder={strings.settings.notificationTimePlaceholder}
           style={[styles.timeInput, !isNotificationTimeValid && styles.invalidTimeInput]}
@@ -65,6 +71,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
         />
       </View>
       {!isNotificationTimeValid ? <Text style={styles.errorText}>{strings.settings.notificationTimeError}</Text> : null}
+      {notificationMessage ? <Text style={styles.statusText}>{notificationMessage}</Text> : null}
 
       <View style={styles.resetRow}>
         <View style={styles.resetCopy}>
@@ -131,6 +138,11 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: -spacing.sm
   },
+  statusText: {
+    color: colors.accent,
+    fontSize: 13,
+    marginTop: -spacing.sm
+  },
   resetRow: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
@@ -146,4 +158,16 @@ const styles = StyleSheet.create({
 
 function isValidNotificationTime(notificationTime: string): boolean {
   return /^([01]\d|2[0-3]):[0-5]\d$/.test(notificationTime);
+}
+
+function getNotificationMessage(scheduleResult: Awaited<ReturnType<typeof scheduleDaily>>): string {
+  if (scheduleResult === "scheduled") {
+    return strings.settings.notificationScheduled;
+  }
+
+  if (scheduleResult === "denied") {
+    return strings.settings.notificationDenied;
+  }
+
+  return strings.settings.notificationError;
 }

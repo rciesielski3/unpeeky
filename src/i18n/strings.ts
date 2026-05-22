@@ -50,7 +50,14 @@ export const strings = {
     resetTitle: "Reset danych",
     resetMeta: "Usuń lokalne cele i postępy",
     resetButton: "Resetuj cele",
+    notificationScheduled: "Przypomnienie zapisane.",
+    notificationDenied: "Powiadomienia wymagają zgody w ustawieniach telefonu.",
+    notificationError: "Nie udało się zapisać przypomnienia.",
     backButton: "Wróć"
+  },
+  notifications: {
+    title: "Unpeeky",
+    body: "Hej! Tata/Mama czeka na Twoje dzisiejsze zadanie."
   },
   avatars: {
     dino: "Dino",
