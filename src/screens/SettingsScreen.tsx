@@ -2,6 +2,7 @@ import { useEffect, useState } from "react";
 import { Switch, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
+import { generateParentPin, isParentPinValid as validateParentPin } from "../domain/goal";
 import type { AppSettings } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
@@ -19,7 +20,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
   const [parentPinDraft, setParentPinDraft] = useState(settings.parentPin);
   const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
   const isNotificationTimeValid = parseNotificationTime(notificationTimeDraft) !== null;
-  const isParentPinValid = /^\d{4}$/.test(parentPinDraft);
+  const isParentPinValid = validateParentPin(parentPinDraft);
 
   useEffect(() => {
     setNotificationTimeDraft(settings.notificationTime);
@@ -56,6 +57,13 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
     }
 
     setParentPinDraft(settings.parentPin);
+  }
+
+  function handleGenerateParentPin() {
+    const parentPin = generateParentPin();
+
+    setParentPinDraft(parentPin);
+    updateSettings({ parentPin });
   }
 
   return (
@@ -96,16 +104,18 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
           <Text style={styles.rowTitle}>{strings.settings.parentPinTitle}</Text>
           <Text style={styles.rowMeta}>{strings.settings.parentPinMeta}</Text>
         </View>
-        <TextInput
-          keyboardType="number-pad"
-          maxLength={4}
-          onBlur={handleParentPinBlur}
-          onChangeText={(text) => setParentPinDraft(text.replace(/\D/g, "").slice(0, 4))}
-          placeholder={strings.settings.parentPinPlaceholder}
-          secureTextEntry
-          style={[styles.timeInput, !isParentPinValid && styles.invalidTimeInput]}
-          value={parentPinDraft}
-        />
+        <View style={styles.pinControls}>
+          <TextInput
+            keyboardType="number-pad"
+            maxLength={4}
+            onBlur={handleParentPinBlur}
+            onChangeText={(text) => setParentPinDraft(text.replace(/\D/g, "").slice(0, 4))}
+            placeholder={strings.settings.parentPinPlaceholder}
+            style={[styles.timeInput, !isParentPinValid && styles.invalidTimeInput]}
+            value={parentPinDraft}
+          />
+          <Button label={strings.settings.generateParentPinButton} onPress={handleGenerateParentPin} variant="ghost" />
+        </View>
       </View>
       {!isParentPinValid ? <Text style={styles.errorText}>{strings.settings.parentPinError}</Text> : null}
 
@@ -178,6 +188,9 @@ const styles = StyleSheet.create({
     color: colors.accent,
     fontSize: 13,
     marginTop: -spacing.sm
+  },
+  pinControls: {
+    gap: spacing.sm
   },
   resetRow: {
     backgroundColor: colors.surface,

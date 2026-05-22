@@ -74,12 +74,14 @@ export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView
       ) : null}
 
       <View style={styles.actions}>
-        <Button
-          disabled={!canApprove}
-          label={isComplete ? strings.approveTask.completeButton : strings.approveTask.approveButton}
-          onPress={onApproveTask}
-          variant="secondary"
-        />
+        {!isComplete ? (
+          <Button
+            disabled={!canApprove}
+            label={strings.approveTask.approveButton}
+            onPress={onApproveTask}
+            variant="secondary"
+          />
+        ) : null}
         <Button label={strings.approveTask.childViewButton} onPress={onOpenChildView} />
         <Button label={strings.approveTask.backButton} onPress={onBack} variant="ghost" />
       </View>
