@@ -3,7 +3,7 @@ import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
-import { FREE_GOAL_LIMIT, getGoalProgress } from "../domain/goal";
+import { FREE_GOAL_LIMIT, getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
@@ -17,7 +17,7 @@ type GoalsScreenProps = {
 };
 
 export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSettings }: GoalsScreenProps) {
-  const activeGoalsCount = goals.filter((goal) => !goal.completed).length;
+  const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
   const hasReachedFreeLimit = !isPremium && activeGoalsCount >= FREE_GOAL_LIMIT;
 
   return (
@@ -41,11 +41,13 @@ export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSet
         data={goals}
         keyExtractor={(goal) => goal.id}
         renderItem={({ item }) => {
+          const isCompleted = isGoalComplete(item);
+
           return (
             <Pressable
               accessibilityRole="button"
               onPress={() => onOpenGoal(item.id)}
-              style={[styles.card, item.completed && styles.completedCard]}
+              style={[styles.card, isCompleted && styles.completedCard]}
             >
               <View style={styles.cardHeader}>
                 <Image
@@ -57,7 +59,7 @@ export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSet
                 <View style={styles.cardCopy}>
                   <View style={styles.titleRow}>
                     <Text style={styles.cardTitle}>{item.rewardName}</Text>
-                    {item.completed ? (
+                    {isCompleted ? (
                       <View style={styles.completedBadge}>
                         <Text style={styles.completedBadgeText}>{strings.goals.completedBadge}</Text>
                       </View>

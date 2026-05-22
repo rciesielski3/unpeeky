@@ -40,7 +40,7 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
 
 export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;
 export type PersistedGoal = Omit<Goal, "avatarId" | "revealOrder"> &
-  Partial<Pick<Goal, "revealOrder">> & {
+  Partial<Pick<Goal, "completed" | "revealOrder">> & {
     avatarId?: string;
   };
 
@@ -59,6 +59,7 @@ export function normalizeGoal(goal: PersistedGoal): Goal {
   return {
     ...goal,
     avatarId: goal.avatarId ? getAvatar(goal.avatarId).id : DEFAULT_AVATAR_ID,
+    completed: isGoalComplete(goal),
     revealOrder: normalizeRevealOrder(goal.totalTasks, goal.revealOrder)
   };
 }
@@ -94,6 +95,10 @@ export function getGoalProgress(goal: Pick<Goal, "completedTasks" | "totalTasks"
   }
 
   return Math.min(1, Math.max(0, goal.completedTasks / goal.totalTasks));
+}
+
+export function isGoalComplete(goal: Pick<Goal, "completedTasks" | "totalTasks"> & { completed?: boolean }): boolean {
+  return goal.completed === true || goal.completedTasks >= goal.totalTasks;
 }
 
 export function completeTask(goal: Goal): Goal {
