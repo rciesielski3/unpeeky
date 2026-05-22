@@ -30,7 +30,8 @@ export default function App() {
     if (isHydrated) {
       void saveGoals(goals);
     }
-  }, [goals, isHydrated]);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [goals]);
 
   function handleCreateGoal(draft: GoalDraft) {
     const goal = createGoal(draft);

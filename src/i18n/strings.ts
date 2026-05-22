@@ -1,38 +1,43 @@
 export const strings = {
   app: {
-    loading: "Ladowanie..."
+    loading: "Ładowanie..."
   },
   addGoal: {
     title: "Nowy cel",
-    childNamePlaceholder: "Imie dziecka",
+    childNamePlaceholder: "Imię dziecka",
     rewardNamePlaceholder: "Nazwa nagrody",
-    tileCountLabel: "Liczba kafelkow",
-    photoPlaceholder: "Zdjecie nagrody dodamy w kolejnym kroku",
+    tileCountLabel: "Liczba kafelków",
+    photoStepLabel: "1. Zdjęcie nagrody",
+    photoPlaceholder: "Zrób zdjęcie lub wybierz z galerii",
+    cameraButton: "Zrób zdjęcie",
+    galleryButton: "Wybierz z galerii",
+    cameraPermissionDenied: "Aparat wymaga zgody w ustawieniach telefonu.",
+    galleryPermissionDenied: "Galeria wymaga zgody w ustawieniach telefonu.",
     saveButton: "Zapisz cel",
-    backButton: "Wroc"
+    backButton: "Wróć"
   },
   child: {
     greeting: (childName: string) => `Hej, ${childName}!`,
     reward: (rewardName: string) => `Nagroda: ${rewardName}`,
-    progress: (completedTasks: number, totalTasks: number) => `${completedTasks} z ${totalTasks} kafelkow odkrytych`,
+    progress: (completedTasks: number, totalTasks: number) => `${completedTasks} z ${totalTasks} kafelków odkrytych`,
     completeButton: "Nagroda gotowa",
-    approveTaskButton: "Zatwierdz zadanie",
-    backToParentButton: "Wroc do rodzica"
+    approveTaskButton: "Zatwierdź zadanie",
+    backToParentButton: "Wróć do rodzica"
   },
   goals: {
     title: "Unpeeky",
-    subtitle: "Cele i postepy",
+    subtitle: "Cele i postępy",
     settingsButton: "Ustawienia",
-    emptyTitle: "Brak celow",
-    emptyText: "Dodaj pierwszy cel i sprawdz pelna petle lokalnie.",
+    emptyTitle: "Brak celów",
+    emptyText: "Dodaj pierwszy cel i sprawdź pełną pętlę lokalnie.",
     newGoalButton: "Nowy cel"
   },
   settings: {
     title: "Ustawienia",
     premiumTitle: "Premium",
-    premiumMeta: "Reklamy beda tylko w widoku rodzica",
+    premiumMeta: "Reklamy będą tylko w widoku rodzica",
     notificationTitle: "Powiadomienie",
     notificationMeta: "18:00 codziennie",
-    backButton: "Wroc"
+    backButton: "Wróć"
   }
 } as const;

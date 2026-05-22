@@ -13,6 +13,15 @@
       "adaptiveIcon": {
         "backgroundColor": "#4F46E5"
       }
-    }
+    },
+    "plugins": [
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Pozwol Unpeeky wybrac zdjecie nagrody z galerii.",
+          "cameraPermission": "Pozwol Unpeeky zrobic zdjecie nagrody."
+        }
+      ]
+    ]
   }
 }
