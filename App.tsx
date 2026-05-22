@@ -124,6 +124,7 @@ export default function App() {
       {route === "goals" ? (
         <GoalsScreen
           goals={goals}
+          isPremium={settings.isPremium}
           onAddGoal={() => setRoute("addGoal")}
           onOpenGoal={handleOpenGoal}
           onOpenSettings={() => setRoute("settings")}

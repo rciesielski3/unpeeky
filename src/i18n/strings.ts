@@ -62,6 +62,10 @@ export const strings = {
     emptyTitle: "Brak celów",
     emptyText: "Dodaj pierwszy cel i sprawdź pełną pętlę lokalnie.",
     newGoalButton: "Nowy cel",
+    freeLimitTitle: "Limit darmowych celów",
+    freeLimitText: (goalLimit: number) =>
+      `Darmowa wersja pozwala mieć ${goalLimit} aktywne cele. Włącz Premium w ustawieniach, żeby dodać więcej.`,
+    freeLimitButton: "Otwórz ustawienia",
     thumbnailLabel: (rewardName: string) => `Zdjęcie nagrody: ${rewardName}`,
     cardProgress: (childName: string, completedTasks: number, totalTasks: number) =>
       `${childName} - ${completedTasks}/${totalTasks}`

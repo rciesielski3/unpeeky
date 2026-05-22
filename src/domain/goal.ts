@@ -4,6 +4,7 @@ import type { AvatarId } from "./avatar";
 
 export const TILE_OPTIONS = [8, 12, 16, 20, 24, 28, 32, 36] as const;
 export const DEFAULT_TILE_COUNT = 16;
+export const FREE_GOAL_LIMIT = 2;
 
 export type TileCount = (typeof TILE_OPTIONS)[number];
 export type AppMode = "singleDevice" | "twoDevices";
