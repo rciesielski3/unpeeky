@@ -158,6 +158,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   cardContent: {
+    alignSelf: "stretch",
     gap: spacing.sm
   },
   completedCard: {

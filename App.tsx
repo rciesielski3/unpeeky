@@ -99,7 +99,6 @@ export default function App() {
 
           if (selectedGoalId === goalId) {
             setSelectedGoalId(null);
-            setRoute("goals");
           }
         }
       }
