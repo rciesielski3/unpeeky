@@ -8,6 +8,7 @@ import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
 import { completeTask, createGoal } from "./src/domain/goal";
 import type { Goal, GoalDraft } from "./src/domain/goal";
+import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
 import { loadGoals, saveGoals } from "./src/storage/appStorage";
 import { colors } from "./src/ui/theme";
@@ -53,7 +54,7 @@ export default function App() {
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
         <View style={styles.loading}>
-          <Text style={styles.loadingText}>Ladowanie...</Text>
+          <Text style={styles.loadingText}>{strings.app.loading}</Text>
         </View>
       </SafeAreaView>
     );

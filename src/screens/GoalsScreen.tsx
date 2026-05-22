@@ -4,6 +4,7 @@ import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
 import { getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
+import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
 
 type GoalsScreenProps = {
@@ -18,17 +19,17 @@ export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: Go
     <View style={styles.screen}>
       <View style={styles.header}>
         <View>
-          <Text style={styles.title}>Unpeeky</Text>
-          <Text style={styles.subtitle}>Cele i postepy</Text>
+          <Text style={styles.title}>{strings.goals.title}</Text>
+          <Text style={styles.subtitle}>{strings.goals.subtitle}</Text>
         </View>
-        <Button label="Ustawienia" onPress={onOpenSettings} variant="ghost" />
+        <Button label={strings.goals.settingsButton} onPress={onOpenSettings} variant="ghost" />
       </View>
 
       <FlatList
         ListEmptyComponent={
           <View style={styles.empty}>
-            <Text style={styles.emptyTitle}>Brak celow</Text>
-            <Text style={styles.emptyText}>Dodaj pierwszy cel i sprawdz pelna petle lokalnie.</Text>
+            <Text style={styles.emptyTitle}>{strings.goals.emptyTitle}</Text>
+            <Text style={styles.emptyText}>{strings.goals.emptyText}</Text>
           </View>
         }
         contentContainerStyle={styles.list}
@@ -46,7 +47,7 @@ export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: Go
       />
 
       <View style={styles.footer}>
-        <Button label="Nowy cel" onPress={onAddGoal} />
+        <Button label={strings.goals.newGoalButton} onPress={onAddGoal} />
       </View>
     </View>
   );
