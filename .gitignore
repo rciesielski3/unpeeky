@@ -1,0 +1,11 @@
+node_modules/
+.expo/
+dist/
+build/
+coverage/
+.DS_Store
+*.log
+
+puzzle-reward-plan.md
+puzzle-reward-codex-prompt.md
+unpeeky_mockup_v3.html
