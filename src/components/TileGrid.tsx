@@ -1,6 +1,9 @@
+import { useEffect, useMemo, useState } from "react";
 import { DimensionValue, ImageBackground, StyleSheet, View } from "react-native";
+import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 import { DEFAULT_TILE_COUNT } from "../domain/goal";
+import { createTileIds, getRevealedTileIds, shuffleTileIds } from "../domain/tiles";
 import { colors } from "../ui/theme";
 
 type TileGridProps = {
@@ -10,25 +13,53 @@ type TileGridProps = {
 };
 
 export function TileGrid({ imageUri, totalTiles = DEFAULT_TILE_COUNT, revealedCount }: TileGridProps) {
-  const tiles = Array.from({ length: totalTiles }, (_, index) => index);
-  const columns = Math.ceil(Math.sqrt(totalTiles));
+  const [revealOrder, setRevealOrder] = useState(() => shuffleTileIds(totalTiles));
+  const tiles = useMemo(() => createTileIds(totalTiles), [totalTiles]);
+  const revealedTileIds = useMemo(() => getRevealedTileIds(revealOrder, revealedCount), [revealOrder, revealedCount]);
+  const columns = Math.max(1, Math.ceil(Math.sqrt(totalTiles)));
   const tileBasis = `${100 / columns}%` as DimensionValue;
+
+  useEffect(() => {
+    setRevealOrder(shuffleTileIds(totalTiles));
+  }, [totalTiles]);
 
   return (
     <ImageBackground source={{ uri: imageUri }} resizeMode="cover" style={styles.image} imageStyle={styles.imageRadius}>
       <View style={styles.grid}>
         {tiles.map((tile) => {
-          const isRevealed = tile < revealedCount;
-
           return (
             <View key={tile} style={[styles.tileSlot, { flexBasis: tileBasis }]}>
-              <View style={[styles.tile, isRevealed && styles.revealed]} />
+              <AnimatedTile isRevealed={revealedTileIds.has(tile)} />
             </View>
           );
         })}
       </View>
     </ImageBackground>
   );
+}
+
+type AnimatedTileProps = {
+  isRevealed: boolean;
+};
+
+function AnimatedTile({ isRevealed }: AnimatedTileProps) {
+  const progress = useSharedValue(isRevealed ? 0 : 1);
+
+  useEffect(() => {
+    progress.value = withSpring(isRevealed ? 0 : 1, {
+      damping: 12,
+      stiffness: 180
+    });
+  }, [isRevealed, progress]);
+
+  const animatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: progress.value,
+      transform: [{ scale: progress.value }]
+    };
+  });
+
+  return <Animated.View style={[styles.tile, animatedStyle]} />;
 }
 
 const styles = StyleSheet.create({
@@ -57,8 +88,5 @@ const styles = StyleSheet.create({
     borderRadius: 4,
     flex: 1,
     opacity: 0.96
-  },
-  revealed: {
-    opacity: 0
   }
 });
