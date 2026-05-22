@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { DimensionValue, ImageBackground, StyleSheet, View } from "react-native";
+import type { DimensionValue } from "react-native";
+import { ImageBackground, StyleSheet, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 import { DEFAULT_TILE_COUNT } from "../domain/goal";

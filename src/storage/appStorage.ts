@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { AppSettings, Goal } from "../domain/goal";
+import type { AppSettings, Goal } from "../domain/goal";
 
 const STORAGE_KEYS = {
   goals: "goals",

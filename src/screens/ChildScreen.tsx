@@ -3,7 +3,8 @@ import { StyleSheet, Text, View } from "react-native";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
 import { TileGrid } from "../components/TileGrid";
-import { Goal, getGoalProgress } from "../domain/goal";
+import { getGoalProgress } from "../domain/goal";
+import type { Goal } from "../domain/goal";
 import { colors, spacing } from "../ui/theme";
 
 type ChildScreenProps = {
@@ -31,7 +32,12 @@ export function ChildScreen({ goal, onBack, onCompleteTask }: ChildScreenProps) 
         </Text>
       </View>
 
-      <Button disabled={isComplete} label={isComplete ? "Nagroda gotowa" : "Zatwierdz zadanie"} onPress={onCompleteTask} variant="secondary" />
+      <Button
+        disabled={isComplete}
+        label={isComplete ? "Nagroda gotowa" : "Zatwierdz zadanie"}
+        onPress={onCompleteTask}
+        variant="secondary"
+      />
       <Button label="Wroc do rodzica" onPress={onBack} variant="ghost" />
     </View>
   );

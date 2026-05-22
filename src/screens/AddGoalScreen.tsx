@@ -2,7 +2,8 @@ import { useState } from "react";
 import { Pressable, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
-import { DEFAULT_TILE_COUNT, GoalDraft, TileCount, TILE_OPTIONS } from "../domain/goal";
+import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
+import type { GoalDraft, TileCount } from "../domain/goal";
 import { colors, spacing } from "../ui/theme";
 
 const PLACEHOLDER_IMAGE_URI = "https://images.unsplash.com/photo-1587654780291-39c9404d746b";
@@ -44,10 +45,13 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
           <Text style={styles.label}>Liczba kafelkow</Text>
           <View style={styles.tileOptions}>
             {TILE_OPTIONS.map((option) => (
-              <Pressable accessibilityRole="button" key={option} onPress={() => setTotalTasks(option)} style={[styles.tileOption, option === totalTasks && styles.selectedTile]}>
-                <Text style={[styles.tileOptionText, option === totalTasks && styles.selectedTileText]}>
-                {option}
-              </Text>
+              <Pressable
+                accessibilityRole="button"
+                key={option}
+                onPress={() => setTotalTasks(option)}
+                style={[styles.tileOption, option === totalTasks && styles.selectedTile]}
+              >
+                <Text style={[styles.tileOptionText, option === totalTasks && styles.selectedTileText]}>{option}</Text>
               </Pressable>
             ))}
           </View>

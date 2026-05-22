@@ -2,7 +2,8 @@ import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
-import { Goal, getGoalProgress } from "../domain/goal";
+import { getGoalProgress } from "../domain/goal";
+import type { Goal } from "../domain/goal";
 import { colors, spacing } from "../ui/theme";
 
 type GoalsScreenProps = {
