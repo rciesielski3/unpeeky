@@ -17,6 +17,7 @@ type ChildScreenProps = {
 
 export function ChildScreen({ goal, onBack, onCompleteTask }: ChildScreenProps) {
   const isComplete = goal.completedTasks >= goal.totalTasks;
+  const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
 
   return (
     <View style={styles.screen}>
@@ -36,6 +37,16 @@ export function ChildScreen({ goal, onBack, onCompleteTask }: ChildScreenProps) 
       <View style={styles.progressBlock}>
         <ProgressBar progress={getGoalProgress(goal)} />
         <Text style={styles.progressText}>{strings.child.progress(goal.completedTasks, goal.totalTasks)}</Text>
+      </View>
+
+      <View style={[styles.messageCard, isComplete && styles.completedCard]}>
+        {isComplete ? <ConfettiDots /> : null}
+        <Text style={styles.messageTitle}>
+          {isComplete ? strings.child.completedTitle : strings.child.encouragementTitle}
+        </Text>
+        <Text style={styles.messageBody}>
+          {isComplete ? strings.child.completedBody : strings.child.remaining(remainingTasks)}
+        </Text>
       </View>
 
       <Button
@@ -79,5 +90,47 @@ const styles = StyleSheet.create({
     color: colors.textMuted,
     fontSize: 14,
     textAlign: "center"
+  },
+  messageCard: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: spacing.xs,
+    overflow: "hidden",
+    padding: spacing.lg
+  },
+  completedCard: {
+    backgroundColor: "#ECFDF5",
+    borderColor: "#86EFAC"
+  },
+  messageTitle: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  messageBody: {
+    color: colors.textMuted,
+    fontSize: 14
+  },
+  confettiLayer: {
+    ...StyleSheet.absoluteFillObject
+  },
+  confettiDot: {
+    borderRadius: 999,
+    height: 8,
+    position: "absolute",
+    width: 8
   }
 });
+
+function ConfettiDots() {
+  return (
+    <View pointerEvents="none" style={styles.confettiLayer}>
+      <View style={[styles.confettiDot, { backgroundColor: "#FACC15", left: 18, top: 12 }]} />
+      <View style={[styles.confettiDot, { backgroundColor: "#60A5FA", right: 28, top: 18 }]} />
+      <View style={[styles.confettiDot, { backgroundColor: "#F472B6", bottom: 14, left: 48 }]} />
+      <View style={[styles.confettiDot, { backgroundColor: "#34D399", bottom: 20, right: 52 }]} />
+    </View>
+  );
+}
