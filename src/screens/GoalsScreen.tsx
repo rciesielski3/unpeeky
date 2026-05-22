@@ -3,19 +3,22 @@ import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
-import { getGoalProgress } from "../domain/goal";
+import { FREE_GOAL_LIMIT, getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
 
 type GoalsScreenProps = {
   goals: Goal[];
+  isPremium: boolean;
   onAddGoal: () => void;
   onOpenGoal: (goalId: string) => void;
   onOpenSettings: () => void;
 };
 
-export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: GoalsScreenProps) {
+export function GoalsScreen({ goals, isPremium, onAddGoal, onOpenGoal, onOpenSettings }: GoalsScreenProps) {
+  const hasReachedFreeLimit = !isPremium && goals.length >= FREE_GOAL_LIMIT;
+
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
@@ -62,8 +65,16 @@ export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: Go
         }}
       />
 
+      {hasReachedFreeLimit ? (
+        <View style={styles.limitCard}>
+          <Text style={styles.limitTitle}>{strings.goals.freeLimitTitle}</Text>
+          <Text style={styles.limitText}>{strings.goals.freeLimitText(FREE_GOAL_LIMIT)}</Text>
+          <Button label={strings.goals.freeLimitButton} onPress={onOpenSettings} variant="ghost" />
+        </View>
+      ) : null}
+
       <View style={styles.footer}>
-        <Button label={strings.goals.newGoalButton} onPress={onAddGoal} />
+        <Button disabled={hasReachedFreeLimit} label={strings.goals.newGoalButton} onPress={onAddGoal} />
       </View>
     </View>
   );
@@ -154,5 +165,22 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingTop: spacing.md
+  },
+  limitCard: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: spacing.sm,
+    padding: spacing.lg
+  },
+  limitTitle: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  limitText: {
+    color: colors.textMuted,
+    fontSize: 13
   }
 });

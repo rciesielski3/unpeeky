@@ -56,6 +56,7 @@ npm run format
 - Reward photo selection
 - Avatar selection
 - First-run mode selection
+- Free goal limit with Premium toggle
 - Persistent task progress
 - Parent PIN for task approval
 - Animated tile reveal grid
