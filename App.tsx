@@ -3,6 +3,7 @@ import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
 import { AddGoalScreen } from "./src/screens/AddGoalScreen";
+import { ApproveTaskScreen } from "./src/screens/ApproveTaskScreen";
 import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
@@ -68,12 +69,12 @@ export default function App() {
 
     setGoals((currentGoals) => [goal, ...currentGoals]);
     setSelectedGoalId(goal.id);
-    setRoute("child");
+    setRoute("approveTask");
   }
 
   function handleOpenGoal(goalId: string) {
     setSelectedGoalId(goalId);
-    setRoute("child");
+    setRoute("approveTask");
   }
 
   function handleCompleteTask(goalId: string) {
@@ -119,10 +120,18 @@ export default function App() {
           />
         ) : null}
         {route === "addGoal" ? <AddGoalScreen onBack={() => setRoute("goals")} onSave={handleCreateGoal} /> : null}
+        {route === "approveTask" && activeGoal ? (
+          <ApproveTaskScreen
+            goal={activeGoal}
+            onApproveTask={() => handleCompleteTask(activeGoal.id)}
+            onBack={() => setRoute("goals")}
+            onOpenChildView={() => setRoute("child")}
+          />
+        ) : null}
         {route === "child" && activeGoal ? (
           <ChildScreen
             goal={activeGoal}
-            onBack={() => setRoute("goals")}
+            onBack={() => setRoute("approveTask")}
             onCompleteTask={() => handleCompleteTask(activeGoal.id)}
           />
         ) : null}
