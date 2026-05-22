@@ -1,4 +1,4 @@
-import { FlatList, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -40,12 +40,15 @@ export function GoalsScreen({ goals, onAddGoal, onOpenGoal, onOpenSettings }: Go
           return (
             <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.card}>
               <View style={styles.cardHeader}>
-                <AvatarBadge avatarId={item.avatarId} />
+                <Image source={{ uri: item.imageUri }} style={styles.thumbnail} />
                 <View style={styles.cardCopy}>
                   <Text style={styles.cardTitle}>{item.rewardName}</Text>
-                  <Text style={styles.meta}>
-                    {item.childName} - {item.completedTasks}/{item.totalTasks}
-                  </Text>
+                  <View style={styles.childRow}>
+                    <AvatarBadge avatarId={item.avatarId} size="sm" />
+                    <Text style={styles.meta}>
+                      {item.childName} - {item.completedTasks}/{item.totalTasks}
+                    </Text>
+                  </View>
                 </View>
               </View>
               <ProgressBar progress={getGoalProgress(item)} />
@@ -120,9 +123,20 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md
   },
+  thumbnail: {
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: 8,
+    height: 84,
+    width: 84
+  },
   cardCopy: {
     flex: 1,
     gap: spacing.xs
+  },
+  childRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.sm
   },
   cardTitle: {
     color: colors.text,
