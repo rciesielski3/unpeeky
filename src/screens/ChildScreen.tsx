@@ -1,6 +1,6 @@
 import { useEffect, useRef } from "react";
 import { StyleSheet, Text, Vibration, View } from "react-native";
-import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
 import { Audio } from "expo-av";
 
 import { AvatarBadge } from "../components/AvatarBadge";
@@ -40,25 +40,23 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
 
   const playCompletionSound = async () => {
     try {
-      // Configure audio mode for playback
-      await Audio.setAudioModeAsync({
-        playsInSilentModeIOS: true
-      });
-
-      // Create a simple completion sound using expo-av
-      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      // Try to load and play sound from assets
+      // In production, add a short celebratory sound file at assets/sounds/completion.mp3
       const { sound } = await Audio.Sound.createAsync(
         // eslint-disable-next-line @typescript-eslint/no-var-requires
         require("../../assets/sounds/completion.mp3"),
         { shouldPlay: true }
       );
-      await sound.playAsync();
-      setTimeout(() => {
-        sound.unloadAsync();
-      }, 1000);
+
+      // Clean up sound when playback finishes
+      sound.setOnPlaybackStatusUpdate((status) => {
+        if (status.isLoaded && status.didJustFinish) {
+          sound.unloadAsync();
+        }
+      });
     } catch {
-      // Fallback: audio not available, continue without sound
-      // In production, you would add an actual sound file at assets/sounds/completion.mp3
+      // Gracefully handle missing sound file or audio API errors
+      // Application continues without sound - this is expected in MVP
     }
   };
 
@@ -174,20 +172,22 @@ function ConfettiDot({ color, delay, from }: { color: string; delay: number; fro
   const opacity = useSharedValue(1);
 
   useEffect(() => {
-    const timer = setTimeout(() => {
-      translateY.value = withTiming(-60, {
+    translateY.value = withDelay(
+      delay,
+      withTiming(-60, {
         duration: 1500,
         easing: Easing.out(Easing.ease)
-      });
-      opacity.value = withTiming(0, {
+      })
+    );
+    opacity.value = withDelay(
+      delay,
+      withTiming(0, {
         duration: 1000,
         easing: Easing.out(Easing.ease)
-      });
-    }, delay);
-
-    return () => clearTimeout(timer);
+      })
+    );
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [delay]);
+  }, []);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
@@ -201,17 +201,17 @@ function ConfettiDot({ color, delay, from }: { color: string; delay: number; fro
   );
 }
 
-function AnimatedConfetti() {
-  const confettiPieces: Array<{ color: string; delay: number; from: "left" | "right" }> = [
-    { color: colors.confettiYellow, delay: 0, from: "left" },
-    { color: colors.confettiBlue, delay: 80, from: "right" },
-    { color: colors.confettiPink, delay: 160, from: "left" },
-    { color: colors.confettiGreen, delay: 240, from: "right" }
-  ];
+const CONFETTI_PIECES: Array<{ color: string; delay: number; from: "left" | "right" }> = [
+  { color: colors.confettiYellow, delay: 0, from: "left" },
+  { color: colors.confettiBlue, delay: 80, from: "right" },
+  { color: colors.confettiPink, delay: 160, from: "left" },
+  { color: colors.confettiGreen, delay: 240, from: "right" }
+];
 
+function AnimatedConfetti() {
   return (
     <View pointerEvents="none" style={styles.confettiLayer}>
-      {confettiPieces.map((piece, idx) => (
+      {CONFETTI_PIECES.map((piece, idx) => (
         <ConfettiDot key={idx} color={piece.color} delay={piece.delay} from={piece.from} />
       ))}
     </View>
