@@ -87,7 +87,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
+    <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.container}>
       <Text style={styles.title}>{strings.settings.title}</Text>
 
       <View style={styles.row}>
@@ -204,6 +204,9 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
   screen: {
     flexGrow: 1,
     gap: spacing.lg,
