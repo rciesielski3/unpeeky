@@ -31,7 +31,7 @@ export default function App() {
         const [storedGoals, storedSettings] = await Promise.all([loadGoals(), loadSettings()]);
 
         setGoals(storedGoals);
-        setSettings(storedSettings);
+        setSettings(normalizeSettings(storedSettings));
       } catch {
         setGoals([]);
         setSettings(normalizeSettings(null));

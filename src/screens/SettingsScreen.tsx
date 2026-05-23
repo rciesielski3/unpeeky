@@ -166,6 +166,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
               <Pressable
                 accessibilityLabel={strings.tileColors[tileColor.labelKey]}
                 accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
                 key={tileColor.id}
                 onPress={() => handleChangeTileColor(tileColor.id)}
                 style={[styles.tileColorOption, isSelected && styles.selectedTileColorOption]}
@@ -264,14 +265,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
     borderRadius: 8,
-    borderWidth: 1,
+    borderWidth: 2,
     gap: spacing.xs,
     minWidth: 92,
     padding: spacing.sm
   },
   selectedTileColorOption: {
-    borderColor: colors.primary,
-    borderWidth: 2
+    borderColor: colors.primary
   },
   tileColorSwatch: {
     borderColor: colors.surface,
