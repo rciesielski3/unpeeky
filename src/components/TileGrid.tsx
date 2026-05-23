@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from "react";
-import type { DimensionValue } from "react-native";
 import { ImageBackground, StyleSheet, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
@@ -18,22 +17,35 @@ export function TileGrid({ imageUri, totalTiles = DEFAULT_TILE_COUNT, revealedCo
   const tiles = useMemo(() => createTileIds(totalTiles), [totalTiles]);
   const revealedTileIds = useMemo(() => getRevealedTileIds(revealOrder, revealedCount), [revealOrder, revealedCount]);
   const layout = useMemo(() => getTileGridLayout(totalTiles), [totalTiles]);
-  const tileBasis = `${100 / layout.columns}%` as DimensionValue;
-  const tileHeight = `${100 / layout.rows}%` as DimensionValue;
+  const tileRows = useMemo(() => createTileRows(tiles, layout.columns), [layout.columns, tiles]);
 
   return (
     <ImageBackground source={{ uri: imageUri }} resizeMode="cover" style={styles.image} imageStyle={styles.imageRadius}>
       <View style={styles.grid}>
-        {tiles.map((tile) => {
+        {tileRows.map((rowTiles, rowIndex) => {
           return (
-            <View key={tile} style={[styles.tileSlot, { flexBasis: tileBasis, height: tileHeight }]}>
-              <AnimatedTile isRevealed={revealedTileIds.has(tile)} />
+            <View key={rowIndex} style={styles.tileRow}>
+              {rowTiles.map((tile) => (
+                <View key={tile} style={styles.tileSlot}>
+                  <AnimatedTile isRevealed={revealedTileIds.has(tile)} />
+                </View>
+              ))}
             </View>
           );
         })}
       </View>
     </ImageBackground>
   );
+}
+
+function createTileRows(tiles: number[], columns: number): number[][] {
+  const rows: number[][] = [];
+
+  for (let startIndex = 0; startIndex < tiles.length; startIndex += columns) {
+    rows.push(tiles.slice(startIndex, startIndex + columns));
+  }
+
+  return rows;
 }
 
 type AnimatedTileProps = {
@@ -72,11 +84,14 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   grid: {
+    flex: 1
+  },
+  tileRow: {
     flex: 1,
-    flexDirection: "row",
-    flexWrap: "wrap"
+    flexDirection: "row"
   },
   tileSlot: {
+    flex: 1,
     overflow: "hidden"
   },
   tile: {

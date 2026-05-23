@@ -1,3 +1,4 @@
+import { useMemo } from "react";
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
@@ -27,6 +28,7 @@ export function GoalsScreen({
 }: GoalsScreenProps) {
   const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
   const hasReachedFreeLimit = !isPremium && activeGoalsCount >= FREE_GOAL_LIMIT;
+  const sortedGoals = useMemo(() => [...goals].sort(compareGoalsByStatus), [goals]);
 
   return (
     <View style={styles.screen}>
@@ -46,7 +48,7 @@ export function GoalsScreen({
           </View>
         }
         contentContainerStyle={styles.list}
-        data={goals}
+        data={sortedGoals}
         keyExtractor={(goal) => goal.id}
         renderItem={({ item }) => {
           const isCompleted = isGoalComplete(item);
@@ -156,6 +158,7 @@ const styles = StyleSheet.create({
     padding: spacing.lg
   },
   cardContent: {
+    alignSelf: "stretch",
     gap: spacing.sm
   },
   completedCard: {
@@ -229,3 +232,7 @@ const styles = StyleSheet.create({
     fontSize: 13
   }
 });
+
+function compareGoalsByStatus(firstGoal: Goal, secondGoal: Goal): number {
+  return Number(isGoalComplete(firstGoal)) - Number(isGoalComplete(secondGoal));
+}
