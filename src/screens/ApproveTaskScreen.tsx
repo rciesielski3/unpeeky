@@ -106,13 +106,16 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 28,
-    fontWeight: "800"
+    fontFamily: "sans-serif-rounded",
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
   },
   subtitle: {
     color: colors.textMuted,
     fontSize: 14,
-    marginTop: spacing.xs
+    marginTop: spacing.xs,
+    textAlign: "center"
   },
   card: {
     alignItems: "center",

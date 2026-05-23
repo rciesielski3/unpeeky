@@ -196,8 +196,10 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 28,
-    fontWeight: "800"
+    fontFamily: "sans-serif-rounded",
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
   },
   form: {
     gap: spacing.md

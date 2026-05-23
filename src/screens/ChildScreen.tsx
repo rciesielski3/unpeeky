@@ -89,7 +89,8 @@ const styles = StyleSheet.create({
   },
   greeting: {
     color: colors.text,
-    fontSize: 30,
+    fontFamily: "sans-serif-rounded",
+    fontSize: 24,
     fontWeight: "800",
     textAlign: "center"
   },

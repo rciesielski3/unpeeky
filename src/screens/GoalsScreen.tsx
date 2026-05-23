@@ -33,11 +33,13 @@ export function GoalsScreen({
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerCopy}>
           <Text style={styles.title}>{strings.goals.title}</Text>
           <Text style={styles.subtitle}>{strings.goals.subtitle}</Text>
         </View>
-        <Button label={strings.goals.settingsButton} onPress={onOpenSettings} variant="ghost" />
+        <View style={styles.headerAction}>
+          <Button label={strings.goals.settingsButton} onPress={onOpenSettings} variant="ghost" />
+        </View>
       </View>
 
       <FlatList
@@ -110,19 +112,31 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: spacing.lg
+    justifyContent: "center",
+    marginBottom: spacing.lg,
+    minHeight: 72
+  },
+  headerCopy: {
+    alignItems: "center",
+    paddingHorizontal: 104
+  },
+  headerAction: {
+    position: "absolute",
+    right: 0,
+    top: 0
   },
   title: {
     color: colors.text,
-    fontSize: 28,
-    fontWeight: "800"
+    fontFamily: "sans-serif-rounded",
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
   },
   subtitle: {
     color: colors.textMuted,
     fontSize: 14,
-    marginTop: spacing.xs
+    marginTop: spacing.xs,
+    textAlign: "center"
   },
   list: {
     flexGrow: 1,

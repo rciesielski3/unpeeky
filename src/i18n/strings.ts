@@ -127,6 +127,8 @@ export const strings = {
     peach: "Brzoskwinia",
     rose: "Róż",
     sky: "Niebo",
-    vanilla: "Wanilia"
+    vanilla: "Wanilia",
+    lilac: "Lilia",
+    lime: "Limonka"
   }
 } as const;
