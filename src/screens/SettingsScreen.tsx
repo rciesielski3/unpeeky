@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, Switch, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Switch, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
@@ -77,7 +77,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
   }
 
   return (
-    <View style={styles.screen}>
+    <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
       <Text style={styles.title}>{strings.settings.title}</Text>
 
       <View style={styles.row}>
@@ -141,6 +141,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
             return (
               <Pressable
                 accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
                 key={appMode}
                 onPress={() => handleChangeMode(appMode)}
                 style={[styles.modeOption, isSelected && styles.selectedModeOption]}
@@ -188,7 +189,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
       </View>
 
       <Button label={strings.settings.backButton} onPress={onBack} variant="ghost" />
-    </View>
+    </ScrollView>
   );
 }
 
