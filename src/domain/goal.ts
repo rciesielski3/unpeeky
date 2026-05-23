@@ -11,7 +11,9 @@ export const TILE_COLOR_OPTIONS = [
   { id: "peach", color: "#FDBA74", labelKey: "peach" },
   { id: "rose", color: "#FDA4AF", labelKey: "rose" },
   { id: "sky", color: "#93C5FD", labelKey: "sky" },
-  { id: "vanilla", color: "#FDE68A", labelKey: "vanilla" }
+  { id: "vanilla", color: "#FDE68A", labelKey: "vanilla" },
+  { id: "lilac", color: "#C4B5FD", labelKey: "lilac" },
+  { id: "lime", color: "#BEF264", labelKey: "lime" }
 ] as const;
 
 export type TileCount = (typeof TILE_OPTIONS)[number];

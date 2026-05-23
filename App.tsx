@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, SafeAreaView, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, SafeAreaView, StatusBar as NativeStatusBar, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
 import { AddGoalScreen } from "./src/screens/AddGoalScreen";
@@ -197,7 +197,8 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background
+    backgroundColor: colors.background,
+    paddingTop: Platform.OS === "android" ? NativeStatusBar.currentHeight : 0
   },
   app: {
     flex: 1

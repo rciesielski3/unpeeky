@@ -8,7 +8,7 @@ import { TileGrid } from "../components/TileGrid";
 import { getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, spacing } from "../ui/theme";
+import { colors, fonts, spacing } from "../ui/theme";
 
 type ChildScreenProps = {
   goal: Goal;
@@ -89,7 +89,8 @@ const styles = StyleSheet.create({
   },
   greeting: {
     color: colors.text,
-    fontSize: 30,
+    fontFamily: fonts.heading,
+    fontSize: 24,
     fontWeight: "800",
     textAlign: "center"
   },

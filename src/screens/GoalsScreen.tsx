@@ -7,7 +7,7 @@ import { ProgressBar } from "../components/ProgressBar";
 import { FREE_GOAL_LIMIT, getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, spacing } from "../ui/theme";
+import { colors, fonts, spacing } from "../ui/theme";
 
 type GoalsScreenProps = {
   goals: Goal[];
@@ -33,11 +33,14 @@ export function GoalsScreen({
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
-        <View>
+        <View style={styles.headerSide} />
+        <View style={styles.headerCopy}>
           <Text style={styles.title}>{strings.goals.title}</Text>
           <Text style={styles.subtitle}>{strings.goals.subtitle}</Text>
         </View>
-        <Button label={strings.goals.settingsButton} onPress={onOpenSettings} variant="ghost" />
+        <View style={[styles.headerSide, styles.headerAction]}>
+          <Button label={strings.goals.settingsButton} onPress={onOpenSettings} variant="ghost" />
+        </View>
       </View>
 
       <FlatList
@@ -111,18 +114,33 @@ const styles = StyleSheet.create({
   header: {
     alignItems: "center",
     flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: spacing.lg
+    justifyContent: "center",
+    marginBottom: spacing.lg,
+    minHeight: 72
+  },
+  headerSide: {
+    flexBasis: 112,
+    flexShrink: 0
+  },
+  headerCopy: {
+    alignItems: "center",
+    flex: 1
+  },
+  headerAction: {
+    alignItems: "flex-end"
   },
   title: {
     color: colors.text,
-    fontSize: 28,
-    fontWeight: "800"
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
   },
   subtitle: {
     color: colors.textMuted,
     fontSize: 14,
-    marginTop: spacing.xs
+    marginTop: spacing.xs,
+    textAlign: "center"
   },
   list: {
     flexGrow: 1,

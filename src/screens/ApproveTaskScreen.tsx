@@ -7,7 +7,7 @@ import { ProgressBar } from "../components/ProgressBar";
 import { getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, spacing } from "../ui/theme";
+import { colors, fonts, spacing } from "../ui/theme";
 
 type ApproveTaskScreenProps = {
   goal: Goal;
@@ -106,13 +106,16 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 28,
-    fontWeight: "800"
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
   },
   subtitle: {
     color: colors.textMuted,
     fontSize: 14,
-    marginTop: spacing.xs
+    marginTop: spacing.xs,
+    textAlign: "center"
   },
   card: {
     alignItems: "center",

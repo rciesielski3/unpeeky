@@ -1,6 +1,16 @@
 import { useState } from "react";
 import * as ImagePicker from "expo-image-picker";
-import { Image, Pressable, StyleSheet, Text, TextInput, View } from "react-native";
+import {
+  Image,
+  KeyboardAvoidingView,
+  Platform,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -9,7 +19,7 @@ import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, spacing } from "../ui/theme";
+import { colors, fonts, spacing } from "../ui/theme";
 
 type ImageSource = "camera" | "gallery";
 
@@ -88,89 +98,109 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
   }
 
   return (
-    <View style={styles.screen}>
-      <Text style={styles.title}>{strings.addGoal.title}</Text>
+    <KeyboardAvoidingView
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
+      keyboardVerticalOffset={spacing.lg}
+      style={styles.container}
+    >
+      <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
+        <Text style={styles.title}>{strings.addGoal.title}</Text>
 
-      <View style={styles.form}>
-        <View>
-          <Text style={styles.label}>{strings.addGoal.photoStepLabel}</Text>
-          <View style={styles.photoBox}>
-            {imageUri ? (
-              <Image source={{ uri: imageUri }} style={styles.photoPreview} />
-            ) : (
-              <Text style={styles.photoIcon}>{strings.addGoal.photoEmptyLabel}</Text>
-            )}
-            <Text style={styles.photoText}>{strings.addGoal.photoPlaceholder}</Text>
-            <View style={styles.photoActions}>
-              <Button label={strings.addGoal.cameraButton} onPress={() => void pickImage("camera")} variant="ghost" />
-              <Button label={strings.addGoal.galleryButton} onPress={() => void pickImage("gallery")} variant="ghost" />
+        <View style={styles.form}>
+          <View>
+            <Text style={styles.label}>{strings.addGoal.photoStepLabel}</Text>
+            <View style={styles.photoBox}>
+              {imageUri ? (
+                <Image source={{ uri: imageUri }} style={styles.photoPreview} />
+              ) : (
+                <Text style={styles.photoIcon}>{strings.addGoal.photoEmptyLabel}</Text>
+              )}
+              <Text style={styles.photoText}>{strings.addGoal.photoPlaceholder}</Text>
+              <View style={styles.photoActions}>
+                <Button label={strings.addGoal.cameraButton} onPress={() => void pickImage("camera")} variant="ghost" />
+                <Button
+                  label={strings.addGoal.galleryButton}
+                  onPress={() => void pickImage("gallery")}
+                  variant="ghost"
+                />
+              </View>
+            </View>
+            {imageError ? <Text style={styles.errorText}>{imageError}</Text> : null}
+          </View>
+          <TextInput
+            onChangeText={setChildName}
+            placeholder={strings.addGoal.childNamePlaceholder}
+            style={styles.input}
+            value={childName}
+          />
+          <TextInput
+            onChangeText={setRewardName}
+            placeholder={strings.addGoal.rewardNamePlaceholder}
+            style={styles.input}
+            value={rewardName}
+          />
+          <View>
+            <Text style={styles.label}>{strings.addGoal.avatarLabel}</Text>
+            <View style={styles.avatarOptions}>
+              {AVATARS.map((avatar) => (
+                <Pressable
+                  accessibilityLabel={strings.avatars[avatar.labelKey]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: avatar.id === avatarId }}
+                  key={avatar.id}
+                  onPress={() => setAvatarId(avatar.id)}
+                  style={[styles.avatarOption, avatar.id === avatarId && styles.selectedAvatar]}
+                >
+                  <AvatarBadge avatarId={avatar.id} size="sm" />
+                </Pressable>
+              ))}
             </View>
           </View>
-          {imageError ? <Text style={styles.errorText}>{imageError}</Text> : null}
-        </View>
-        <TextInput
-          onChangeText={setChildName}
-          placeholder={strings.addGoal.childNamePlaceholder}
-          style={styles.input}
-          value={childName}
-        />
-        <TextInput
-          onChangeText={setRewardName}
-          placeholder={strings.addGoal.rewardNamePlaceholder}
-          style={styles.input}
-          value={rewardName}
-        />
-        <View>
-          <Text style={styles.label}>{strings.addGoal.avatarLabel}</Text>
-          <View style={styles.avatarOptions}>
-            {AVATARS.map((avatar) => (
-              <Pressable
-                accessibilityLabel={strings.avatars[avatar.labelKey]}
-                accessibilityRole="button"
-                key={avatar.id}
-                onPress={() => setAvatarId(avatar.id)}
-                style={[styles.avatarOption, avatar.id === avatarId && styles.selectedAvatar]}
-              >
-                <AvatarBadge avatarId={avatar.id} size="sm" />
-              </Pressable>
-            ))}
+          <View>
+            <Text style={styles.label}>{strings.addGoal.tileCountLabel}</Text>
+            <View style={styles.tileOptions}>
+              {TILE_OPTIONS.map((option) => (
+                <Pressable
+                  accessibilityLabel={`${strings.addGoal.tileCountLabel}: ${option}`}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: option === totalTasks }}
+                  key={option}
+                  onPress={() => setTotalTasks(option)}
+                  style={[styles.tileOption, option === totalTasks && styles.selectedTile]}
+                >
+                  <Text style={[styles.tileOptionText, option === totalTasks && styles.selectedTileText]}>
+                    {option}
+                  </Text>
+                </Pressable>
+              ))}
+            </View>
           </View>
         </View>
-        <View>
-          <Text style={styles.label}>{strings.addGoal.tileCountLabel}</Text>
-          <View style={styles.tileOptions}>
-            {TILE_OPTIONS.map((option) => (
-              <Pressable
-                accessibilityRole="button"
-                key={option}
-                onPress={() => setTotalTasks(option)}
-                style={[styles.tileOption, option === totalTasks && styles.selectedTile]}
-              >
-                <Text style={[styles.tileOptionText, option === totalTasks && styles.selectedTileText]}>{option}</Text>
-              </Pressable>
-            ))}
-          </View>
-        </View>
-      </View>
 
-      <View style={styles.actions}>
-        <Button disabled={!canSave} label={strings.addGoal.saveButton} onPress={handleSave} variant="secondary" />
-        <Button label={strings.addGoal.backButton} onPress={onBack} variant="ghost" />
-      </View>
-    </View>
+        <View style={styles.actions}>
+          <Button disabled={!canSave} label={strings.addGoal.saveButton} onPress={handleSave} variant="secondary" />
+          <Button label={strings.addGoal.backButton} onPress={onBack} variant="ghost" />
+        </View>
+      </ScrollView>
+    </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
   screen: {
-    flex: 1,
+    flexGrow: 1,
     gap: spacing.lg,
     padding: spacing.lg
   },
   title: {
     color: colors.text,
-    fontSize: 28,
-    fontWeight: "800"
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
   },
   form: {
     gap: spacing.md

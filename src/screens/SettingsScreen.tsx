@@ -6,7 +6,7 @@ import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OP
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
-import { colors, spacing } from "../ui/theme";
+import { colors, fonts, spacing } from "../ui/theme";
 
 type SettingsScreenProps = {
   onBack: () => void;
@@ -214,8 +214,10 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 28,
-    fontWeight: "800"
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
   },
   row: {
     alignItems: "center",
@@ -272,7 +274,8 @@ const styles = StyleSheet.create({
   tileColorOptions: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
+    justifyContent: "space-between"
   },
   tileColorOption: {
     alignItems: "center",
@@ -281,8 +284,10 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     borderWidth: 2,
     gap: spacing.xs,
-    minWidth: 92,
-    padding: spacing.sm
+    minWidth: 64,
+    paddingHorizontal: spacing.xs,
+    paddingVertical: spacing.sm,
+    width: "22.5%"
   },
   selectedTileColorOption: {
     borderColor: colors.primary
@@ -291,12 +296,12 @@ const styles = StyleSheet.create({
     borderColor: colors.surface,
     borderRadius: 999,
     borderWidth: 2,
-    height: 28,
-    width: 28
+    height: 22,
+    width: 22
   },
   tileColorLabel: {
     color: colors.text,
-    fontSize: 12,
+    fontSize: 10,
     fontWeight: "700"
   },
   modeOption: {

@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Button } from "../components/Button";
 import type { AppMode } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, spacing } from "../ui/theme";
+import { colors, fonts, spacing } from "../ui/theme";
 
 type ModeSelectionScreenProps = {
   initialMode: AppMode | null;
@@ -66,13 +66,16 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontSize: 28,
-    fontWeight: "800"
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
   },
   subtitle: {
     color: colors.textMuted,
     fontSize: 14,
-    marginTop: spacing.xs
+    marginTop: spacing.xs,
+    textAlign: "center"
   },
   options: {
     gap: spacing.md
