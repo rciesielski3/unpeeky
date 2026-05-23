@@ -13,9 +13,10 @@ type ChildScreenProps = {
   goal: Goal;
   onBack: () => void;
   onCompleteTask: () => void;
+  tileColor: string;
 };
 
-export function ChildScreen({ goal, onBack, onCompleteTask }: ChildScreenProps) {
+export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildScreenProps) {
   const isComplete = goal.completedTasks >= goal.totalTasks;
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
 
@@ -31,6 +32,7 @@ export function ChildScreen({ goal, onBack, onCompleteTask }: ChildScreenProps) 
         imageUri={goal.imageUri}
         revealOrder={goal.revealOrder}
         revealedCount={goal.completedTasks}
+        tileColor={tileColor}
         totalTiles={goal.totalTasks}
       />
 

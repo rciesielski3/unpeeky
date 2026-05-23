@@ -2,8 +2,8 @@ import { useEffect, useState } from "react";
 import { Pressable, Switch, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
-import { generateParentPin, isParentPinValid as validateParentPin } from "../domain/goal";
-import type { AppMode, AppSettings } from "../domain/goal";
+import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
+import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
 import { colors, spacing } from "../ui/theme";
@@ -70,6 +70,10 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
 
   function handleChangeMode(appMode: AppMode) {
     updateSettings({ appMode });
+  }
+
+  function handleChangeTileColor(tileColorId: TileColorId) {
+    updateSettings({ tileColorId });
   }
 
   return (
@@ -143,6 +147,31 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
               >
                 <Text style={[styles.modeTitle, isSelected && styles.selectedModeText]}>{getModeTitle(appMode)}</Text>
                 <Text style={[styles.modeMeta, isSelected && styles.selectedModeMeta]}>{getModeMeta(appMode)}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+      </View>
+
+      <View style={styles.resetRow}>
+        <View>
+          <Text style={styles.rowTitle}>{strings.settings.tileColorTitle}</Text>
+          <Text style={styles.rowMeta}>{strings.settings.tileColorMeta}</Text>
+        </View>
+        <View style={styles.tileColorOptions}>
+          {TILE_COLOR_OPTIONS.map((tileColor) => {
+            const isSelected = settings.tileColorId === tileColor.id;
+
+            return (
+              <Pressable
+                accessibilityLabel={strings.tileColors[tileColor.labelKey]}
+                accessibilityRole="button"
+                key={tileColor.id}
+                onPress={() => handleChangeTileColor(tileColor.id)}
+                style={[styles.tileColorOption, isSelected && styles.selectedTileColorOption]}
+              >
+                <View style={[styles.tileColorSwatch, { backgroundColor: tileColor.color }]} />
+                <Text style={styles.tileColorLabel}>{strings.tileColors[tileColor.labelKey]}</Text>
               </Pressable>
             );
           })}
@@ -224,6 +253,37 @@ const styles = StyleSheet.create({
   },
   modeOptions: {
     gap: spacing.sm
+  },
+  tileColorOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
+  tileColorOption: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderWidth: 1,
+    gap: spacing.xs,
+    minWidth: 92,
+    padding: spacing.sm
+  },
+  selectedTileColorOption: {
+    borderColor: colors.primary,
+    borderWidth: 2
+  },
+  tileColorSwatch: {
+    borderColor: colors.surface,
+    borderRadius: 999,
+    borderWidth: 2,
+    height: 28,
+    width: 28
+  },
+  tileColorLabel: {
+    color: colors.text,
+    fontSize: 12,
+    fontWeight: "700"
   },
   modeOption: {
     backgroundColor: colors.surfaceMuted,
