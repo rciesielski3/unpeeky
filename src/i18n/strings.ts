@@ -56,8 +56,8 @@ export const strings = {
     backButton: "Wróć"
   },
   goals: {
-    title: "Unpeeky",
-    subtitle: "Cele i postępy",
+    title: "Cele i postępy",
+    subtitle: "Twoje nagrody",
     settingsButton: "Ustawienia",
     emptyTitle: "Brak celów",
     emptyText: "Dodaj pierwszy cel i sprawdź pełną pętlę lokalnie.",
@@ -126,6 +126,7 @@ export const strings = {
     mint: "Mięta",
     peach: "Brzoskwinia",
     rose: "Róż",
-    sky: "Niebo"
+    sky: "Niebo",
+    vanilla: "Wanilia"
   }
 } as const;
