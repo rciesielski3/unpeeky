@@ -1,5 +1,7 @@
 import { useEffect, useRef } from "react";
 import { StyleSheet, Text, Vibration, View } from "react-native";
+import Animated, { Easing, useAnimatedStyle, useSharedValue, withTiming } from "react-native-reanimated";
+import { Audio } from "expo-av";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -31,9 +33,34 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
   useEffect(() => {
     if (isComplete && !hasPlayedCompletionFeedback.current) {
       Vibration.vibrate([0, 120, 80, 160]);
+      playCompletionSound();
       hasPlayedCompletionFeedback.current = true;
     }
   }, [isComplete]);
+
+  const playCompletionSound = async () => {
+    try {
+      // Configure audio mode for playback
+      await Audio.setAudioModeAsync({
+        playsInSilentModeIOS: true
+      });
+
+      // Create a simple completion sound using expo-av
+      // eslint-disable-next-line @typescript-eslint/no-var-requires
+      const { sound } = await Audio.Sound.createAsync(
+        // eslint-disable-next-line @typescript-eslint/no-var-requires
+        require("../../assets/sounds/completion.mp3"),
+        { shouldPlay: true }
+      );
+      await sound.playAsync();
+      setTimeout(() => {
+        sound.unloadAsync();
+      }, 1000);
+    } catch {
+      // Fallback: audio not available, continue without sound
+      // In production, you would add an actual sound file at assets/sounds/completion.mp3
+    }
+  };
 
   return (
     <View style={styles.screen}>
@@ -57,7 +84,7 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
       </View>
 
       <View style={[styles.messageCard, isComplete && styles.completedCard]}>
-        {isComplete ? <ConfettiDots /> : null}
+        {isComplete ? <AnimatedConfetti /> : null}
         <Text style={styles.messageTitle}>
           {isComplete ? strings.child.completedTitle : strings.child.encouragementTitle}
         </Text>
@@ -142,13 +169,51 @@ const styles = StyleSheet.create({
   }
 });
 
-function ConfettiDots() {
+function ConfettiDot({ color, delay, from }: { color: string; delay: number; from: "left" | "right" }) {
+  const translateY = useSharedValue(0);
+  const opacity = useSharedValue(1);
+
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      translateY.value = withTiming(-60, {
+        duration: 1500,
+        easing: Easing.out(Easing.ease)
+      });
+      opacity.value = withTiming(0, {
+        duration: 1000,
+        easing: Easing.out(Easing.ease)
+      });
+    }, delay);
+
+    return () => clearTimeout(timer);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [delay]);
+
+  const animatedStyle = useAnimatedStyle(() => ({
+    transform: [{ translateY: translateY.value }],
+    opacity: opacity.value
+  }));
+
+  return (
+    <Animated.View
+      style={[styles.confettiDot, { backgroundColor: color, [from]: from === "left" ? 18 : 28 }, animatedStyle]}
+    />
+  );
+}
+
+function AnimatedConfetti() {
+  const confettiPieces: Array<{ color: string; delay: number; from: "left" | "right" }> = [
+    { color: colors.confettiYellow, delay: 0, from: "left" },
+    { color: colors.confettiBlue, delay: 80, from: "right" },
+    { color: colors.confettiPink, delay: 160, from: "left" },
+    { color: colors.confettiGreen, delay: 240, from: "right" }
+  ];
+
   return (
     <View pointerEvents="none" style={styles.confettiLayer}>
-      <View style={[styles.confettiDot, { backgroundColor: colors.confettiYellow, left: 18, top: 12 }]} />
-      <View style={[styles.confettiDot, { backgroundColor: colors.confettiBlue, right: 28, top: 18 }]} />
-      <View style={[styles.confettiDot, { backgroundColor: colors.confettiPink, bottom: 14, left: 48 }]} />
-      <View style={[styles.confettiDot, { backgroundColor: colors.confettiGreen, bottom: 20, right: 52 }]} />
+      {confettiPieces.map((piece, idx) => (
+        <ConfettiDot key={idx} color={piece.color} delay={piece.delay} from={piece.from} />
+      ))}
     </View>
   );
 }
