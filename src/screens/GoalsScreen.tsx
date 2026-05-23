@@ -234,12 +234,5 @@ const styles = StyleSheet.create({
 });
 
 function compareGoalsByStatus(firstGoal: Goal, secondGoal: Goal): number {
-  const firstGoalCompleted = isGoalComplete(firstGoal);
-  const secondGoalCompleted = isGoalComplete(secondGoal);
-
-  if (firstGoalCompleted === secondGoalCompleted) {
-    return 0;
-  }
-
-  return firstGoalCompleted ? 1 : -1;
+  return Number(isGoalComplete(firstGoal)) - Number(isGoalComplete(secondGoal));
 }
