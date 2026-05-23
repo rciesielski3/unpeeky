@@ -1,4 +1,5 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { StyleSheet, Text, Vibration, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -19,6 +20,14 @@ type ChildScreenProps = {
 export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildScreenProps) {
   const isComplete = goal.completedTasks >= goal.totalTasks;
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
+  const hasPlayedCompletionFeedback = useRef(isComplete);
+
+  useEffect(() => {
+    if (isComplete && !hasPlayedCompletionFeedback.current) {
+      Vibration.vibrate([0, 120, 80, 160]);
+      hasPlayedCompletionFeedback.current = true;
+    }
+  }, [isComplete]);
 
   return (
     <View style={styles.screen}>
