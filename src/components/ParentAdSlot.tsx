@@ -1,0 +1,47 @@
+import { StyleSheet, Text, View } from "react-native";
+
+import { strings } from "../i18n/strings";
+import { colors, spacing } from "../ui/theme";
+
+type ParentAdSlotProps = {
+  isPremium: boolean;
+};
+
+export function ParentAdSlot({ isPremium }: ParentAdSlotProps) {
+  if (isPremium) {
+    return null;
+  }
+
+  return (
+    <View accessibilityLabel={strings.ads.placeholderLabel} accessibilityRole="summary" style={styles.slot}>
+      <Text style={styles.label}>{strings.ads.placeholderTitle}</Text>
+      <Text style={styles.text}>{strings.ads.placeholderText}</Text>
+    </View>
+  );
+}
+
+const styles = StyleSheet.create({
+  slot: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: 8,
+    borderStyle: "dashed",
+    borderWidth: 1,
+    gap: spacing.xs,
+    justifyContent: "center",
+    minHeight: 72,
+    padding: spacing.md
+  },
+  label: {
+    color: colors.textMuted,
+    fontSize: 11,
+    fontWeight: "800",
+    textTransform: "uppercase"
+  },
+  text: {
+    color: colors.text,
+    fontSize: 13,
+    textAlign: "center"
+  }
+});

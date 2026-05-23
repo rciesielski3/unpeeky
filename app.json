@@ -12,7 +12,9 @@
     "android": {
       "adaptiveIcon": {
         "backgroundColor": "#4F46E5"
-      }
+      },
+      "permissions": [],
+      "package": "com.adateo.unpeeky"
     },
     "plugins": [
       [

@@ -107,6 +107,11 @@ export const strings = {
     title: "Unpeeky",
     body: "Hej! Tata/Mama czeka na Twoje dzisiejsze zadanie."
   },
+  ads: {
+    placeholderLabel: "Miejsce na reklamę",
+    placeholderTitle: "Baner reklamowy",
+    placeholderText: "W tej wersji MVP reklamę może wyświetlać tylko rodzic."
+  },
   avatars: {
     dino: "Dino",
     unicorn: "Jednorożec",
