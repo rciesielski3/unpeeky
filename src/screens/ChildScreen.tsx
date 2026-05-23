@@ -1,10 +1,11 @@
-import { StyleSheet, Text, View } from "react-native";
+import { useEffect, useRef } from "react";
+import { StyleSheet, Text, Vibration, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
 import { TileGrid } from "../components/TileGrid";
-import { getGoalProgress } from "../domain/goal";
+import { getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
@@ -17,8 +18,16 @@ type ChildScreenProps = {
 };
 
 export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildScreenProps) {
-  const isComplete = goal.completedTasks >= goal.totalTasks;
+  const isComplete = isGoalComplete(goal);
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
+  const hasPlayedCompletionFeedback = useRef(isComplete);
+
+  useEffect(() => {
+    if (isComplete && !hasPlayedCompletionFeedback.current) {
+      Vibration.vibrate([0, 120, 80, 160]);
+      hasPlayedCompletionFeedback.current = true;
+    }
+  }, [isComplete]);
 
   return (
     <View style={styles.screen}>
