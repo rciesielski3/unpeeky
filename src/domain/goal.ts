@@ -5,9 +5,17 @@ import type { AvatarId } from "./avatar";
 export const TILE_OPTIONS = [9, 16, 25, 36] as const;
 export const DEFAULT_TILE_COUNT = 16;
 export const FREE_GOAL_LIMIT = 2;
+export const TILE_COLOR_OPTIONS = [
+  { id: "lavender", color: "#6366F1", labelKey: "lavender" },
+  { id: "mint", color: "#5EEAD4", labelKey: "mint" },
+  { id: "peach", color: "#FDBA74", labelKey: "peach" },
+  { id: "rose", color: "#FDA4AF", labelKey: "rose" },
+  { id: "sky", color: "#93C5FD", labelKey: "sky" }
+] as const;
 
 export type TileCount = (typeof TILE_OPTIONS)[number];
 export type AppMode = "singleDevice" | "twoDevices";
+export type TileColorId = (typeof TILE_COLOR_OPTIONS)[number]["id"];
 
 export type Goal = {
   id: string;
@@ -28,6 +36,7 @@ export type AppSettings = {
   childName: string;
   parentPin: string;
   appMode: AppMode | null;
+  tileColorId: TileColorId;
 };
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
@@ -35,7 +44,8 @@ export const DEFAULT_APP_SETTINGS: AppSettings = {
   notificationTime: "18:00",
   childName: "",
   parentPin: "",
-  appMode: null
+  appMode: null,
+  tileColorId: "lavender"
 };
 
 export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;
@@ -73,7 +83,8 @@ export function normalizeSettings(settings: Partial<AppSettings> | null | undefi
   return {
     ...nextSettings,
     appMode: isAppMode(nextSettings.appMode) ? nextSettings.appMode : null,
-    parentPin: isParentPinValid(nextSettings.parentPin) ? nextSettings.parentPin : generateParentPin()
+    parentPin: isParentPinValid(nextSettings.parentPin) ? nextSettings.parentPin : generateParentPin(),
+    tileColorId: isTileColorId(nextSettings.tileColorId) ? nextSettings.tileColorId : DEFAULT_APP_SETTINGS.tileColorId
   };
 }
 
@@ -87,6 +98,14 @@ export function isParentPinValid(parentPin: string): boolean {
 
 export function isAppMode(appMode: unknown): appMode is AppMode {
   return appMode === "singleDevice" || appMode === "twoDevices";
+}
+
+export function getTileColor(tileColorId: TileColorId): string {
+  return TILE_COLOR_OPTIONS.find((tileColor) => tileColor.id === tileColorId)?.color ?? TILE_COLOR_OPTIONS[0].color;
+}
+
+export function isTileColorId(tileColorId: unknown): tileColorId is TileColorId {
+  return TILE_COLOR_OPTIONS.some((tileColor) => tileColor.id === tileColorId);
 }
 
 export function getGoalProgress(goal: Pick<Goal, "completedTasks" | "totalTasks">): number {

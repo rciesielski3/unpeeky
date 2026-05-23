@@ -93,6 +93,8 @@ export const strings = {
     appModeSingleDeviceMeta: "Rodzic zatwierdza PIN-em, dziecko odkrywa na tym samym telefonie.",
     appModeTwoDevices: "Dwa telefony",
     appModeTwoDevicesMeta: "Przygotowane pod późniejsze powiadomienia na telefon dziecka.",
+    tileColorTitle: "Kolor kafelków",
+    tileColorMeta: "Wybierz pastelowy kolor zasłony zdjęcia.",
     resetTitle: "Reset danych",
     resetMeta: "Usuń lokalne cele i postępy",
     resetButton: "Resetuj cele",
@@ -118,5 +120,12 @@ export const strings = {
     butterfly: "Motyl",
     star: "Gwiazdka",
     rainbow: "Tęcza"
+  },
+  tileColors: {
+    lavender: "Lawenda",
+    mint: "Mięta",
+    peach: "Brzoskwinia",
+    rose: "Róż",
+    sky: "Niebo"
   }
 } as const;

@@ -11,9 +11,16 @@ type TileGridProps = {
   totalTiles?: number;
   revealedCount: number;
   revealOrder: number[];
+  tileColor?: string;
 };
 
-export function TileGrid({ imageUri, totalTiles = DEFAULT_TILE_COUNT, revealedCount, revealOrder }: TileGridProps) {
+export function TileGrid({
+  imageUri,
+  totalTiles = DEFAULT_TILE_COUNT,
+  revealedCount,
+  revealOrder,
+  tileColor = colors.tile
+}: TileGridProps) {
   const tiles = useMemo(() => createTileIds(totalTiles), [totalTiles]);
   const revealedTileIds = useMemo(() => getRevealedTileIds(revealOrder, revealedCount), [revealOrder, revealedCount]);
   const layout = useMemo(() => getTileGridLayout(totalTiles), [totalTiles]);
@@ -27,7 +34,7 @@ export function TileGrid({ imageUri, totalTiles = DEFAULT_TILE_COUNT, revealedCo
             <View key={rowIndex} style={styles.tileRow}>
               {rowTiles.map((tile) => (
                 <View key={tile} style={styles.tileSlot}>
-                  <AnimatedTile isRevealed={revealedTileIds.has(tile)} />
+                  <AnimatedTile isRevealed={revealedTileIds.has(tile)} tileColor={tileColor} />
                 </View>
               ))}
             </View>
@@ -50,9 +57,10 @@ function createTileRows(tiles: number[], columns: number): number[][] {
 
 type AnimatedTileProps = {
   isRevealed: boolean;
+  tileColor: string;
 };
 
-function AnimatedTile({ isRevealed }: AnimatedTileProps) {
+function AnimatedTile({ isRevealed, tileColor }: AnimatedTileProps) {
   const progress = useSharedValue(isRevealed ? 0 : 1);
 
   useEffect(() => {
@@ -69,7 +77,7 @@ function AnimatedTile({ isRevealed }: AnimatedTileProps) {
     };
   });
 
-  return <Animated.View style={[styles.tile, animatedStyle]} />;
+  return <Animated.View style={[styles.tile, { backgroundColor: tileColor }, animatedStyle]} />;
 }
 
 const styles = StyleSheet.create({
@@ -95,7 +103,6 @@ const styles = StyleSheet.create({
     overflow: "hidden"
   },
   tile: {
-    backgroundColor: colors.tile,
     flex: 1
   }
 });

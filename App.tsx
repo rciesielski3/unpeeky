@@ -8,7 +8,7 @@ import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { ModeSelectionScreen } from "./src/screens/ModeSelectionScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
-import { completeTask, createGoal, normalizeSettings } from "./src/domain/goal";
+import { completeTask, createGoal, getTileColor, normalizeSettings } from "./src/domain/goal";
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
@@ -31,7 +31,7 @@ export default function App() {
         const [storedGoals, storedSettings] = await Promise.all([loadGoals(), loadSettings()]);
 
         setGoals(storedGoals);
-        setSettings(storedSettings);
+        setSettings(normalizeSettings(storedSettings));
       } catch {
         setGoals([]);
         setSettings(normalizeSettings(null));
@@ -172,6 +172,7 @@ export default function App() {
           goal={activeGoal}
           onBack={() => setRoute("approveTask")}
           onCompleteTask={() => setRoute("approveTask")}
+          tileColor={getTileColor(settings.tileColorId)}
         />
       ) : null}
       {route === "settings" ? (
