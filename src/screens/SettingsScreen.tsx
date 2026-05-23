@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Pressable, Switch, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, Switch, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
@@ -61,6 +61,16 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
     setParentPinDraft(settings.parentPin);
   }
 
+  function handleParentPinChange(text: string) {
+    const parentPin = text.replace(/\D/g, "").slice(0, 4);
+
+    setParentPinDraft(parentPin);
+
+    if (validateParentPin(parentPin)) {
+      updateSettings({ parentPin });
+    }
+  }
+
   function handleGenerateParentPin() {
     const parentPin = generateParentPin();
 
@@ -77,7 +87,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
   }
 
   return (
-    <View style={styles.screen}>
+    <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.container}>
       <Text style={styles.title}>{strings.settings.title}</Text>
 
       <View style={styles.row}>
@@ -119,7 +129,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
             keyboardType="number-pad"
             maxLength={4}
             onBlur={handleParentPinBlur}
-            onChangeText={(text) => setParentPinDraft(text.replace(/\D/g, "").slice(0, 4))}
+            onChangeText={handleParentPinChange}
             placeholder={strings.settings.parentPinPlaceholder}
             style={[styles.timeInput, !isParentPinValid && styles.invalidTimeInput]}
             value={parentPinDraft}
@@ -141,6 +151,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
             return (
               <Pressable
                 accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
                 key={appMode}
                 onPress={() => handleChangeMode(appMode)}
                 style={[styles.modeOption, isSelected && styles.selectedModeOption]}
@@ -188,13 +199,16 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
       </View>
 
       <Button label={strings.settings.backButton} onPress={onBack} variant="ghost" />
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1
+  },
   screen: {
-    flex: 1,
+    flexGrow: 1,
     gap: spacing.lg,
     padding: spacing.lg
   },
