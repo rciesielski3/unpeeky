@@ -1,3 +1,5 @@
+import { Platform } from "react-native";
+
 export const colors = {
   background: "#F8FAFC",
   surface: "#FFFFFF",
@@ -24,4 +26,8 @@ export const spacing = {
   md: 12,
   lg: 16,
   xl: 24
+} as const;
+
+export const fonts = {
+  heading: Platform.OS === "android" ? "sans-serif-rounded" : undefined
 } as const;

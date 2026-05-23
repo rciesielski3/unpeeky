@@ -19,7 +19,7 @@ import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, spacing } from "../ui/theme";
+import { colors, fonts, spacing } from "../ui/theme";
 
 type ImageSource = "camera" | "gallery";
 
@@ -197,7 +197,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontFamily: "sans-serif-rounded",
+    fontFamily: fonts.heading,
     fontSize: 24,
     fontWeight: "800",
     textAlign: "center"

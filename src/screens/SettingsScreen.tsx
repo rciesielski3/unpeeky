@@ -6,7 +6,7 @@ import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OP
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
-import { colors, spacing } from "../ui/theme";
+import { colors, fonts, spacing } from "../ui/theme";
 
 type SettingsScreenProps = {
   onBack: () => void;
@@ -214,7 +214,7 @@ const styles = StyleSheet.create({
   },
   title: {
     color: colors.text,
-    fontFamily: "sans-serif-rounded",
+    fontFamily: fonts.heading,
     fontSize: 24,
     fontWeight: "800",
     textAlign: "center"

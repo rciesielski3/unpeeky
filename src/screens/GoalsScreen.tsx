@@ -7,7 +7,7 @@ import { ProgressBar } from "../components/ProgressBar";
 import { FREE_GOAL_LIMIT, getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, spacing } from "../ui/theme";
+import { colors, fonts, spacing } from "../ui/theme";
 
 type GoalsScreenProps = {
   goals: Goal[];
@@ -33,11 +33,12 @@ export function GoalsScreen({
   return (
     <View style={styles.screen}>
       <View style={styles.header}>
+        <View style={styles.headerSide} />
         <View style={styles.headerCopy}>
           <Text style={styles.title}>{strings.goals.title}</Text>
           <Text style={styles.subtitle}>{strings.goals.subtitle}</Text>
         </View>
-        <View style={styles.headerAction}>
+        <View style={[styles.headerSide, styles.headerAction]}>
           <Button label={strings.goals.settingsButton} onPress={onOpenSettings} variant="ghost" />
         </View>
       </View>
@@ -112,22 +113,25 @@ const styles = StyleSheet.create({
   },
   header: {
     alignItems: "center",
+    flexDirection: "row",
     justifyContent: "center",
     marginBottom: spacing.lg,
     minHeight: 72
   },
+  headerSide: {
+    flexBasis: 112,
+    flexShrink: 0
+  },
   headerCopy: {
     alignItems: "center",
-    paddingHorizontal: 104
+    flex: 1
   },
   headerAction: {
-    position: "absolute",
-    right: 0,
-    top: 0
+    alignItems: "flex-end"
   },
   title: {
     color: colors.text,
-    fontFamily: "sans-serif-rounded",
+    fontFamily: fonts.heading,
     fontSize: 24,
     fontWeight: "800",
     textAlign: "center"
