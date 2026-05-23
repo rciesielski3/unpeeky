@@ -61,6 +61,16 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
     setParentPinDraft(settings.parentPin);
   }
 
+  function handleParentPinChange(text: string) {
+    const parentPin = text.replace(/\D/g, "").slice(0, 4);
+
+    setParentPinDraft(parentPin);
+
+    if (validateParentPin(parentPin)) {
+      updateSettings({ parentPin });
+    }
+  }
+
   function handleGenerateParentPin() {
     const parentPin = generateParentPin();
 
@@ -119,7 +129,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
             keyboardType="number-pad"
             maxLength={4}
             onBlur={handleParentPinBlur}
-            onChangeText={(text) => setParentPinDraft(text.replace(/\D/g, "").slice(0, 4))}
+            onChangeText={handleParentPinChange}
             placeholder={strings.settings.parentPinPlaceholder}
             style={[styles.timeInput, !isParentPinValid && styles.invalidTimeInput]}
             value={parentPinDraft}
@@ -195,7 +205,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
 
 const styles = StyleSheet.create({
   screen: {
-    flex: 1,
+    flexGrow: 1,
     gap: spacing.lg,
     padding: spacing.lg
   },

@@ -21,6 +21,12 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
   const isComplete = isGoalComplete(goal);
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
   const hasPlayedCompletionFeedback = useRef(isComplete);
+  const lastGoalId = useRef(goal.id);
+
+  if (lastGoalId.current !== goal.id) {
+    hasPlayedCompletionFeedback.current = isComplete;
+    lastGoalId.current = goal.id;
+  }
 
   useEffect(() => {
     if (isComplete && !hasPlayedCompletionFeedback.current) {

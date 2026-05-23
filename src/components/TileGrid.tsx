@@ -92,17 +92,21 @@ const styles = StyleSheet.create({
     borderRadius: 8
   },
   grid: {
-    flex: 1
+    flex: 1,
+    gap: 2
   },
   tileRow: {
     flex: 1,
-    flexDirection: "row"
+    flexDirection: "row",
+    gap: 2
   },
   tileSlot: {
+    borderRadius: 6,
     flex: 1,
     overflow: "hidden"
   },
   tile: {
+    borderRadius: 6,
     flex: 1
   }
 });
