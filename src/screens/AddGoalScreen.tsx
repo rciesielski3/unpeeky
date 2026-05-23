@@ -99,7 +99,7 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={spacing.lg}
       style={styles.container}
     >
@@ -161,6 +161,7 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
             <View style={styles.tileOptions}>
               {TILE_OPTIONS.map((option) => (
                 <Pressable
+                  accessibilityLabel={`${strings.addGoal.tileCountLabel}: ${option}`}
                   accessibilityRole="button"
                   accessibilityState={{ selected: option === totalTasks }}
                   key={option}
