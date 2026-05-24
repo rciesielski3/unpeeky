@@ -23,6 +23,7 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
   const [parentPinDraft, setParentPinDraft] = useState(settings.parentPin);
   const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+  const [isAboutOpen, setIsAboutOpen] = useState(false);
   const isReminderEnabled = notificationTimeDraft.trim().length > 0;
   const isNotificationTimeValid = !isReminderEnabled || parseNotificationTime(notificationTimeDraft) !== null;
   const isParentPinValid = validateParentPin(parentPinDraft);
@@ -223,14 +224,6 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
         </View>
       </View>
 
-      <View pointerEvents="none" style={styles.bearScene}>
-        <Text style={styles.cloudLeft}>☁</Text>
-        <Text style={styles.cloudRight}>☁</Text>
-        <Text style={styles.flowerLeft}>✿</Text>
-        <Text style={styles.flowerRight}>✿</Text>
-        <Text style={styles.bear}>🐻</Text>
-      </View>
-
       <View style={styles.card}>
         <View style={styles.premiumHeader}>
           <Text style={styles.settingIcon}>👑</Text>
@@ -250,9 +243,10 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
         <View style={styles.divider} />
         <SettingsAction icon="▢" label={strings.settings.resetTitle} onPress={onResetGoals} />
         <View style={styles.divider} />
-        <SettingsAction icon="ⓘ" label={strings.settings.aboutApp} />
+        <SettingsAction icon="ⓘ" label={strings.settings.aboutApp} onPress={() => setIsAboutOpen(true)} />
       </View>
 
+      <AboutModal onClose={() => setIsAboutOpen(false)} visible={isAboutOpen} />
       <TimePickerModal
         notificationTime={notificationTimeDraft || "18:30"}
         onClose={() => setIsTimePickerOpen(false)}
@@ -486,43 +480,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
     fontWeight: "800"
   },
-  bearScene: {
-    alignItems: "center",
-    minHeight: 220,
-    overflow: "hidden"
-  },
-  bear: {
-    fontSize: 128,
-    marginTop: spacing.xl
-  },
-  cloudLeft: {
-    color: colors.surface,
-    fontSize: 62,
-    left: 36,
-    position: "absolute",
-    top: 44
-  },
-  cloudRight: {
-    color: colors.surface,
-    fontSize: 62,
-    position: "absolute",
-    right: 28,
-    top: 54
-  },
-  flowerLeft: {
-    color: colors.accent,
-    fontSize: 42,
-    left: 12,
-    position: "absolute",
-    top: 130
-  },
-  flowerRight: {
-    color: colors.warning,
-    fontSize: 38,
-    position: "absolute",
-    right: 28,
-    top: 136
-  },
   modalOverlay: {
     alignItems: "center",
     backgroundColor: "rgba(16, 24, 40, 0.28)",
@@ -533,9 +490,9 @@ const styles = StyleSheet.create({
   timePickerCard: {
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
-    gap: spacing.lg,
-    maxHeight: "78%",
-    padding: spacing.xl,
+    gap: spacing.md,
+    maxHeight: "86%",
+    padding: spacing.lg,
     shadowColor: colors.accentDark,
     shadowOffset: { height: 12, width: 0 },
     shadowOpacity: 0.16,
@@ -552,8 +509,8 @@ const styles = StyleSheet.create({
   timePickerColumns: {
     flexDirection: "row",
     gap: spacing.md,
-    justifyContent: "center",
-    minHeight: 260
+    height: 310,
+    justifyContent: "center"
   },
   timePickerColumn: {
     backgroundColor: colors.surfaceMuted,
@@ -598,6 +555,36 @@ const styles = StyleSheet.create({
     color: colors.surface,
     fontSize: 18,
     fontWeight: "800"
+  },
+  aboutCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    padding: spacing.xl,
+    shadowColor: colors.accentDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    width: "100%"
+  },
+  aboutTitle: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  aboutBody: {
+    color: colors.textMuted,
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "center"
+  },
+  aboutOwner: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "800",
+    textAlign: "center"
   }
 });
 
@@ -672,6 +659,23 @@ function TimePickerModal({
           </View>
           <Pressable accessibilityRole="button" onPress={onClose} style={styles.timePickerDoneButton}>
             <Text style={styles.timePickerDoneText}>{strings.settings.notificationTimePickerClose}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function AboutModal({ onClose, visible }: { onClose: () => void; visible: boolean }) {
+  return (
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.aboutCard}>
+          <Text style={styles.aboutTitle}>{strings.settings.aboutTitle}</Text>
+          <Text style={styles.aboutBody}>{strings.settings.aboutBody}</Text>
+          <Text style={styles.aboutOwner}>{strings.settings.aboutOwner}</Text>
+          <Pressable accessibilityRole="button" onPress={onClose} style={styles.timePickerDoneButton}>
+            <Text style={styles.timePickerDoneText}>{strings.settings.aboutClose}</Text>
           </Pressable>
         </View>
       </View>
