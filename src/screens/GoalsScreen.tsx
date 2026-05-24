@@ -35,7 +35,7 @@ export function GoalsScreen({
       <View style={styles.header}>
         <View style={styles.headerSide} />
         <View style={styles.headerCopy}>
-          <Text style={styles.hello}>Cześć, Mamo!</Text>
+          <Text style={styles.hello}>{strings.goals.greeting}</Text>
           <Text style={styles.title}>{strings.goals.title}</Text>
           <Text style={styles.subtitle}>{strings.goals.subtitle}</Text>
         </View>
