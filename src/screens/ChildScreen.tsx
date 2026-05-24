@@ -1,7 +1,6 @@
 import { useEffect, useRef } from "react";
 import { StyleSheet, Text, Vibration, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
-import { Audio } from "expo-av";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -33,32 +32,9 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
   useEffect(() => {
     if (isComplete && !hasPlayedCompletionFeedback.current) {
       Vibration.vibrate([0, 120, 80, 160]);
-      playCompletionSound();
       hasPlayedCompletionFeedback.current = true;
     }
   }, [isComplete]);
-
-  const playCompletionSound = async () => {
-    try {
-      // Try to load and play sound from assets
-      // In production, add a short celebratory sound file at assets/sounds/completion.mp3
-      const { sound } = await Audio.Sound.createAsync(
-        // eslint-disable-next-line @typescript-eslint/no-var-requires
-        require("../../assets/sounds/completion.mp3"),
-        { shouldPlay: true }
-      );
-
-      // Clean up sound when playback finishes
-      sound.setOnPlaybackStatusUpdate((status) => {
-        if (status.isLoaded && status.didJustFinish) {
-          sound.unloadAsync();
-        }
-      });
-    } catch {
-      // Gracefully handle missing sound file or audio API errors
-      // Application continues without sound - this is expected in MVP
-    }
-  };
 
   return (
     <View style={styles.screen}>
@@ -186,8 +162,7 @@ function ConfettiDot({ color, delay, from }: { color: string; delay: number; fro
         easing: Easing.out(Easing.ease)
       })
     );
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [delay, opacity, translateY]);
 
   const animatedStyle = useAnimatedStyle(() => ({
     transform: [{ translateY: translateY.value }],
