@@ -14,6 +14,7 @@ export const strings = {
   },
   addGoal: {
     title: "Dodaj nowy cel",
+    editTitle: "Edytuj cel",
     childNamePlaceholder: "Np. Kuba",
     rewardNamePlaceholder: "Np. Hulajnoga, Zabawka, Wyjście do kina",
     tileCountLabel: "Liczba kafelków",
@@ -31,6 +32,7 @@ export const strings = {
     imagePickerError: "Nie udało się wybrać zdjęcia. Spróbuj ponownie.",
     avatarLabel: "Wybierz awatar",
     saveButton: "Zapisz cel ✓",
+    updateButton: "Zapisz zmiany ✓",
     backButton: "Wróć"
   },
   child: {
@@ -73,6 +75,7 @@ export const strings = {
       `Darmowa wersja pozwala mieć ${goalLimit} aktywne cele. Włącz Premium w ustawieniach, żeby dodać więcej.`,
     freeLimitButton: "Otwórz ustawienia",
     completedBadge: "Ukończone",
+    editButton: "Edytuj",
     deleteButton: "Usuń",
     deleteTitle: "Usunąć cel?",
     deleteMeta: (rewardName: string) => `Cel "${rewardName}" i jego postęp zostaną usunięte z tego telefonu.`,

@@ -9,7 +9,7 @@ import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { ModeSelectionScreen } from "./src/screens/ModeSelectionScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
-import { completeTask, createGoal, getTileColor, normalizeSettings } from "./src/domain/goal";
+import { completeTask, createGoal, getTileColor, normalizeSettings, updateGoal } from "./src/domain/goal";
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
@@ -72,6 +72,28 @@ export default function App() {
     setGoals((currentGoals) => [goal, ...currentGoals]);
     setSelectedGoalId(goal.id);
     setRoute("approveTask");
+  }
+
+  function handleSaveGoal(draft: GoalDraft) {
+    if (activeGoal && route === "addGoal") {
+      setGoals((currentGoals) =>
+        currentGoals.map((goal) => (goal.id === activeGoal.id ? updateGoal(goal, draft) : goal))
+      );
+      setRoute("goals");
+      return;
+    }
+
+    handleCreateGoal(draft);
+  }
+
+  function handleStartAddGoal() {
+    setSelectedGoalId(null);
+    setRoute("addGoal");
+  }
+
+  function handleStartEditGoal(goalId: string) {
+    setSelectedGoalId(goalId);
+    setRoute("addGoal");
   }
 
   function handleOpenGoal(goalId: string) {
@@ -158,13 +180,16 @@ export default function App() {
         <GoalsScreen
           goals={goals}
           isPremium={settings.isPremium}
-          onAddGoal={() => setRoute("addGoal")}
+          onAddGoal={handleStartAddGoal}
           onDeleteGoal={handleDeleteGoal}
+          onEditGoal={handleStartEditGoal}
           onOpenGoal={handleOpenGoal}
           onOpenSettings={() => setRoute("settings")}
         />
       ) : null}
-      {route === "addGoal" ? <AddGoalScreen onBack={() => setRoute("goals")} onSave={handleCreateGoal} /> : null}
+      {route === "addGoal" ? (
+        <AddGoalScreen initialGoal={activeGoal ?? null} onBack={() => setRoute("goals")} onSave={handleSaveGoal} />
+      ) : null}
       {route === "approveTask" && activeGoal ? (
         <ApproveTaskScreen
           goal={activeGoal}
@@ -207,7 +232,7 @@ export default function App() {
           <BottomNav
             activeRoute={route}
             hasChildView={Boolean(activeGoal)}
-            onAddGoal={() => setRoute("addGoal")}
+            onAddGoal={handleStartAddGoal}
             onOpenChild={handleOpenChildTab}
             onOpenGoals={() => setRoute("goals")}
             onOpenSettings={() => setRoute("settings")}

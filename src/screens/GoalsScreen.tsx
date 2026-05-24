@@ -1,4 +1,4 @@
-import { useMemo } from "react";
+import { useMemo, useState } from "react";
 import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
@@ -14,6 +14,7 @@ type GoalsScreenProps = {
   isPremium: boolean;
   onAddGoal: () => void;
   onDeleteGoal: (goalId: string) => void;
+  onEditGoal: (goalId: string) => void;
   onOpenGoal: (goalId: string) => void;
   onOpenSettings: () => void;
 };
@@ -23,9 +24,11 @@ export function GoalsScreen({
   isPremium,
   onAddGoal,
   onDeleteGoal,
+  onEditGoal,
   onOpenGoal,
   onOpenSettings
 }: GoalsScreenProps) {
+  const [openMenuGoalId, setOpenMenuGoalId] = useState<string | null>(null);
   const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
   const hasReachedFreeLimit = !isPremium && activeGoalsCount >= FREE_GOAL_LIMIT;
   const sortedGoals = useMemo(() => [...goals].sort(compareGoalsByStatus), [goals]);
@@ -64,10 +67,18 @@ export function GoalsScreen({
           const progress = getGoalProgress(item);
           const progressPercent = Math.round(progress * 100);
           const progressColor = getGoalAccent(index);
+          const isMenuOpen = openMenuGoalId === item.id;
 
           return (
             <View style={[styles.card, isCompleted && styles.completedCard]}>
-              <Pressable accessibilityRole="button" onPress={() => onOpenGoal(item.id)} style={styles.cardContent}>
+              <Pressable
+                accessibilityRole="button"
+                onPress={() => {
+                  setOpenMenuGoalId(null);
+                  onOpenGoal(item.id);
+                }}
+                style={styles.cardContent}
+              >
                 <View style={styles.cardHeader}>
                   <Image
                     accessibilityLabel={strings.goals.thumbnailLabel(item.rewardName)}
@@ -78,14 +89,6 @@ export function GoalsScreen({
                   <View style={styles.cardCopy}>
                     <View style={styles.titleRow}>
                       <Text style={styles.cardTitle}>{item.rewardName}</Text>
-                      <Pressable
-                        accessibilityLabel={strings.goals.deleteButton}
-                        accessibilityRole="button"
-                        onPress={() => onDeleteGoal(item.id)}
-                        style={styles.menuButton}
-                      >
-                        <Text style={styles.menuDots}>⋮</Text>
-                      </Pressable>
                     </View>
                     <View style={styles.childRow}>
                       <AvatarBadge avatarId={item.avatarId} size="sm" />
@@ -109,6 +112,40 @@ export function GoalsScreen({
                   </View>
                 </View>
               </Pressable>
+              <Pressable
+                accessibilityLabel={`${strings.goals.editButton}, ${strings.goals.deleteButton}`}
+                accessibilityRole="button"
+                accessibilityState={{ expanded: isMenuOpen }}
+                onPress={() => setOpenMenuGoalId(isMenuOpen ? null : item.id)}
+                style={styles.menuButton}
+              >
+                <Text style={styles.menuDots}>⋮</Text>
+              </Pressable>
+              {isMenuOpen ? (
+                <View style={styles.cardMenu}>
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => {
+                      setOpenMenuGoalId(null);
+                      onEditGoal(item.id);
+                    }}
+                    style={styles.menuItem}
+                  >
+                    <Text style={styles.menuItemText}>{strings.goals.editButton}</Text>
+                  </Pressable>
+                  <View style={styles.menuDivider} />
+                  <Pressable
+                    accessibilityRole="button"
+                    onPress={() => {
+                      setOpenMenuGoalId(null);
+                      onDeleteGoal(item.id);
+                    }}
+                    style={styles.menuItem}
+                  >
+                    <Text style={[styles.menuItemText, styles.deleteMenuItemText]}>{strings.goals.deleteButton}</Text>
+                  </Pressable>
+                </View>
+              ) : null}
             </View>
           );
         }}
@@ -233,6 +270,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.surface,
     borderRadius: 24,
     padding: spacing.md,
+    position: "relative",
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 12, width: 0 },
     shadowOpacity: 0.08,
@@ -261,6 +299,7 @@ const styles = StyleSheet.create({
     flex: 1,
     gap: spacing.md,
     justifyContent: "center",
+    paddingRight: spacing.xl,
     paddingVertical: spacing.sm
   },
   titleRow: {
@@ -307,14 +346,50 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     alignItems: "center",
+    position: "absolute",
+    right: spacing.md,
+    top: spacing.md,
     minHeight: 32,
-    minWidth: 28
+    minWidth: 32,
+    zIndex: 2
   },
   menuDots: {
     color: colors.textMuted,
     fontSize: 28,
     fontWeight: "800",
     lineHeight: 28
+  },
+  cardMenu: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    minWidth: 132,
+    overflow: "hidden",
+    position: "absolute",
+    right: spacing.md,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 8, width: 0 },
+    shadowOpacity: 0.14,
+    shadowRadius: 16,
+    top: 48,
+    zIndex: 3
+  },
+  menuItem: {
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md
+  },
+  menuItemText: {
+    color: colors.text,
+    fontSize: 15,
+    fontWeight: "800"
+  },
+  deleteMenuItemText: {
+    color: colors.warningDark
+  },
+  menuDivider: {
+    backgroundColor: colors.border,
+    height: 1
   },
   completedBadge: {
     backgroundColor: colors.accent,

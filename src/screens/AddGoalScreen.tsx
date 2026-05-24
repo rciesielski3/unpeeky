@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   Image,
@@ -16,25 +16,36 @@ import { AvatarBadge } from "../components/AvatarBadge";
 import { AVATARS, DEFAULT_AVATAR_ID } from "../domain/avatar";
 import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
-import type { GoalDraft, TileCount } from "../domain/goal";
+import type { Goal, GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ImageSource = "camera" | "gallery";
 
 type AddGoalScreenProps = {
+  initialGoal?: Goal | null;
   onBack: () => void;
   onSave: (draft: GoalDraft) => void;
 };
 
-export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
-  const [childName, setChildName] = useState("");
-  const [rewardName, setRewardName] = useState("");
-  const [imageUri, setImageUri] = useState<string | null>(null);
+export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScreenProps) {
+  const isEditing = initialGoal !== null;
+  const [childName, setChildName] = useState(initialGoal?.childName ?? "");
+  const [rewardName, setRewardName] = useState(initialGoal?.rewardName ?? "");
+  const [imageUri, setImageUri] = useState<string | null>(initialGoal?.imageUri ?? null);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [totalTasks, setTotalTasks] = useState<TileCount>(DEFAULT_TILE_COUNT);
-  const [avatarId, setAvatarId] = useState<AvatarId>(DEFAULT_AVATAR_ID);
+  const [totalTasks, setTotalTasks] = useState<TileCount>(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
+  const [avatarId, setAvatarId] = useState<AvatarId>(initialGoal?.avatarId ?? DEFAULT_AVATAR_ID);
   const canSave = childName.trim().length > 0 && rewardName.trim().length > 0 && imageUri !== null;
+
+  useEffect(() => {
+    setChildName(initialGoal?.childName ?? "");
+    setRewardName(initialGoal?.rewardName ?? "");
+    setImageUri(initialGoal?.imageUri ?? null);
+    setTotalTasks(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
+    setAvatarId(initialGoal?.avatarId ?? DEFAULT_AVATAR_ID);
+    setImageError(null);
+  }, [initialGoal]);
 
   async function pickImage(source: ImageSource) {
     try {
@@ -112,7 +123,7 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
           >
             <Text style={styles.backIcon}>‹</Text>
           </Pressable>
-          <Text style={styles.title}>{strings.addGoal.title}</Text>
+          <Text style={styles.title}>{isEditing ? strings.addGoal.editTitle : strings.addGoal.title}</Text>
           <View accessibilityRole="image" style={styles.starBadge}>
             <Text style={styles.starIcon}>⭐</Text>
           </View>
@@ -213,7 +224,9 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
             onPress={handleSave}
             style={[styles.saveButton, !canSave && styles.disabledButton]}
           >
-            <Text style={styles.saveButtonText}>{strings.addGoal.saveButton}</Text>
+            <Text style={styles.saveButtonText}>
+              {isEditing ? strings.addGoal.updateButton : strings.addGoal.saveButton}
+            </Text>
           </Pressable>
         </View>
       </ScrollView>

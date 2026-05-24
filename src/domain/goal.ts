@@ -68,6 +68,18 @@ export function createGoal(draft: GoalDraft, now = new Date()): Goal {
   };
 }
 
+export function updateGoal(goal: Goal, draft: GoalDraft): Goal {
+  const completedTasks = Math.min(goal.completedTasks, draft.totalTasks);
+
+  return {
+    ...goal,
+    ...draft,
+    completedTasks,
+    completed: completedTasks >= draft.totalTasks,
+    revealOrder: normalizeRevealOrder(draft.totalTasks, goal.revealOrder)
+  };
+}
+
 export function normalizeGoal(goal: PersistedGoal): Goal {
   return {
     ...goal,
