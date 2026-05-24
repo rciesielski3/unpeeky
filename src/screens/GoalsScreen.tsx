@@ -62,11 +62,11 @@ export function GoalsScreen({
         contentContainerStyle={styles.list}
         data={sortedGoals}
         keyExtractor={(goal) => goal.id}
-        renderItem={({ index, item }) => {
+        renderItem={({ item }) => {
           const isCompleted = isGoalComplete(item);
           const progress = getGoalProgress(item);
           const progressPercent = Math.round(progress * 100);
-          const progressColor = getGoalAccent(index);
+          const progressColor = getGoalAccent(item.id);
           const isMenuOpen = openMenuGoalId === item.id;
 
           return (
@@ -96,7 +96,7 @@ export function GoalsScreen({
                     </View>
                     <Text style={styles.tasksText}>
                       <Text style={[styles.completedTasks, { color: progressColor }]}>{item.completedTasks}</Text>
-                      {` / ${item.totalTasks} zadań`}
+                      {strings.goals.tasksTotal(item.totalTasks)}
                     </Text>
                     <View style={styles.progressRow}>
                       <View style={styles.progressWrap}>
@@ -268,7 +268,7 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 24,
+    borderRadius: radii.lg,
     padding: spacing.md,
     position: "relative",
     shadowColor: colors.primaryDark,
@@ -346,11 +346,12 @@ const styles = StyleSheet.create({
   },
   menuButton: {
     alignItems: "center",
+    justifyContent: "center",
     position: "absolute",
     right: spacing.md,
     top: spacing.md,
-    minHeight: 32,
-    minWidth: 32,
+    minHeight: 44,
+    minWidth: 44,
     zIndex: 2
   },
   menuDots: {
@@ -456,8 +457,9 @@ function compareGoalsByStatus(firstGoal: Goal, secondGoal: Goal): number {
   return Number(isGoalComplete(firstGoal)) - Number(isGoalComplete(secondGoal));
 }
 
-function getGoalAccent(index: number): string {
+function getGoalAccent(goalId: string): string {
   const accents = [colors.primary, colors.warning, colors.accent] as const;
+  const hash = goalId.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0);
 
-  return accents[index % accents.length] ?? colors.primary;
+  return accents[hash % accents.length] ?? colors.primary;
 }

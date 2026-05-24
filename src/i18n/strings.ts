@@ -81,7 +81,8 @@ export const strings = {
     deleteMeta: (rewardName: string) => `Cel "${rewardName}" i jego postęp zostaną usunięte z tego telefonu.`,
     thumbnailLabel: (rewardName: string) => `Zdjęcie nagrody: ${rewardName}`,
     cardProgress: (childName: string, completedTasks: number, totalTasks: number) =>
-      `${childName} - ${completedTasks}/${totalTasks}`
+      `${childName} - ${completedTasks}/${totalTasks}`,
+    tasksTotal: (totalTasks: number) => ` / ${totalTasks} ${getPolishTaskLabel(totalTasks)}`
   },
   navigation: {
     goals: "Cele",
@@ -97,11 +98,12 @@ export const strings = {
     premiumVersionTitle: "Wersja Premium",
     premiumVersionMeta: "Odblokuj wszystkie awatary, nielimitowane cele i usuń reklamy.",
     premiumUpgradeButton: "◇  Przejdź na Premium",
-    restorePurchases: "Przywróć zakupy",
     aboutApp: "O aplikacji",
     notificationTitle: "Powiadomienie",
     notificationMeta: "Codzienna godzina przypomnienia",
     notificationTimePlaceholder: "HH:MM",
+    notificationTimePickerTitle: "Wybierz godzinę",
+    notificationTimePickerClose: "Gotowe",
     notificationTimeError: "Wpisz godzinę w formacie HH:MM.",
     parentPinTitle: "PIN rodzica",
     parentPinMeta: "4 cyfry do zatwierdzania zadań",
@@ -169,3 +171,18 @@ export const strings = {
     lime: "Limonka"
   }
 } as const;
+
+function getPolishTaskLabel(count: number): string {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+
+  if (count === 1) {
+    return "zadanie";
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+    return "zadania";
+  }
+
+  return "zadań";
+}

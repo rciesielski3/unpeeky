@@ -153,11 +153,6 @@ export default function App() {
   }
 
   function handleOpenChildTab() {
-    if (!activeGoal) {
-      setRoute("goals");
-      return;
-    }
-
     setRoute("child");
   }
 
