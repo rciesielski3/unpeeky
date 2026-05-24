@@ -56,8 +56,8 @@ export const strings = {
     backButton: "Wróć"
   },
   goals: {
-    greeting: "Cześć!",
-    title: "Cele i postępy",
+    greeting: "Cześć, Mamo! 👋",
+    title: "Twoje cele",
     subtitle: "Twoje nagrody",
     settingsButton: "Ustawienia",
     emptyTitle: "Brak celów",
@@ -74,6 +74,12 @@ export const strings = {
     thumbnailLabel: (rewardName: string) => `Zdjęcie nagrody: ${rewardName}`,
     cardProgress: (childName: string, completedTasks: number, totalTasks: number) =>
       `${childName} - ${completedTasks}/${totalTasks}`
+  },
+  navigation: {
+    goals: "Cele",
+    add: "Dodaj",
+    child: "Dziecko",
+    settings: "Ustawienia"
   },
   settings: {
     title: "Ustawienia",

@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Alert, Platform, SafeAreaView, StatusBar as NativeStatusBar, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
+import { BottomNav } from "./src/components/BottomNav";
 import { AddGoalScreen } from "./src/screens/AddGoalScreen";
 import { ApproveTaskScreen } from "./src/screens/ApproveTaskScreen";
 import { ChildScreen } from "./src/screens/ChildScreen";
@@ -129,6 +130,15 @@ export default function App() {
     setRoute("goals");
   }
 
+  function handleOpenChildTab() {
+    if (!activeGoal) {
+      setRoute("goals");
+      return;
+    }
+
+    setRoute("child");
+  }
+
   if (!isHydrated || !settings) {
     return (
       <SafeAreaView style={styles.safeArea}>
@@ -185,11 +195,25 @@ export default function App() {
       ) : null}
     </>
   );
+  const shouldShowBottomNav = Boolean(settings.appMode) && route !== "approveTask";
+  const routeBackground = getRouteBackground(route);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={[styles.safeArea, { backgroundColor: routeBackground }]}>
       <StatusBar style="dark" />
-      <View style={styles.app}>{screen}</View>
+      <View style={[styles.app, { backgroundColor: routeBackground }]}>
+        <View style={styles.screenSlot}>{screen}</View>
+        {shouldShowBottomNav ? (
+          <BottomNav
+            activeRoute={route}
+            hasChildView={Boolean(activeGoal)}
+            onAddGoal={() => setRoute("addGoal")}
+            onOpenChild={handleOpenChildTab}
+            onOpenGoals={() => setRoute("goals")}
+            onOpenSettings={() => setRoute("settings")}
+          />
+        ) : null}
+      </View>
     </SafeAreaView>
   );
 }
@@ -203,6 +227,9 @@ const styles = StyleSheet.create({
   app: {
     flex: 1
   },
+  screenSlot: {
+    flex: 1
+  },
   loading: {
     alignItems: "center",
     flex: 1,
@@ -213,3 +240,18 @@ const styles = StyleSheet.create({
     fontSize: 16
   }
 });
+
+function getRouteBackground(route: AppRoute): string {
+  switch (route) {
+    case "addGoal":
+      return colors.addBackground;
+    case "child":
+      return colors.childBackground;
+    case "settings":
+      return colors.settingsBackground;
+    case "approveTask":
+    case "goals":
+    default:
+      return colors.parentBackground;
+  }
+}

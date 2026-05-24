@@ -32,16 +32,21 @@ export function GoalsScreen({
 
   return (
     <View style={styles.screen}>
+      <View style={styles.glowTop} />
+      <View style={styles.glowBottom} />
       <View style={styles.header}>
-        <View style={styles.headerSide} />
         <View style={styles.headerCopy}>
           <Text style={styles.hello}>{strings.goals.greeting}</Text>
           <Text style={styles.title}>{strings.goals.title}</Text>
-          <Text style={styles.subtitle}>{strings.goals.subtitle}</Text>
         </View>
-        <View style={[styles.headerSide, styles.headerAction]}>
-          <Button label={strings.goals.settingsButton} onPress={onOpenSettings} variant="ghost" />
-        </View>
+        <Pressable
+          accessibilityLabel={strings.goals.settingsButton}
+          accessibilityRole="button"
+          onPress={onOpenSettings}
+          style={styles.settingsCircle}
+        >
+          <Text style={styles.settingsIcon}>🔔</Text>
+        </Pressable>
       </View>
 
       <FlatList
@@ -54,8 +59,11 @@ export function GoalsScreen({
         contentContainerStyle={styles.list}
         data={sortedGoals}
         keyExtractor={(goal) => goal.id}
-        renderItem={({ item }) => {
+        renderItem={({ index, item }) => {
           const isCompleted = isGoalComplete(item);
+          const progress = getGoalProgress(item);
+          const progressPercent = Math.round(progress * 100);
+          const progressColor = getGoalAccent(index);
 
           return (
             <View style={[styles.card, isCompleted && styles.completedCard]}>
@@ -70,23 +78,37 @@ export function GoalsScreen({
                   <View style={styles.cardCopy}>
                     <View style={styles.titleRow}>
                       <Text style={styles.cardTitle}>{item.rewardName}</Text>
-                      {isCompleted ? (
-                        <View style={styles.completedBadge}>
-                          <Text style={styles.completedBadgeText}>{strings.goals.completedBadge}</Text>
-                        </View>
-                      ) : null}
+                      <Pressable
+                        accessibilityLabel={strings.goals.deleteButton}
+                        accessibilityRole="button"
+                        onPress={() => onDeleteGoal(item.id)}
+                        style={styles.menuButton}
+                      >
+                        <Text style={styles.menuDots}>⋮</Text>
+                      </Pressable>
                     </View>
                     <View style={styles.childRow}>
                       <AvatarBadge avatarId={item.avatarId} size="sm" />
-                      <Text style={styles.meta}>
-                        {strings.goals.cardProgress(item.childName, item.completedTasks, item.totalTasks)}
-                      </Text>
+                      <Text style={styles.childName}>{item.childName}</Text>
                     </View>
+                    <Text style={styles.tasksText}>
+                      <Text style={[styles.completedTasks, { color: progressColor }]}>{item.completedTasks}</Text>
+                      {` / ${item.totalTasks} zadań`}
+                    </Text>
+                    <View style={styles.progressRow}>
+                      <View style={styles.progressWrap}>
+                        <ProgressBar color={progressColor} progress={progress} />
+                      </View>
+                      <Text style={styles.percent}>{progressPercent}%</Text>
+                    </View>
+                    {isCompleted ? (
+                      <View style={styles.completedBadge}>
+                        <Text style={styles.completedBadgeText}>{strings.goals.completedBadge}</Text>
+                      </View>
+                    ) : null}
                   </View>
                 </View>
-                <ProgressBar progress={getGoalProgress(item)} />
               </Pressable>
-              <Button label={strings.goals.deleteButton} onPress={() => onDeleteGoal(item.id)} variant="ghost" />
             </View>
           );
         }}
@@ -101,7 +123,15 @@ export function GoalsScreen({
       ) : null}
 
       <View style={styles.footer}>
-        <Button disabled={hasReachedFreeLimit} label={strings.goals.newGoalButton} onPress={onAddGoal} />
+        <Pressable
+          accessibilityRole="button"
+          disabled={hasReachedFreeLimit}
+          onPress={onAddGoal}
+          style={[styles.addButton, hasReachedFreeLimit && styles.disabledButton]}
+        >
+          <Text style={styles.addIcon}>+</Text>
+          <Text style={styles.addButtonText}>{strings.goals.newGoalButton}</Text>
+        </Pressable>
       </View>
     </View>
   );
@@ -111,54 +141,78 @@ const styles = StyleSheet.create({
   screen: {
     flex: 1,
     backgroundColor: colors.parentBackground,
-    padding: spacing.lg
+    overflow: "hidden",
+    paddingHorizontal: spacing.xl,
+    paddingTop: spacing.xl
+  },
+  glowTop: {
+    backgroundColor: colors.parentBackgroundSoft,
+    borderRadius: 180,
+    height: 220,
+    position: "absolute",
+    right: -72,
+    top: 72,
+    width: 220
+  },
+  glowBottom: {
+    backgroundColor: colors.parentBackgroundSoft,
+    borderRadius: 220,
+    bottom: 84,
+    height: 260,
+    left: -92,
+    position: "absolute",
+    width: 260
   },
   header: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
-    justifyContent: "center",
-    marginBottom: spacing.lg,
-    minHeight: 72
-  },
-  headerSide: {
-    flexBasis: 112,
-    flexShrink: 0
+    justifyContent: "space-between",
+    marginBottom: spacing.xl,
+    minHeight: 124
   },
   headerCopy: {
-    alignItems: "center",
-    flex: 1
-  },
-  headerAction: {
-    alignItems: "flex-end"
+    flex: 1,
+    paddingRight: spacing.lg
   },
   title: {
     color: colors.text,
     fontFamily: fonts.heading,
-    fontSize: 26,
+    fontSize: 34,
     fontWeight: "800",
-    textAlign: "center"
+    letterSpacing: 0,
+    lineHeight: 40
   },
   hello: {
     color: colors.text,
-    fontSize: 15,
+    fontSize: 24,
     marginBottom: spacing.xs,
-    textAlign: "center"
+    lineHeight: 30
   },
-  subtitle: {
-    color: colors.textMuted,
-    fontSize: 14,
-    marginTop: spacing.xs,
-    textAlign: "center"
+  settingsCircle: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: radii.pill,
+    height: 64,
+    justifyContent: "center",
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 8, width: 0 },
+    shadowOpacity: 0.1,
+    shadowRadius: 18,
+    width: 64
+  },
+  settingsIcon: {
+    fontSize: 28
   },
   list: {
     flexGrow: 1,
-    gap: spacing.md
+    gap: spacing.xl,
+    paddingBottom: spacing.xl
   },
   empty: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderWidth: 1,
     gap: spacing.sm,
     justifyContent: "center",
@@ -177,15 +231,12 @@ const styles = StyleSheet.create({
   },
   card: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    gap: spacing.sm,
-    padding: spacing.lg,
+    borderRadius: 24,
+    padding: spacing.md,
     shadowColor: colors.primaryDark,
-    shadowOffset: { height: 8, width: 0 },
+    shadowOffset: { height: 12, width: 0 },
     shadowOpacity: 0.08,
-    shadowRadius: 16
+    shadowRadius: 20
   },
   cardContent: {
     alignSelf: "stretch",
@@ -196,25 +247,27 @@ const styles = StyleSheet.create({
     borderColor: colors.successBorder
   },
   cardHeader: {
-    alignItems: "center",
+    alignItems: "stretch",
     flexDirection: "row",
-    gap: spacing.md
+    gap: spacing.xl
   },
   thumbnail: {
     backgroundColor: colors.surfaceMuted,
-    borderRadius: radii.md,
-    height: 84,
-    width: 84
+    borderRadius: radii.lg,
+    height: 166,
+    width: 166
   },
   cardCopy: {
     flex: 1,
-    gap: spacing.xs
+    gap: spacing.md,
+    justifyContent: "center",
+    paddingVertical: spacing.sm
   },
   titleRow: {
-    alignItems: "center",
+    alignItems: "flex-start",
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
+    justifyContent: "space-between"
   },
   childRow: {
     alignItems: "center",
@@ -223,12 +276,45 @@ const styles = StyleSheet.create({
   },
   cardTitle: {
     color: colors.text,
-    fontSize: 18,
+    flex: 1,
+    fontSize: 20,
+    fontWeight: "800"
+  },
+  childName: {
+    color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: "600"
+  },
+  tasksText: {
+    color: colors.text,
+    fontSize: 16
+  },
+  completedTasks: {
+    fontWeight: "800"
+  },
+  progressRow: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md
+  },
+  progressWrap: {
+    flex: 1
+  },
+  percent: {
+    color: colors.textMuted,
+    fontSize: 14,
     fontWeight: "700"
   },
-  meta: {
+  menuButton: {
+    alignItems: "center",
+    minHeight: 32,
+    minWidth: 28
+  },
+  menuDots: {
     color: colors.textMuted,
-    fontSize: 14
+    fontSize: 28,
+    fontWeight: "800",
+    lineHeight: 28
   },
   completedBadge: {
     backgroundColor: colors.accent,
@@ -242,7 +328,35 @@ const styles = StyleSheet.create({
     fontWeight: "800"
   },
   footer: {
-    paddingTop: spacing.md
+    paddingBottom: spacing.lg,
+    paddingTop: spacing.sm
+  },
+  addButton: {
+    alignItems: "center",
+    backgroundColor: colors.primary,
+    borderRadius: radii.pill,
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "center",
+    minHeight: 74,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 10, width: 0 },
+    shadowOpacity: 0.18,
+    shadowRadius: 20
+  },
+  disabledButton: {
+    opacity: 0.45
+  },
+  addIcon: {
+    color: colors.surface,
+    fontSize: 42,
+    fontWeight: "300",
+    lineHeight: 46
+  },
+  addButtonText: {
+    color: colors.surface,
+    fontSize: 22,
+    fontWeight: "800"
   },
   limitCard: {
     backgroundColor: colors.surface,
@@ -265,4 +379,10 @@ const styles = StyleSheet.create({
 
 function compareGoalsByStatus(firstGoal: Goal, secondGoal: Goal): number {
   return Number(isGoalComplete(firstGoal)) - Number(isGoalComplete(secondGoal));
+}
+
+function getGoalAccent(index: number): string {
+  const accents = [colors.primary, colors.warning, colors.accent] as const;
+
+  return accents[index % accents.length] ?? colors.primary;
 }

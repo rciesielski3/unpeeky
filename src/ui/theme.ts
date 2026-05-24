@@ -3,6 +3,7 @@ import { Platform } from "react-native";
 export const colors = {
   background: "#F8FAFC",
   parentBackground: "#F1EDFF",
+  parentBackgroundSoft: "#EFF7FF",
   addBackground: "#FFF5D8",
   childBackground: "#EAF5FF",
   settingsBackground: "#EEF8DF",
@@ -10,6 +11,7 @@ export const colors = {
   surfaceMuted: "#F2F4FF",
   primary: "#8B5CF6",
   primaryDark: "#5B35D5",
+  primarySoft: "#EEE7FF",
   accent: "#7AC943",
   accentDark: "#4C9F24",
   warning: "#FFB703",
