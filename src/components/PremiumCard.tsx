@@ -9,7 +9,7 @@ type PremiumCardProps = {
 };
 
 export function PremiumCard({ isPremium, onPress }: PremiumCardProps) {
-  const statusText = isPremium ? strings.premium.activeBadge : strings.premium.price;
+  const statusText = isPremium ? strings.premium.activeBadge : strings.premium.inactiveBadge;
 
   return (
     <Pressable
@@ -48,9 +48,7 @@ export function PremiumCard({ isPremium, onPress }: PremiumCardProps) {
 function BenefitRow({ active, text }: { active: boolean; text: string }) {
   return (
     <View style={styles.benefit}>
-      <Text style={[styles.benefitIcon, { color: active ? colors.accent : colors.textMuted }]}>
-        {active ? "OK" : "-"}
-      </Text>
+      <Text style={[styles.benefitIcon, { opacity: active ? 1 : 0.5 }]}>{active ? "+" : "-"}</Text>
       <Text style={[styles.benefitText, !active && styles.benefitTextMuted]}>{text}</Text>
     </View>
   );
@@ -111,8 +109,10 @@ const styles = StyleSheet.create({
     gap: spacing.sm
   },
   benefitIcon: {
+    color: colors.surface,
     fontSize: 16,
     fontWeight: "700",
+    textAlign: "center",
     width: 20
   },
   benefitText: {

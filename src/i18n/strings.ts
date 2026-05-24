@@ -114,6 +114,7 @@ export const strings = {
   },
   premium: {
     activeBadge: "ON",
+    inactiveBadge: "UP",
     activeTitle: "Premium aktywny",
     activeMeta: "Limit celów i reklamy są wyłączone.",
     inactiveTitle: "Premium",
