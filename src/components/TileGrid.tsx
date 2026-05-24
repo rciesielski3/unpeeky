@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { ImageBackground, StyleSheet, View } from "react-native";
+import { ImageBackground, StyleSheet, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 import { DEFAULT_TILE_COUNT } from "../domain/goal";
@@ -77,7 +77,11 @@ function AnimatedTile({ isRevealed, tileColor }: AnimatedTileProps) {
     };
   });
 
-  return <Animated.View style={[styles.tile, { backgroundColor: tileColor }, animatedStyle]} />;
+  return (
+    <Animated.View style={[styles.tile, { backgroundColor: tileColor }, animatedStyle]}>
+      <Text style={styles.tileStar}>★</Text>
+    </Animated.View>
+  );
 }
 
 const styles = StyleSheet.create({
@@ -108,7 +112,14 @@ const styles = StyleSheet.create({
     overflow: "hidden"
   },
   tile: {
+    alignItems: "center",
     borderRadius: 6,
-    flex: 1
+    flex: 1,
+    justifyContent: "center"
+  },
+  tileStar: {
+    color: colors.surface,
+    fontSize: 30,
+    opacity: 0.16
   }
 });

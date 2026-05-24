@@ -43,7 +43,8 @@ export const strings = {
     completedBody: "Nagroda jest odkryta. Czas świętować!",
     completeButton: "Nagroda gotowa",
     approveTaskButton: "Zatwierdź zadanie",
-    backToParentButton: "Wróć do rodzica"
+    backToParentButton: "Wróć do rodzica",
+    soundButton: "Dźwięk"
   },
   approveTask: {
     title: "Zatwierdź zadanie",
