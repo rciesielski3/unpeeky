@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
+import { ScreenDecorations } from "../components/ScreenDecorations";
 import { AVATARS, DEFAULT_AVATAR_ID } from "../domain/avatar";
 import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
@@ -114,6 +115,7 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
       style={styles.container}
     >
       <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.scroll}>
+        <ScreenDecorations variant="sunny" />
         <View style={styles.header}>
           <Pressable
             accessibilityLabel={strings.addGoal.backButton}

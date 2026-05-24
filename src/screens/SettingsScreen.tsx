@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
+import { ScreenDecorations } from "../components/ScreenDecorations";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -121,6 +122,7 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
 
   return (
     <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.container}>
+      <ScreenDecorations variant="garden" />
       <View style={styles.hero}>
         <Text style={styles.title}>{strings.settings.title}</Text>
       </View>

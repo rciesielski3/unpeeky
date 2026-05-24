@@ -4,6 +4,7 @@ import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTimi
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { ProgressBar } from "../components/ProgressBar";
+import { ScreenDecorations } from "../components/ScreenDecorations";
 import { TileGrid } from "../components/TileGrid";
 import { getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
@@ -38,6 +39,7 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
 
   return (
     <ScrollView contentContainerStyle={styles.screen} style={styles.scroll}>
+      <ScreenDecorations variant="clouds" />
       <View style={styles.cloudLeft} />
       <View style={styles.cloudRight} />
       <Text style={styles.sparkleLeft}>✦</Text>

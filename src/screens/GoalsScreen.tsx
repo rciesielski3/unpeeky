@@ -4,6 +4,7 @@ import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
+import { ScreenDecorations } from "../components/ScreenDecorations";
 import { FREE_GOAL_LIMIT, getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -37,6 +38,7 @@ export function GoalsScreen({
     <View style={styles.screen}>
       <View style={styles.glowTop} />
       <View style={styles.glowBottom} />
+      <ScreenDecorations variant="stars" />
       <View style={styles.header}>
         <View style={styles.headerCopy}>
           <Text style={styles.hello}>{strings.goals.greeting}</Text>
