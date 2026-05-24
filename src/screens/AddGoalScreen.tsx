@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   Image,
@@ -13,29 +13,39 @@ import {
 } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
-import { Button } from "../components/Button";
 import { AVATARS, DEFAULT_AVATAR_ID } from "../domain/avatar";
 import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
-import type { GoalDraft, TileCount } from "../domain/goal";
+import type { Goal, GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ImageSource = "camera" | "gallery";
 
 type AddGoalScreenProps = {
+  initialGoal?: Goal | null;
   onBack: () => void;
   onSave: (draft: GoalDraft) => void;
 };
 
-export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
-  const [childName, setChildName] = useState("");
-  const [rewardName, setRewardName] = useState("");
-  const [imageUri, setImageUri] = useState<string | null>(null);
+export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScreenProps) {
+  const isEditing = initialGoal !== null;
+  const [childName, setChildName] = useState(initialGoal?.childName ?? "");
+  const [rewardName, setRewardName] = useState(initialGoal?.rewardName ?? "");
+  const [imageUri, setImageUri] = useState<string | null>(initialGoal?.imageUri ?? null);
   const [imageError, setImageError] = useState<string | null>(null);
-  const [totalTasks, setTotalTasks] = useState<TileCount>(DEFAULT_TILE_COUNT);
-  const [avatarId, setAvatarId] = useState<AvatarId>(DEFAULT_AVATAR_ID);
+  const [totalTasks, setTotalTasks] = useState<TileCount>(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
+  const [avatarId, setAvatarId] = useState<AvatarId>(initialGoal?.avatarId ?? DEFAULT_AVATAR_ID);
   const canSave = childName.trim().length > 0 && rewardName.trim().length > 0 && imageUri !== null;
+
+  useEffect(() => {
+    setChildName(initialGoal?.childName ?? "");
+    setRewardName(initialGoal?.rewardName ?? "");
+    setImageUri(initialGoal?.imageUri ?? null);
+    setTotalTasks(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
+    setAvatarId(initialGoal?.avatarId ?? DEFAULT_AVATAR_ID);
+    setImageError(null);
+  }, [initialGoal]);
 
   async function pickImage(source: ImageSource) {
     try {
@@ -103,65 +113,68 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
       keyboardVerticalOffset={spacing.lg}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled">
-        <Text style={styles.title}>{strings.addGoal.title}</Text>
+      <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.scroll}>
+        <View style={styles.header}>
+          <Pressable
+            accessibilityLabel={strings.addGoal.backButton}
+            accessibilityRole="button"
+            onPress={onBack}
+            style={styles.backButton}
+          >
+            <Text style={styles.backIcon}>‹</Text>
+          </Pressable>
+          <Text style={styles.title}>{isEditing ? strings.addGoal.editTitle : strings.addGoal.title}</Text>
+          <View accessibilityRole="image" style={styles.starBadge}>
+            <Text style={styles.starIcon}>⭐</Text>
+          </View>
+        </View>
 
-        <View style={styles.form}>
-          <View>
+        <View style={styles.formCard}>
+          <View style={styles.section}>
             <Text style={styles.label}>{strings.addGoal.photoStepLabel}</Text>
-            <View style={styles.photoBox}>
+            <Pressable
+              accessibilityLabel={strings.addGoal.photoPlaceholder}
+              accessibilityRole="button"
+              onPress={() => void pickImage("camera")}
+              style={styles.photoBox}
+            >
               {imageUri ? (
                 <Image source={{ uri: imageUri }} style={styles.photoPreview} />
               ) : (
                 <Text style={styles.photoIcon}>{strings.addGoal.photoEmptyLabel}</Text>
               )}
               <Text style={styles.photoText}>{strings.addGoal.photoPlaceholder}</Text>
-              <View style={styles.photoActions}>
-                <Button label={strings.addGoal.cameraButton} onPress={() => void pickImage("camera")} variant="ghost" />
-                <Button
-                  label={strings.addGoal.galleryButton}
-                  onPress={() => void pickImage("gallery")}
-                  variant="ghost"
-                />
-              </View>
-            </View>
+            </Pressable>
+            <Pressable
+              accessibilityLabel={strings.addGoal.galleryButton}
+              accessibilityRole="button"
+              onPress={() => void pickImage("gallery")}
+              style={styles.galleryLink}
+            >
+              <Text style={styles.galleryLinkText}>{strings.addGoal.galleryButton}</Text>
+            </Pressable>
             {imageError ? <Text style={styles.errorText}>{imageError}</Text> : null}
           </View>
-          <TextInput
-            onChangeText={setChildName}
-            placeholder={strings.addGoal.childNamePlaceholder}
-            style={styles.input}
-            value={childName}
-          />
-          <TextInput
-            onChangeText={setRewardName}
-            placeholder={strings.addGoal.rewardNamePlaceholder}
-            style={styles.input}
-            value={rewardName}
-          />
-          <View>
-            <Text style={styles.label}>{strings.addGoal.avatarLabel}</Text>
-            <View style={styles.avatarOptions}>
-              {AVATARS.map((avatar) => (
-                <Pressable
-                  accessibilityLabel={strings.avatars[avatar.labelKey]}
-                  accessibilityRole="button"
-                  accessibilityState={{ selected: avatar.id === avatarId }}
-                  key={avatar.id}
-                  onPress={() => setAvatarId(avatar.id)}
-                  style={[styles.avatarOption, avatar.id === avatarId && styles.selectedAvatar]}
-                >
-                  <AvatarBadge avatarId={avatar.id} size="sm" />
-                </Pressable>
-              ))}
-            </View>
+
+          <View style={styles.divider} />
+
+          <View style={styles.section}>
+            <Text style={styles.label}>{strings.addGoal.rewardStepLabel}</Text>
+            <TextInput
+              onChangeText={setRewardName}
+              placeholder={strings.addGoal.rewardNamePlaceholder}
+              placeholderTextColor={colors.textMuted}
+              style={styles.input}
+              value={rewardName}
+            />
           </View>
-          <View>
-            <Text style={styles.label}>{strings.addGoal.tileCountLabel}</Text>
+
+          <View style={styles.section}>
+            <Text style={styles.label}>{strings.addGoal.taskStepLabel}</Text>
             <View style={styles.tileOptions}>
               {TILE_OPTIONS.map((option) => (
                 <Pressable
-                  accessibilityLabel={`${strings.addGoal.tileCountLabel}: ${option}`}
+                  accessibilityLabel={`${strings.addGoal.taskStepLabel}: ${option}`}
                   accessibilityRole="button"
                   accessibilityState={{ selected: option === totalTasks }}
                   key={option}
@@ -175,11 +188,46 @@ export function AddGoalScreen({ onBack, onSave }: AddGoalScreenProps) {
               ))}
             </View>
           </View>
-        </View>
 
-        <View style={styles.actions}>
-          <Button disabled={!canSave} label={strings.addGoal.saveButton} onPress={handleSave} variant="secondary" />
-          <Button label={strings.addGoal.backButton} onPress={onBack} variant="ghost" />
+          <View style={styles.section}>
+            <Text style={styles.label}>{strings.addGoal.avatarStepLabel}</Text>
+            <View style={styles.avatarOptions}>
+              {AVATARS.slice(0, 6).map((avatar) => (
+                <Pressable
+                  accessibilityLabel={strings.avatars[avatar.labelKey]}
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: avatar.id === avatarId }}
+                  key={avatar.id}
+                  onPress={() => setAvatarId(avatar.id)}
+                  style={[styles.avatarOption, avatar.id === avatarId && styles.selectedAvatar]}
+                >
+                  <AvatarBadge avatarId={avatar.id} size="sm" />
+                </Pressable>
+              ))}
+            </View>
+          </View>
+
+          <View style={styles.section}>
+            <Text style={styles.label}>{strings.addGoal.childStepLabel}</Text>
+            <TextInput
+              onChangeText={setChildName}
+              placeholder={strings.addGoal.childNamePlaceholder}
+              placeholderTextColor={colors.textMuted}
+              style={styles.input}
+              value={childName}
+            />
+          </View>
+
+          <Pressable
+            accessibilityRole="button"
+            disabled={!canSave}
+            onPress={handleSave}
+            style={[styles.saveButton, !canSave && styles.disabledButton]}
+          >
+            <Text style={styles.saveButtonText}>
+              {isEditing ? strings.addGoal.updateButton : strings.addGoal.saveButton}
+            </Text>
+          </Pressable>
         </View>
       </ScrollView>
     </KeyboardAvoidingView>
@@ -190,67 +238,124 @@ const styles = StyleSheet.create({
   container: {
     flex: 1
   },
+  scroll: {
+    backgroundColor: colors.addBackground
+  },
   screen: {
     backgroundColor: colors.addBackground,
     flexGrow: 1,
     gap: spacing.lg,
-    padding: spacing.lg
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl
+  },
+  header: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+    minHeight: 84
+  },
+  backButton: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: radii.pill,
+    height: 58,
+    justifyContent: "center",
+    shadowColor: colors.warningDark,
+    shadowOffset: { height: 8, width: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 14,
+    width: 58
+  },
+  backIcon: {
+    color: colors.warning,
+    fontSize: 42,
+    fontWeight: "700",
+    lineHeight: 46
+  },
+  starBadge: {
+    alignItems: "center",
+    height: 72,
+    justifyContent: "center",
+    width: 72
+  },
+  starIcon: {
+    fontSize: 56
   },
   title: {
     color: colors.text,
     fontFamily: fonts.heading,
-    fontSize: 26,
+    flex: 1,
+    fontSize: 28,
     fontWeight: "800",
     textAlign: "center"
   },
-  form: {
-    gap: spacing.md
+  formCard: {
+    backgroundColor: colors.surface,
+    borderRadius: 26,
+    gap: spacing.xl,
+    padding: spacing.xl,
+    shadowColor: colors.warningDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.08,
+    shadowRadius: 22
+  },
+  section: {
+    gap: spacing.sm
   },
   input: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radii.md,
+    borderColor: "#EFE3D2",
+    borderRadius: 18,
     borderWidth: 1,
     fontSize: 16,
-    minHeight: 54,
-    paddingHorizontal: spacing.md
+    minHeight: 60,
+    paddingHorizontal: spacing.lg
   },
   label: {
-    color: colors.textMuted,
-    fontSize: 14,
-    marginBottom: spacing.sm
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: "800"
+  },
+  divider: {
+    backgroundColor: "#F2E6CA",
+    height: 1
   },
   tileOptions: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.md,
+    justifyContent: "space-between"
   },
   tileOption: {
     alignItems: "center",
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radii.md,
+    borderColor: "#EFE3D2",
+    borderRadius: 16,
     borderWidth: 1,
     justifyContent: "center",
-    minWidth: 64,
-    padding: spacing.md
+    minHeight: 62,
+    width: "21%"
   },
   tileOptionText: {
     color: colors.text,
+    fontSize: 17,
+    fontWeight: "700",
     textAlign: "center"
   },
   selectedTile: {
     borderColor: colors.warning,
-    backgroundColor: colors.warning
+    backgroundColor: "#FFD338"
   },
   selectedTileText: {
-    color: colors.surface,
+    color: colors.text,
     fontWeight: "800"
   },
   avatarOptions: {
     flexDirection: "row",
-    flexWrap: "wrap",
-    gap: spacing.sm
+    gap: spacing.sm,
+    justifyContent: "space-between"
   },
   avatarOption: {
     alignItems: "center",
@@ -263,20 +368,20 @@ const styles = StyleSheet.create({
     width: 48
   },
   selectedAvatar: {
-    borderColor: colors.primary,
+    borderColor: colors.warning,
     borderWidth: 2
   },
   photoBox: {
     alignItems: "center",
-    backgroundColor: "#FFFBEB",
-    borderColor: colors.warning,
-    borderRadius: radii.lg,
+    backgroundColor: colors.surface,
+    borderColor: "#F3D36D",
+    borderRadius: 26,
     borderStyle: "dashed",
-    borderWidth: 1,
-    gap: spacing.sm,
+    borderWidth: 2,
+    gap: spacing.md,
     justifyContent: "center",
-    minHeight: 168,
-    padding: spacing.md
+    minHeight: 190,
+    padding: spacing.lg
   },
   photoPreview: {
     aspectRatio: 1,
@@ -284,26 +389,47 @@ const styles = StyleSheet.create({
     width: 112
   },
   photoIcon: {
-    color: colors.warning,
-    fontSize: 18,
+    fontSize: 44,
     fontWeight: "800"
   },
   photoText: {
     color: colors.text,
+    fontSize: 17,
     fontWeight: "700",
+    lineHeight: 26,
     textAlign: "center"
   },
-  photoActions: {
-    gap: spacing.sm,
-    width: "100%"
+  galleryLink: {
+    alignSelf: "center",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.xs
+  },
+  galleryLinkText: {
+    color: colors.primaryDark,
+    fontWeight: "800"
   },
   errorText: {
     color: colors.warning,
     fontSize: 13,
     marginTop: spacing.sm
   },
-  actions: {
-    gap: spacing.sm,
-    marginTop: "auto"
+  saveButton: {
+    alignItems: "center",
+    backgroundColor: "#FFC20E",
+    borderRadius: radii.pill,
+    justifyContent: "center",
+    minHeight: 78,
+    shadowColor: colors.warningDark,
+    shadowOffset: { height: 8, width: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14
+  },
+  disabledButton: {
+    opacity: 0.45
+  },
+  saveButtonText: {
+    color: colors.surface,
+    fontSize: 22,
+    fontWeight: "800"
   }
 });

@@ -13,20 +13,26 @@ export const strings = {
     continueButton: "Kontynuuj"
   },
   addGoal: {
-    title: "Nowy cel",
-    childNamePlaceholder: "Imię dziecka",
-    rewardNamePlaceholder: "Nazwa nagrody",
+    title: "Dodaj nowy cel",
+    editTitle: "Edytuj cel",
+    childNamePlaceholder: "Np. Kuba",
+    rewardNamePlaceholder: "Np. Hulajnoga, Zabawka, Wyjście do kina",
     tileCountLabel: "Liczba kafelków",
     photoStepLabel: "1. Zdjęcie nagrody",
-    photoPlaceholder: "Zrób zdjęcie lub wybierz z galerii",
-    photoEmptyLabel: "Zdjęcie",
+    rewardStepLabel: "2. Nazwa nagrody",
+    taskStepLabel: "3. Liczba zadań",
+    avatarStepLabel: "4. Wybierz awatar",
+    childStepLabel: "5. Imię dziecka",
+    photoPlaceholder: "Zrób zdjęcie\nlub wybierz z galerii",
+    photoEmptyLabel: "📷",
     cameraButton: "Zrób zdjęcie",
     galleryButton: "Wybierz z galerii",
     cameraPermissionDenied: "Aparat wymaga zgody w ustawieniach telefonu.",
     galleryPermissionDenied: "Galeria wymaga zgody w ustawieniach telefonu.",
     imagePickerError: "Nie udało się wybrać zdjęcia. Spróbuj ponownie.",
-    avatarLabel: "Wybierz avatar",
-    saveButton: "Zapisz cel",
+    avatarLabel: "Wybierz awatar",
+    saveButton: "Zapisz cel ✓",
+    updateButton: "Zapisz zmiany ✓",
     backButton: "Wróć"
   },
   child: {
@@ -39,7 +45,8 @@ export const strings = {
     completedBody: "Nagroda jest odkryta. Czas świętować!",
     completeButton: "Nagroda gotowa",
     approveTaskButton: "Zatwierdź zadanie",
-    backToParentButton: "Wróć do rodzica"
+    backToParentButton: "Wróć do rodzica",
+    soundButton: "Dźwięk"
   },
   approveTask: {
     title: "Zatwierdź zadanie",
@@ -56,8 +63,8 @@ export const strings = {
     backButton: "Wróć"
   },
   goals: {
-    greeting: "Cześć!",
-    title: "Cele i postępy",
+    greeting: "Cześć, Mamo! 👋",
+    title: "Twoje cele",
     subtitle: "Twoje nagrody",
     settingsButton: "Ustawienia",
     emptyTitle: "Brak celów",
@@ -68,20 +75,35 @@ export const strings = {
       `Darmowa wersja pozwala mieć ${goalLimit} aktywne cele. Włącz Premium w ustawieniach, żeby dodać więcej.`,
     freeLimitButton: "Otwórz ustawienia",
     completedBadge: "Ukończone",
+    editButton: "Edytuj",
     deleteButton: "Usuń",
     deleteTitle: "Usunąć cel?",
     deleteMeta: (rewardName: string) => `Cel "${rewardName}" i jego postęp zostaną usunięte z tego telefonu.`,
     thumbnailLabel: (rewardName: string) => `Zdjęcie nagrody: ${rewardName}`,
     cardProgress: (childName: string, completedTasks: number, totalTasks: number) =>
-      `${childName} - ${completedTasks}/${totalTasks}`
+      `${childName} - ${completedTasks}/${totalTasks}`,
+    tasksTotal: (totalTasks: number) => ` / ${totalTasks} ${getPolishTaskLabel(totalTasks)}`
+  },
+  navigation: {
+    goals: "Cele",
+    add: "Dodaj",
+    child: "Dziecko",
+    settings: "Ustawienia"
   },
   settings: {
     title: "Ustawienia",
+    dailyReminderTitle: "Codzienne przypomnienie",
     premiumTitle: "Premium",
     premiumMeta: "Reklamy będą tylko w widoku rodzica",
+    premiumVersionTitle: "Wersja Premium",
+    premiumVersionMeta: "Odblokuj wszystkie awatary, nielimitowane cele i usuń reklamy.",
+    premiumUpgradeButton: "◇  Przejdź na Premium",
+    aboutApp: "O aplikacji",
     notificationTitle: "Powiadomienie",
     notificationMeta: "Codzienna godzina przypomnienia",
     notificationTimePlaceholder: "HH:MM",
+    notificationTimePickerTitle: "Wybierz godzinę",
+    notificationTimePickerClose: "Gotowe",
     notificationTimeError: "Wpisz godzinę w formacie HH:MM.",
     parentPinTitle: "PIN rodzica",
     parentPinMeta: "4 cyfry do zatwierdzania zadań",
@@ -149,3 +171,18 @@ export const strings = {
     lime: "Limonka"
   }
 } as const;
+
+function getPolishTaskLabel(count: number): string {
+  const lastDigit = count % 10;
+  const lastTwoDigits = count % 100;
+
+  if (count === 1) {
+    return "zadanie";
+  }
+
+  if (lastDigit >= 2 && lastDigit <= 4 && (lastTwoDigits < 12 || lastTwoDigits > 14)) {
+    return "zadania";
+  }
+
+  return "zadań";
+}

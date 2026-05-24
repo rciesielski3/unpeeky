@@ -1,8 +1,6 @@
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
+import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
-import { Button } from "../components/Button";
-import { PremiumCard } from "../components/PremiumCard";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -17,12 +15,16 @@ type SettingsScreenProps = {
 };
 
 const MODE_OPTIONS: AppMode[] = ["singleDevice", "twoDevices"];
+const HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => hour);
+const MINUTE_OPTIONS = [0, 15, 30, 45];
 
-export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, settings }: SettingsScreenProps) {
+export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: SettingsScreenProps) {
   const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);
   const [parentPinDraft, setParentPinDraft] = useState(settings.parentPin);
   const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
-  const isNotificationTimeValid = parseNotificationTime(notificationTimeDraft) !== null;
+  const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
+  const isReminderEnabled = notificationTimeDraft.trim().length > 0;
+  const isNotificationTimeValid = !isReminderEnabled || parseNotificationTime(notificationTimeDraft) !== null;
   const isParentPinValid = validateParentPin(parentPinDraft);
 
   useEffect(() => {
@@ -40,17 +42,46 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
     });
   }
 
-  async function handleNotificationTimeBlur() {
-    if (isNotificationTimeValid) {
-      updateSettings({ notificationTime: notificationTimeDraft });
-      const scheduleResult = await scheduleDaily(notificationTimeDraft);
-
-      setNotificationMessage(getNotificationMessage(scheduleResult));
+  async function handleReminderToggle(isEnabled: boolean) {
+    if (!isEnabled) {
+      setNotificationTimeDraft("");
+      updateSettings({ notificationTime: "" });
+      setNotificationMessage(null);
       return;
     }
 
-    setNotificationTimeDraft(settings.notificationTime);
-    setNotificationMessage(null);
+    const notificationTime = settings.notificationTime || "18:30";
+
+    setNotificationTimeDraft(notificationTime);
+    setIsTimePickerOpen(true);
+    void saveNotificationTime(notificationTime);
+  }
+
+  async function saveNotificationTime(notificationTime: string) {
+    if (!parseNotificationTime(notificationTime)) {
+      return;
+    }
+
+    updateSettings({ notificationTime });
+    const scheduleResult = await scheduleDaily(notificationTime);
+
+    setNotificationMessage(getNotificationMessage(scheduleResult));
+  }
+
+  function handleChangeNotificationTime(hour: number, minute: number) {
+    const notificationTime = `${formatTimePart(hour)}:${formatTimePart(minute)}`;
+
+    setNotificationTimeDraft(notificationTime);
+    void saveNotificationTime(notificationTime);
+  }
+
+  function handleOpenTimePicker() {
+    if (!isReminderEnabled) {
+      setNotificationTimeDraft(settings.notificationTime || "18:30");
+      void saveNotificationTime(settings.notificationTime || "18:30");
+    }
+
+    setIsTimePickerOpen(true);
   }
 
   function handleParentPinBlur() {
@@ -89,52 +120,59 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
 
   return (
     <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.container}>
-      <Text style={styles.title}>{strings.settings.title}</Text>
-
-      <PremiumCard isPremium={settings.isPremium} onPress={() => updateSettings({ isPremium: !settings.isPremium })} />
-
-      <View style={styles.row}>
-        <View>
-          <Text style={styles.rowTitle}>{strings.settings.notificationTitle}</Text>
-          <Text style={styles.rowMeta}>{strings.settings.notificationMeta}</Text>
-        </View>
-        <TextInput
-          keyboardType="numbers-and-punctuation"
-          maxLength={5}
-          onBlur={() => void handleNotificationTimeBlur()}
-          onChangeText={(text) => {
-            setNotificationTimeDraft(text);
-            setNotificationMessage(null);
-          }}
-          placeholder={strings.settings.notificationTimePlaceholder}
-          style={[styles.timeInput, !isNotificationTimeValid && styles.invalidTimeInput]}
-          value={notificationTimeDraft}
-        />
+      <View style={styles.hero}>
+        <Text style={styles.title}>{strings.settings.title}</Text>
       </View>
-      {!isNotificationTimeValid ? <Text style={styles.errorText}>{strings.settings.notificationTimeError}</Text> : null}
-      {notificationMessage ? <Text style={styles.statusText}>{notificationMessage}</Text> : null}
 
-      <View style={styles.row}>
-        <View>
-          <Text style={styles.rowTitle}>{strings.settings.parentPinTitle}</Text>
-          <Text style={styles.rowMeta}>{strings.settings.parentPinMeta}</Text>
+      <View style={styles.card}>
+        <View style={styles.settingLine}>
+          <Text style={styles.settingIcon}>🔔</Text>
+          <Text style={styles.lineTitle}>{strings.settings.dailyReminderTitle}</Text>
+          <Switch
+            onValueChange={(isEnabled) => void handleReminderToggle(isEnabled)}
+            style={styles.notificationSwitch}
+            thumbColor={colors.surface}
+            trackColor={{ false: colors.border, true: colors.accent }}
+            value={isReminderEnabled}
+          />
         </View>
-        <View style={styles.pinControls}>
+        <View style={styles.divider} />
+        <Pressable accessibilityRole="button" onPress={handleOpenTimePicker} style={styles.settingLine}>
+          <Text style={styles.settingIcon}>◷</Text>
+          <Text style={[styles.timeValue, !isNotificationTimeValid && styles.invalidTimeText]}>
+            {notificationTimeDraft || strings.settings.notificationTimePlaceholder}
+          </Text>
+          <Text style={styles.chevron}>›</Text>
+        </Pressable>
+        {!isNotificationTimeValid ? (
+          <Text style={styles.errorText}>{strings.settings.notificationTimeError}</Text>
+        ) : null}
+        {notificationMessage ? <Text style={styles.statusText}>{notificationMessage}</Text> : null}
+      </View>
+
+      <View style={styles.card}>
+        <View style={styles.settingLine}>
+          <View>
+            <Text style={styles.rowTitle}>{strings.settings.parentPinTitle}</Text>
+            <Text style={styles.rowMeta}>{strings.settings.parentPinMeta}</Text>
+          </View>
           <TextInput
             keyboardType="number-pad"
             maxLength={4}
             onBlur={handleParentPinBlur}
             onChangeText={handleParentPinChange}
             placeholder={strings.settings.parentPinPlaceholder}
-            style={[styles.timeInput, !isParentPinValid && styles.invalidTimeInput]}
+            style={[styles.pinInput, !isParentPinValid && styles.invalidTimeInput]}
             value={parentPinDraft}
           />
-          <Button label={strings.settings.generateParentPinButton} onPress={handleGenerateParentPin} variant="ghost" />
         </View>
+        <Pressable accessibilityRole="button" onPress={handleGenerateParentPin} style={styles.textButton}>
+          <Text style={styles.textButtonLabel}>{strings.settings.generateParentPinButton}</Text>
+        </Pressable>
+        {!isParentPinValid ? <Text style={styles.errorText}>{strings.settings.parentPinError}</Text> : null}
       </View>
-      {!isParentPinValid ? <Text style={styles.errorText}>{strings.settings.parentPinError}</Text> : null}
 
-      <View style={styles.resetRow}>
+      <View style={styles.card}>
         <View>
           <Text style={styles.rowTitle}>{strings.settings.appModeTitle}</Text>
           <Text style={styles.rowMeta}>{strings.settings.appModeMeta}</Text>
@@ -159,7 +197,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
         </View>
       </View>
 
-      <View style={styles.resetRow}>
+      <View style={styles.card}>
         <View>
           <Text style={styles.rowTitle}>{strings.settings.tileColorTitle}</Text>
           <Text style={styles.rowMeta}>{strings.settings.tileColorMeta}</Text>
@@ -185,15 +223,42 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
         </View>
       </View>
 
-      <View style={styles.resetRow}>
-        <View style={styles.resetCopy}>
-          <Text style={styles.rowTitle}>{strings.settings.resetTitle}</Text>
-          <Text style={styles.rowMeta}>{strings.settings.resetMeta}</Text>
-        </View>
-        <Button label={strings.settings.resetButton} onPress={onResetGoals} variant="ghost" />
+      <View pointerEvents="none" style={styles.bearScene}>
+        <Text style={styles.cloudLeft}>☁</Text>
+        <Text style={styles.cloudRight}>☁</Text>
+        <Text style={styles.flowerLeft}>✿</Text>
+        <Text style={styles.flowerRight}>✿</Text>
+        <Text style={styles.bear}>🐻</Text>
       </View>
 
-      <Button label={strings.settings.backButton} onPress={onBack} variant="ghost" />
+      <View style={styles.card}>
+        <View style={styles.premiumHeader}>
+          <Text style={styles.settingIcon}>👑</Text>
+          <View style={styles.premiumCopy}>
+            <Text style={styles.rowTitle}>{strings.settings.premiumVersionTitle}</Text>
+            <Text style={styles.rowMeta}>{strings.settings.premiumVersionMeta}</Text>
+          </View>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: settings.isPremium }}
+          onPress={() => updateSettings({ isPremium: !settings.isPremium })}
+          style={styles.premiumButton}
+        >
+          <Text style={styles.premiumButtonText}>{strings.settings.premiumUpgradeButton}</Text>
+        </Pressable>
+        <View style={styles.divider} />
+        <SettingsAction icon="▢" label={strings.settings.resetTitle} onPress={onResetGoals} />
+        <View style={styles.divider} />
+        <SettingsAction icon="ⓘ" label={strings.settings.aboutApp} />
+      </View>
+
+      <TimePickerModal
+        notificationTime={notificationTimeDraft || "18:30"}
+        onClose={() => setIsTimePickerOpen(false)}
+        onSelect={handleChangeNotificationTime}
+        visible={isTimePickerOpen}
+      />
     </ScrollView>
   );
 }
@@ -206,46 +271,89 @@ const styles = StyleSheet.create({
     backgroundColor: colors.settingsBackground,
     flexGrow: 1,
     gap: spacing.lg,
-    padding: spacing.lg
+    paddingBottom: spacing.xl,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.xl
+  },
+  hero: {
+    alignItems: "center",
+    flexDirection: "row",
+    justifyContent: "flex-start",
+    minHeight: 96
   },
   title: {
     color: colors.text,
     fontFamily: fonts.heading,
-    fontSize: 24,
-    fontWeight: "800",
-    textAlign: "center"
+    fontSize: 34,
+    fontWeight: "800"
   },
-  row: {
+  card: {
+    backgroundColor: colors.surface,
+    borderRadius: 24,
+    gap: spacing.lg,
+    padding: spacing.xl,
+    shadowColor: colors.accentDark,
+    shadowOffset: { height: 10, width: 0 },
+    shadowOpacity: 0.08,
+    shadowRadius: 22
+  },
+  settingLine: {
     alignItems: "center",
     backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radii.lg,
-    borderWidth: 1,
     flexDirection: "row",
-    justifyContent: "space-between",
-    padding: spacing.lg
+    gap: spacing.md,
+    justifyContent: "space-between"
+  },
+  settingIcon: {
+    color: colors.accentDark,
+    fontSize: 28,
+    width: 38
+  },
+  lineTitle: {
+    color: colors.text,
+    flex: 1,
+    fontSize: 18,
+    fontWeight: "700"
+  },
+  notificationSwitch: {
+    transform: [{ scaleX: 1.18 }, { scaleY: 1.18 }]
+  },
+  divider: {
+    backgroundColor: colors.border,
+    height: 1
   },
   rowTitle: {
     color: colors.text,
-    fontSize: 16,
-    fontWeight: "700"
+    fontSize: 20,
+    fontWeight: "800"
   },
   rowMeta: {
     color: colors.textMuted,
-    fontSize: 13,
+    fontSize: 15,
+    lineHeight: 22,
     marginTop: spacing.xs
   },
-  timeInput: {
+  timeValue: {
+    color: colors.text,
+    flex: 1,
+    fontSize: 26,
+    fontWeight: "800",
+    paddingVertical: spacing.xs
+  },
+  invalidTimeText: {
+    color: colors.warningDark
+  },
+  pinInput: {
     backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
-    borderRadius: radii.md,
+    borderRadius: 18,
     borderWidth: 1,
     color: colors.text,
-    fontSize: 16,
-    fontWeight: "700",
-    minWidth: 92,
-    paddingHorizontal: spacing.md,
-    paddingVertical: spacing.sm,
+    fontSize: 22,
+    fontWeight: "800",
+    minWidth: 122,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md,
     textAlign: "center"
   },
   invalidTimeInput: {
@@ -261,8 +369,49 @@ const styles = StyleSheet.create({
     fontSize: 13,
     marginTop: -spacing.sm
   },
-  pinControls: {
-    gap: spacing.sm
+  chevron: {
+    color: colors.textMuted,
+    fontSize: 38,
+    lineHeight: 42
+  },
+  premiumHeader: {
+    alignItems: "flex-start",
+    flexDirection: "row",
+    gap: spacing.md
+  },
+  premiumCopy: {
+    flex: 1
+  },
+  premiumButton: {
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: colors.accent,
+    borderRadius: radii.pill,
+    justifyContent: "center",
+    minHeight: 58,
+    paddingHorizontal: spacing.xl,
+    shadowColor: colors.accentDark,
+    shadowOffset: { height: 7, width: 0 },
+    shadowOpacity: 0.2,
+    shadowRadius: 14,
+    width: "86%"
+  },
+  premiumButtonText: {
+    color: colors.surface,
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  actionLine: {
+    alignItems: "center",
+    flexDirection: "row",
+    gap: spacing.md,
+    minHeight: 46
+  },
+  actionLabel: {
+    color: colors.text,
+    flex: 1,
+    fontSize: 17,
+    fontWeight: "600"
   },
   modeOptions: {
     gap: spacing.sm
@@ -286,7 +435,7 @@ const styles = StyleSheet.create({
     width: "22.5%"
   },
   selectedTileColorOption: {
-    borderColor: colors.primary
+    borderColor: colors.accent
   },
   tileColorSwatch: {
     borderColor: colors.surface,
@@ -309,8 +458,8 @@ const styles = StyleSheet.create({
     padding: spacing.md
   },
   selectedModeOption: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary
+    backgroundColor: colors.accent,
+    borderColor: colors.accent
   },
   modeTitle: {
     color: colors.text,
@@ -327,18 +476,208 @@ const styles = StyleSheet.create({
   selectedModeMeta: {
     color: colors.surfaceMuted
   },
-  resetRow: {
-    backgroundColor: colors.surface,
-    borderColor: colors.border,
-    borderRadius: radii.lg,
-    borderWidth: 1,
-    gap: spacing.md,
+  textButton: {
+    alignSelf: "flex-end",
+    paddingHorizontal: spacing.sm,
+    paddingVertical: spacing.xs
+  },
+  textButtonLabel: {
+    color: colors.primaryDark,
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  bearScene: {
+    alignItems: "center",
+    minHeight: 220,
+    overflow: "hidden"
+  },
+  bear: {
+    fontSize: 128,
+    marginTop: spacing.xl
+  },
+  cloudLeft: {
+    color: colors.surface,
+    fontSize: 62,
+    left: 36,
+    position: "absolute",
+    top: 44
+  },
+  cloudRight: {
+    color: colors.surface,
+    fontSize: 62,
+    position: "absolute",
+    right: 28,
+    top: 54
+  },
+  flowerLeft: {
+    color: colors.accent,
+    fontSize: 42,
+    left: 12,
+    position: "absolute",
+    top: 130
+  },
+  flowerRight: {
+    color: colors.warning,
+    fontSize: 38,
+    position: "absolute",
+    right: 28,
+    top: 136
+  },
+  modalOverlay: {
+    alignItems: "center",
+    backgroundColor: "rgba(16, 24, 40, 0.28)",
+    flex: 1,
+    justifyContent: "center",
     padding: spacing.lg
   },
-  resetCopy: {
-    gap: spacing.xs
+  timePickerCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.lg,
+    maxHeight: "78%",
+    padding: spacing.xl,
+    shadowColor: colors.accentDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    width: "100%"
+  },
+  timePickerTitle: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  timePickerColumns: {
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "center",
+    minHeight: 260
+  },
+  timePickerColumn: {
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radii.md,
+    flex: 1
+  },
+  timePickerOptions: {
+    gap: spacing.sm,
+    padding: spacing.sm
+  },
+  timePickerOption: {
+    alignItems: "center",
+    borderRadius: radii.md,
+    minHeight: 48,
+    justifyContent: "center"
+  },
+  selectedTimePickerOption: {
+    backgroundColor: colors.accent
+  },
+  timePickerOptionText: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: "800"
+  },
+  selectedTimePickerText: {
+    color: colors.surface
+  },
+  timeSeparator: {
+    alignSelf: "center",
+    color: colors.text,
+    fontSize: 32,
+    fontWeight: "800"
+  },
+  timePickerDoneButton: {
+    alignItems: "center",
+    backgroundColor: colors.accent,
+    borderRadius: radii.pill,
+    justifyContent: "center",
+    minHeight: 56
+  },
+  timePickerDoneText: {
+    color: colors.surface,
+    fontSize: 18,
+    fontWeight: "800"
   }
 });
+
+function SettingsAction({ icon, label, onPress }: { icon: string; label: string; onPress?: () => void }) {
+  return (
+    <Pressable accessibilityRole="button" disabled={!onPress} onPress={onPress} style={styles.actionLine}>
+      <Text style={styles.settingIcon}>{icon}</Text>
+      <Text style={styles.actionLabel}>{label}</Text>
+      <Text style={styles.chevron}>›</Text>
+    </Pressable>
+  );
+}
+
+function TimePickerModal({
+  notificationTime,
+  onClose,
+  onSelect,
+  visible
+}: {
+  notificationTime: string;
+  onClose: () => void;
+  onSelect: (hour: number, minute: number) => void;
+  visible: boolean;
+}) {
+  const parsedTime = parseNotificationTime(notificationTime) ?? { hour: 18, minute: 30 };
+
+  return (
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.timePickerCard}>
+          <Text style={styles.timePickerTitle}>{strings.settings.notificationTimePickerTitle}</Text>
+          <View style={styles.timePickerColumns}>
+            <ScrollView contentContainerStyle={styles.timePickerOptions} style={styles.timePickerColumn}>
+              {HOUR_OPTIONS.map((hour) => {
+                const isSelected = parsedTime.hour === hour;
+
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
+                    key={hour}
+                    onPress={() => onSelect(hour, parsedTime.minute)}
+                    style={[styles.timePickerOption, isSelected && styles.selectedTimePickerOption]}
+                  >
+                    <Text style={[styles.timePickerOptionText, isSelected && styles.selectedTimePickerText]}>
+                      {formatTimePart(hour)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+            <Text style={styles.timeSeparator}>:</Text>
+            <ScrollView contentContainerStyle={styles.timePickerOptions} style={styles.timePickerColumn}>
+              {MINUTE_OPTIONS.map((minute) => {
+                const isSelected = parsedTime.minute === minute;
+
+                return (
+                  <Pressable
+                    accessibilityRole="button"
+                    accessibilityState={{ selected: isSelected }}
+                    key={minute}
+                    onPress={() => onSelect(parsedTime.hour, minute)}
+                    style={[styles.timePickerOption, isSelected && styles.selectedTimePickerOption]}
+                  >
+                    <Text style={[styles.timePickerOptionText, isSelected && styles.selectedTimePickerText]}>
+                      {formatTimePart(minute)}
+                    </Text>
+                  </Pressable>
+                );
+              })}
+            </ScrollView>
+          </View>
+          <Pressable accessibilityRole="button" onPress={onClose} style={styles.timePickerDoneButton}>
+            <Text style={styles.timePickerDoneText}>{strings.settings.notificationTimePickerClose}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
 
 function getModeTitle(appMode: AppMode): string {
   return appMode === "singleDevice" ? strings.settings.appModeSingleDevice : strings.settings.appModeTwoDevices;
@@ -358,4 +697,8 @@ function getNotificationMessage(scheduleResult: Awaited<ReturnType<typeof schedu
   }
 
   return strings.settings.notificationError;
+}
+
+function formatTimePart(timePart: number): string {
+  return `${timePart}`.padStart(2, "0");
 }

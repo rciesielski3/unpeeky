@@ -3,13 +3,14 @@ import { StyleSheet, View } from "react-native";
 import { colors } from "../ui/theme";
 
 type ProgressBarProps = {
+  color?: string;
   progress: number;
 };
 
-export function ProgressBar({ progress }: ProgressBarProps) {
+export function ProgressBar({ color = colors.accent, progress }: ProgressBarProps) {
   return (
     <View style={styles.track}>
-      <View style={[styles.fill, { width: `${Math.min(1, Math.max(0, progress)) * 100}%` }]} />
+      <View style={[styles.fill, { backgroundColor: color, width: `${Math.min(1, Math.max(0, progress)) * 100}%` }]} />
     </View>
   );
 }
