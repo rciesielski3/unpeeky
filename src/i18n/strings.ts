@@ -56,6 +56,7 @@ export const strings = {
     backButton: "Wróć"
   },
   goals: {
+    greeting: "Cześć!",
     title: "Cele i postępy",
     subtitle: "Twoje nagrody",
     settingsButton: "Ustawienia",

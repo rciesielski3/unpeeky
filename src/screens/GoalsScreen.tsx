@@ -7,7 +7,7 @@ import { ProgressBar } from "../components/ProgressBar";
 import { FREE_GOAL_LIMIT, getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, fonts, spacing } from "../ui/theme";
+import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type GoalsScreenProps = {
   goals: Goal[];
@@ -35,6 +35,7 @@ export function GoalsScreen({
       <View style={styles.header}>
         <View style={styles.headerSide} />
         <View style={styles.headerCopy}>
+          <Text style={styles.hello}>{strings.goals.greeting}</Text>
           <Text style={styles.title}>{strings.goals.title}</Text>
           <Text style={styles.subtitle}>{strings.goals.subtitle}</Text>
         </View>
@@ -109,6 +110,7 @@ export function GoalsScreen({
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
+    backgroundColor: colors.parentBackground,
     padding: spacing.lg
   },
   header: {
@@ -132,8 +134,14 @@ const styles = StyleSheet.create({
   title: {
     color: colors.text,
     fontFamily: fonts.heading,
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "800",
+    textAlign: "center"
+  },
+  hello: {
+    color: colors.text,
+    fontSize: 15,
+    marginBottom: spacing.xs,
     textAlign: "center"
   },
   subtitle: {
@@ -170,10 +178,14 @@ const styles = StyleSheet.create({
   card: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderWidth: 1,
     gap: spacing.sm,
-    padding: spacing.lg
+    padding: spacing.lg,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 8, width: 0 },
+    shadowOpacity: 0.08,
+    shadowRadius: 16
   },
   cardContent: {
     alignSelf: "stretch",
@@ -190,7 +202,7 @@ const styles = StyleSheet.create({
   },
   thumbnail: {
     backgroundColor: colors.surfaceMuted,
-    borderRadius: 8,
+    borderRadius: radii.md,
     height: 84,
     width: 84
   },
@@ -235,7 +247,7 @@ const styles = StyleSheet.create({
   limitCard: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderWidth: 1,
     gap: spacing.sm,
     padding: spacing.lg

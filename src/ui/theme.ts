@@ -2,22 +2,28 @@ import { Platform } from "react-native";
 
 export const colors = {
   background: "#F8FAFC",
+  parentBackground: "#F1EDFF",
+  addBackground: "#FFF5D8",
+  childBackground: "#EAF5FF",
+  settingsBackground: "#EEF8DF",
   surface: "#FFFFFF",
-  surfaceMuted: "#EEF2FF",
-  primary: "#4F46E5",
-  primaryDark: "#3730A3",
-  accent: "#0F766E",
-  warning: "#D97706",
-  text: "#111827",
-  textMuted: "#6B7280",
-  border: "#D1D5DB",
-  tile: "#6366F1",
-  successSurface: "#ECFDF5",
-  successBorder: "#86EFAC",
-  confettiYellow: "#FACC15",
-  confettiBlue: "#60A5FA",
-  confettiPink: "#F472B6",
-  confettiGreen: "#34D399"
+  surfaceMuted: "#F2F4FF",
+  primary: "#8B5CF6",
+  primaryDark: "#5B35D5",
+  accent: "#7AC943",
+  accentDark: "#4C9F24",
+  warning: "#FFB703",
+  warningDark: "#E67700",
+  text: "#101828",
+  textMuted: "#667085",
+  border: "#E4E7EC",
+  tile: "#C8A7F2",
+  successSurface: "#F0FBE7",
+  successBorder: "#B7E987",
+  confettiYellow: "#FFD43B",
+  confettiBlue: "#74C0FC",
+  confettiPink: "#FAA2C1",
+  confettiGreen: "#8CE99A"
 } as const;
 
 export const spacing = {
@@ -26,6 +32,13 @@ export const spacing = {
   md: 12,
   lg: 16,
   xl: 24
+} as const;
+
+export const radii = {
+  sm: 12,
+  md: 16,
+  lg: 24,
+  pill: 999
 } as const;
 
 export const fonts = {

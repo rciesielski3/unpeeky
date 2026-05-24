@@ -7,7 +7,7 @@ import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OP
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
-import { colors, fonts, spacing } from "../ui/theme";
+import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type SettingsScreenProps = {
   onBack: () => void;
@@ -203,6 +203,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   screen: {
+    backgroundColor: colors.settingsBackground,
     flexGrow: 1,
     gap: spacing.lg,
     padding: spacing.lg
@@ -218,7 +219,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderWidth: 1,
     flexDirection: "row",
     justifyContent: "space-between",
@@ -237,7 +238,7 @@ const styles = StyleSheet.create({
   timeInput: {
     backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.md,
     borderWidth: 1,
     color: colors.text,
     fontSize: 16,
@@ -276,7 +277,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.md,
     borderWidth: 2,
     gap: spacing.xs,
     minWidth: 64,
@@ -302,7 +303,7 @@ const styles = StyleSheet.create({
   modeOption: {
     backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.md,
     borderWidth: 1,
     gap: spacing.xs,
     padding: spacing.md
@@ -329,7 +330,7 @@ const styles = StyleSheet.create({
   resetRow: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderWidth: 1,
     gap: spacing.md,
     padding: spacing.lg

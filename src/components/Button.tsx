@@ -1,6 +1,6 @@
 import { Pressable, StyleSheet, Text } from "react-native";
 
-import { colors, spacing } from "../ui/theme";
+import { colors, radii, spacing } from "../ui/theme";
 
 type ButtonVariant = "primary" | "secondary" | "ghost";
 
@@ -27,20 +27,20 @@ export function Button({ label, onPress, variant = "primary", disabled = false }
 const styles = StyleSheet.create({
   button: {
     alignItems: "center",
-    borderRadius: 8,
-    minHeight: 44,
+    borderRadius: radii.lg,
+    minHeight: 56,
     justifyContent: "center",
     paddingHorizontal: spacing.lg,
-    paddingVertical: spacing.sm
+    paddingVertical: spacing.md
   },
   primary: {
     backgroundColor: colors.primary
   },
   secondary: {
-    backgroundColor: colors.accent
+    backgroundColor: colors.warning
   },
   ghost: {
-    backgroundColor: colors.surfaceMuted
+    backgroundColor: colors.surface
   },
   label: {
     color: colors.surface,
