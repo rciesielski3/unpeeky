@@ -192,14 +192,18 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
           <View style={styles.section}>
             <Text style={styles.label}>{strings.addGoal.avatarStepLabel}</Text>
             <View style={styles.avatarOptions}>
-              {AVATARS.slice(0, 6).map((avatar) => (
+              {AVATARS.slice(0, 6).map((avatar, index) => (
                 <Pressable
                   accessibilityLabel={strings.avatars[avatar.labelKey]}
                   accessibilityRole="button"
                   accessibilityState={{ selected: avatar.id === avatarId }}
                   key={avatar.id}
                   onPress={() => setAvatarId(avatar.id)}
-                  style={[styles.avatarOption, avatar.id === avatarId && styles.selectedAvatar]}
+                  style={[
+                    styles.avatarOption,
+                    { backgroundColor: getAvatarOptionBackground(index) },
+                    avatar.id === avatarId && styles.selectedAvatar
+                  ]}
                 >
                   <AvatarBadge avatarId={avatar.id} size="sm" />
                 </Pressable>
@@ -244,7 +248,7 @@ const styles = StyleSheet.create({
   screen: {
     backgroundColor: colors.addBackground,
     flexGrow: 1,
-    gap: spacing.lg,
+    gap: spacing.sm,
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl
@@ -294,15 +298,15 @@ const styles = StyleSheet.create({
   formCard: {
     backgroundColor: colors.surface,
     borderRadius: 26,
-    gap: spacing.xl,
-    padding: spacing.xl,
+    gap: spacing.lg,
+    padding: spacing.lg,
     shadowColor: colors.warningDark,
     shadowOffset: { height: 12, width: 0 },
     shadowOpacity: 0.08,
     shadowRadius: 22
   },
   section: {
-    gap: spacing.sm
+    gap: spacing.xs
   },
   input: {
     backgroundColor: colors.surface,
@@ -315,7 +319,7 @@ const styles = StyleSheet.create({
   },
   label: {
     color: colors.text,
-    fontSize: 17,
+    fontSize: 15,
     fontWeight: "800"
   },
   divider: {
@@ -325,7 +329,7 @@ const styles = StyleSheet.create({
   tileOptions: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.md,
+    gap: spacing.sm,
     justifyContent: "space-between"
   },
   tileOption: {
@@ -335,8 +339,8 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     justifyContent: "center",
-    minHeight: 62,
-    width: "21%"
+    minHeight: 54,
+    width: "22%"
   },
   tileOptionText: {
     color: colors.text,
@@ -359,13 +363,12 @@ const styles = StyleSheet.create({
   },
   avatarOption: {
     alignItems: "center",
-    backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
     borderRadius: 999,
-    borderWidth: 1,
-    height: 48,
+    borderWidth: 2,
+    height: 50,
     justifyContent: "center",
-    width: 48
+    width: 50
   },
   selectedAvatar: {
     borderColor: colors.warning,
@@ -418,18 +421,24 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFC20E",
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 78,
+    minHeight: 60,
     shadowColor: colors.warningDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.2,
     shadowRadius: 14
   },
   disabledButton: {
-    opacity: 0.45
+    backgroundColor: "#FFE38A"
   },
   saveButtonText: {
-    color: colors.surface,
-    fontSize: 22,
+    color: colors.text,
+    fontSize: 18,
     fontWeight: "800"
   }
 });
+
+function getAvatarOptionBackground(index: number): string {
+  const backgrounds = ["#E7F8D9", "#EEF0FF", "#F0E4FF", "#FFF0D7", "#FFF5C8", "#F1E8FF"] as const;
+
+  return backgrounds[index % backgrounds.length] ?? colors.surfaceMuted;
+}

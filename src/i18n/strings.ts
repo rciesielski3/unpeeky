@@ -63,7 +63,7 @@ export const strings = {
     backButton: "Wróć"
   },
   goals: {
-    greeting: "Cześć, Mamo! 👋",
+    greeting: "Cześć, Rodzicu! 👋",
     title: "Twoje cele",
     subtitle: "Twoje nagrody",
     settingsButton: "Ustawienia",
@@ -99,6 +99,11 @@ export const strings = {
     premiumVersionMeta: "Odblokuj wszystkie awatary, nielimitowane cele i usuń reklamy.",
     premiumUpgradeButton: "◇  Przejdź na Premium",
     aboutApp: "O aplikacji",
+    aboutTitle: "O Unpeeky",
+    aboutBody:
+      "Unpeeky pomaga rodzicom motywować dzieci małymi krokami. Zdjęcie nagrody odkrywa się kafelek po kafelku po zatwierdzonych zadaniach.",
+    aboutOwner: "Owner: Adateo, Rafał Ciesielski",
+    aboutClose: "Zamknij",
     notificationTitle: "Powiadomienie",
     notificationMeta: "Codzienna godzina przypomnienia",
     notificationTimePlaceholder: "HH:MM",

@@ -414,7 +414,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
     justifyContent: "center",
-    minHeight: 74,
+    minHeight: 60,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 10, width: 0 },
     shadowOpacity: 0.18,
@@ -425,13 +425,13 @@ const styles = StyleSheet.create({
   },
   addIcon: {
     color: colors.surface,
-    fontSize: 42,
+    fontSize: 30,
     fontWeight: "300",
-    lineHeight: 46
+    lineHeight: 34
   },
   addButtonText: {
     color: colors.surface,
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "800"
   },
   limitCard: {
