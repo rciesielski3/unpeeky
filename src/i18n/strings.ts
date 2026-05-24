@@ -102,7 +102,7 @@ export const strings = {
     aboutTitle: "O Unpeeky",
     aboutBody:
       "Unpeeky pomaga rodzicom motywować dzieci małymi krokami. Zdjęcie nagrody odkrywa się kafelek po kafelku po zatwierdzonych zadaniach.",
-    aboutOwner: "Owner: Adateo, Rafał Ciesielski",
+    aboutOwner: "Właściciel: Adateo, Rafał Ciesielski",
     aboutClose: "Zamknij",
     notificationTitle: "Powiadomienie",
     notificationMeta: "Codzienna godzina przypomnienia",

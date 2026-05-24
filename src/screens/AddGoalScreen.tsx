@@ -418,7 +418,7 @@ const styles = StyleSheet.create({
   },
   saveButton: {
     alignItems: "center",
-    backgroundColor: "#FFC20E",
+    backgroundColor: colors.ctaWarning,
     borderRadius: radii.pill,
     justifyContent: "center",
     minHeight: 60,
@@ -428,7 +428,7 @@ const styles = StyleSheet.create({
     shadowRadius: 14
   },
   disabledButton: {
-    backgroundColor: "#FFE38A"
+    backgroundColor: colors.ctaWarningDisabled
   },
   saveButtonText: {
     color: colors.text,
@@ -438,7 +438,5 @@ const styles = StyleSheet.create({
 });
 
 function getAvatarOptionBackground(index: number): string {
-  const backgrounds = ["#E7F8D9", "#EEF0FF", "#F0E4FF", "#FFF0D7", "#FFF5C8", "#F1E8FF"] as const;
-
-  return backgrounds[index % backgrounds.length] ?? colors.surfaceMuted;
+  return colors.avatarPastelBackgrounds[index % colors.avatarPastelBackgrounds.length] ?? colors.surfaceMuted;
 }

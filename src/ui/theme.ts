@@ -16,6 +16,8 @@ export const colors = {
   accentDark: "#4C9F24",
   warning: "#FFB703",
   warningDark: "#E67700",
+  ctaWarning: "#FFC20E",
+  ctaWarningDisabled: "#FFE38A",
   text: "#101828",
   textMuted: "#667085",
   border: "#E4E7EC",
@@ -25,7 +27,8 @@ export const colors = {
   confettiYellow: "#FFD43B",
   confettiBlue: "#74C0FC",
   confettiPink: "#FAA2C1",
-  confettiGreen: "#8CE99A"
+  confettiGreen: "#8CE99A",
+  avatarPastelBackgrounds: ["#E7F8D9", "#EEF0FF", "#F0E4FF", "#FFF0D7", "#FFF5C8", "#F1E8FF"]
 } as const;
 
 export const spacing = {
