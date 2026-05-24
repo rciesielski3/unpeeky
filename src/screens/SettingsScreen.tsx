@@ -1,7 +1,8 @@
 import { useEffect, useState } from "react";
-import { Pressable, ScrollView, Switch, StyleSheet, Text, TextInput, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, TextInput, View } from "react-native";
 
 import { Button } from "../components/Button";
+import { PremiumCard } from "../components/PremiumCard";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -90,13 +91,7 @@ export function SettingsScreen({ onBack, onResetGoals, onSettingsChange, setting
     <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.container}>
       <Text style={styles.title}>{strings.settings.title}</Text>
 
-      <View style={styles.row}>
-        <View>
-          <Text style={styles.rowTitle}>{strings.settings.premiumTitle}</Text>
-          <Text style={styles.rowMeta}>{strings.settings.premiumMeta}</Text>
-        </View>
-        <Switch onValueChange={(isPremium) => updateSettings({ isPremium })} value={settings.isPremium} />
-      </View>
+      <PremiumCard isPremium={settings.isPremium} onPress={() => updateSettings({ isPremium: !settings.isPremium })} />
 
       <View style={styles.row}>
         <View>

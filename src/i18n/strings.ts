@@ -112,6 +112,17 @@ export const strings = {
     placeholderTitle: "Baner reklamowy",
     placeholderText: "W tej wersji MVP reklamę może wyświetlać tylko rodzic."
   },
+  premium: {
+    activeBadge: "ON",
+    inactiveBadge: "UP",
+    activeTitle: "Premium aktywny",
+    activeMeta: "Limit celów i reklamy są wyłączone.",
+    inactiveTitle: "Premium",
+    inactiveMeta: "Odblokuj nielimitowane cele i ukryj reklamy w widoku rodzica.",
+    benefits: ["Nielimitowane cele", "Bez reklam", "Wsparcie rozwoju aplikacji"],
+    price: "9 zł",
+    priceMeta: "jednorazowo"
+  },
   avatars: {
     dino: "Dino",
     unicorn: "Jednorożec",
