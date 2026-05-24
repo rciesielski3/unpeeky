@@ -2,7 +2,7 @@ import { normalizeRevealOrder, shuffleTileIds } from "./tiles";
 import { DEFAULT_AVATAR_ID, getAvatar } from "./avatar";
 import type { AvatarId } from "./avatar";
 
-export const TILE_OPTIONS = [9, 16, 25, 36] as const;
+export const TILE_OPTIONS = [8, 12, 16, 20, 24, 28, 32, 36] as const;
 export const DEFAULT_TILE_COUNT = 16;
 export const FREE_GOAL_LIMIT = 2;
 export const TILE_COLOR_OPTIONS = [
