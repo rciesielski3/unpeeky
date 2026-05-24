@@ -42,9 +42,13 @@ export function AvatarBadge({ avatarId, size = "md" }: AvatarBadgeProps) {
 const styles = StyleSheet.create({
   badge: {
     alignItems: "center",
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: colors.surface,
     borderColor: colors.surface,
     borderRadius: 999,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 4, width: 0 },
+    shadowOpacity: 0.12,
+    shadowRadius: 10,
     justifyContent: "center"
   },
   emoji: {

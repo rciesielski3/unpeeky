@@ -4,7 +4,7 @@ import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-na
 
 import { DEFAULT_TILE_COUNT } from "../domain/goal";
 import { createTileIds, getRevealedTileIds, getTileGridLayout } from "../domain/tiles";
-import { colors } from "../ui/theme";
+import { colors, radii } from "../ui/theme";
 
 type TileGridProps = {
   imageUri: string;
@@ -84,12 +84,14 @@ const styles = StyleSheet.create({
   image: {
     aspectRatio: 1,
     backgroundColor: colors.surfaceMuted,
-    borderRadius: 8,
+    borderColor: colors.surface,
+    borderRadius: radii.lg,
+    borderWidth: 4,
     overflow: "hidden",
     width: "100%"
   },
   imageRadius: {
-    borderRadius: 8
+    borderRadius: radii.lg
   },
   grid: {
     flex: 1,

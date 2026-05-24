@@ -7,7 +7,7 @@ import { ProgressBar } from "../components/ProgressBar";
 import { getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, fonts, spacing } from "../ui/theme";
+import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ApproveTaskScreenProps = {
   goal: Goal;
@@ -25,7 +25,7 @@ export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      behavior={Platform.OS === "ios" ? "padding" : undefined}
       keyboardVerticalOffset={spacing.lg}
       style={styles.container}
     >
@@ -100,6 +100,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   screen: {
+    backgroundColor: colors.parentBackground,
     flexGrow: 1,
     gap: spacing.lg,
     padding: spacing.lg
@@ -121,7 +122,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderWidth: 1,
     flexDirection: "row",
     gap: spacing.md,
@@ -129,7 +130,7 @@ const styles = StyleSheet.create({
   },
   thumbnail: {
     backgroundColor: colors.surfaceMuted,
-    borderRadius: 8,
+    borderRadius: radii.md,
     height: 96,
     width: 96
   },
@@ -154,7 +155,7 @@ const styles = StyleSheet.create({
   progressBlock: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderWidth: 1,
     gap: spacing.sm,
     padding: spacing.lg
@@ -171,7 +172,7 @@ const styles = StyleSheet.create({
   pinBlock: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderWidth: 1,
     gap: spacing.sm,
     padding: spacing.lg
@@ -189,7 +190,7 @@ const styles = StyleSheet.create({
   pinInput: {
     backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.md,
     borderWidth: 1,
     color: colors.text,
     fontSize: 20,

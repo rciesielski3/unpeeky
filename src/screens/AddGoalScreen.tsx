@@ -19,7 +19,7 @@ import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, fonts, spacing } from "../ui/theme";
+import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ImageSource = "camera" | "gallery";
 
@@ -191,6 +191,7 @@ const styles = StyleSheet.create({
     flex: 1
   },
   screen: {
+    backgroundColor: colors.addBackground,
     flexGrow: 1,
     gap: spacing.lg,
     padding: spacing.lg
@@ -198,7 +199,7 @@ const styles = StyleSheet.create({
   title: {
     color: colors.text,
     fontFamily: fonts.heading,
-    fontSize: 24,
+    fontSize: 26,
     fontWeight: "800",
     textAlign: "center"
   },
@@ -208,10 +209,10 @@ const styles = StyleSheet.create({
   input: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.md,
     borderWidth: 1,
     fontSize: 16,
-    minHeight: 48,
+    minHeight: 54,
     paddingHorizontal: spacing.md
   },
   label: {
@@ -228,19 +229,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.md,
     borderWidth: 1,
     justifyContent: "center",
-    minWidth: 48,
-    padding: spacing.sm
+    minWidth: 64,
+    padding: spacing.md
   },
   tileOptionText: {
     color: colors.text,
     textAlign: "center"
   },
   selectedTile: {
-    backgroundColor: colors.primary,
-    borderColor: colors.primary
+    borderColor: colors.warning,
+    backgroundColor: colors.warning
   },
   selectedTileText: {
     color: colors.surface,
@@ -253,7 +254,7 @@ const styles = StyleSheet.create({
   },
   avatarOption: {
     alignItems: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
     borderRadius: 999,
     borderWidth: 1,
@@ -269,7 +270,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     backgroundColor: "#FFFBEB",
     borderColor: colors.warning,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderStyle: "dashed",
     borderWidth: 1,
     gap: spacing.sm,
@@ -279,7 +280,7 @@ const styles = StyleSheet.create({
   },
   photoPreview: {
     aspectRatio: 1,
-    borderRadius: 8,
+    borderRadius: radii.md,
     width: 112
   },
   photoIcon: {

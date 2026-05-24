@@ -4,7 +4,7 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 import { Button } from "../components/Button";
 import type { AppMode } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { colors, fonts, spacing } from "../ui/theme";
+import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ModeSelectionScreenProps = {
   initialMode: AppMode | null;
@@ -60,6 +60,7 @@ function getModeMeta(appMode: AppMode): string {
 
 const styles = StyleSheet.create({
   screen: {
+    backgroundColor: colors.parentBackground,
     flex: 1,
     gap: spacing.lg,
     padding: spacing.lg
@@ -83,7 +84,7 @@ const styles = StyleSheet.create({
   option: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 8,
+    borderRadius: radii.lg,
     borderWidth: 1,
     gap: spacing.xs,
     padding: spacing.lg
