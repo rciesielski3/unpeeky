@@ -287,7 +287,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     alignItems: "center",
-    backgroundColor: "rgba(16, 24, 40, 0.28)",
+    backgroundColor: colors.modalOverlay,
     flex: 1,
     justifyContent: "center",
     padding: spacing.lg

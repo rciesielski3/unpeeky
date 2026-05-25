@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Pressable, StyleSheet, Text, Vibration, View } from "react-native";
+import { Pressable, ScrollView, StyleSheet, Text, Vibration, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
 
 import { AvatarBadge } from "../components/AvatarBadge";
@@ -51,7 +51,10 @@ export function ChildScreen({
   }, [isComplete]);
 
   return (
-    <View style={[styles.screen, { backgroundColor: theme.childBackground }]}>
+    <ScrollView
+      contentContainerStyle={[styles.screen, { backgroundColor: theme.childBackground }]}
+      style={[styles.scroll, { backgroundColor: theme.childBackground }]}
+    >
       <ScreenDecorations variant="clouds" />
       <View style={styles.cloudLeft} />
       <View style={styles.cloudRight} />
@@ -127,16 +130,18 @@ export function ChildScreen({
           </Text>
         </Pressable>
       </View>
-    </View>
+    </ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
+  scroll: {
+    backgroundColor: colors.childBackground
+  },
   screen: {
     backgroundColor: colors.childBackground,
-    flex: 1,
+    flexGrow: 1,
     gap: spacing.sm,
-    overflow: "hidden",
     paddingBottom: spacing.md,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.md
