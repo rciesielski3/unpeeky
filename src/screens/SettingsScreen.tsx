@@ -865,7 +865,7 @@ function PremiumModal({
               <Text style={styles.premiumPriceMeta}>{strings.premium.priceMeta}</Text>
             </View>
           ) : null}
-          <Text style={styles.premiumDisclosure}>{strings.settings.premiumModalDisclosure}</Text>
+          {!isPremium ? <Text style={styles.premiumDisclosure}>{strings.settings.premiumModalDisclosure}</Text> : null}
           {!isPremium ? (
             <Pressable
               accessibilityRole="button"
