@@ -1,7 +1,8 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Platform, SafeAreaView, StatusBar as NativeStatusBar, StyleSheet, Text, View } from "react-native";
+import { Alert, Platform, SafeAreaView, StatusBar as NativeStatusBar, StyleSheet, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
 
+import { AppLoader } from "./src/components/AppLoader";
 import { BottomNav } from "./src/components/BottomNav";
 import { AddGoalScreen } from "./src/screens/AddGoalScreen";
 import { ApproveTaskScreen } from "./src/screens/ApproveTaskScreen";
@@ -168,9 +169,7 @@ export default function App() {
     return (
       <SafeAreaView style={styles.safeArea}>
         <StatusBar style="dark" />
-        <View style={styles.loading}>
-          <Text style={styles.loadingText}>{strings.app.loading}</Text>
-        </View>
+        <AppLoader />
       </SafeAreaView>
     );
   }
@@ -269,15 +268,6 @@ const styles = StyleSheet.create({
   },
   screenSlot: {
     flex: 1
-  },
-  loading: {
-    alignItems: "center",
-    flex: 1,
-    justifyContent: "center"
-  },
-  loadingText: {
-    color: colors.textMuted,
-    fontSize: 16
   }
 });
 

@@ -1,6 +1,8 @@
 export const strings = {
   app: {
-    loading: "Ładowanie..."
+    loading: "Ładowanie...",
+    loadingTitle: "Unpeeky",
+    loadingMeta: "Odkrywamy nagrody..."
   },
   modeSelection: {
     title: "Jak będzie działać Unpeeky?",
