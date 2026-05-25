@@ -189,8 +189,9 @@ export function SettingsScreen({
       </View>
 
       <View style={styles.card}>
+        <Text style={styles.sectionEyebrow}>{strings.settings.notificationsSectionTitle}</Text>
         <View style={styles.settingLine}>
-          <Text style={styles.settingIcon}>🔔</Text>
+          <SettingsIconBubble icon="♢" tintColor={theme.accent} />
           <Text style={styles.lineTitle}>{strings.settings.dailyReminderTitle}</Text>
           <Switch
             onValueChange={(isEnabled) => void handleReminderToggle(isEnabled)}
@@ -202,7 +203,7 @@ export function SettingsScreen({
         </View>
         <View style={styles.divider} />
         <Pressable accessibilityRole="button" onPress={handleOpenTimePicker} style={styles.settingLine}>
-          <Text style={styles.settingIcon}>◷</Text>
+          <SettingsIconBubble icon="↯" tintColor={theme.accent} />
           <Text style={[styles.timeValue, !isNotificationTimeValid && styles.invalidTimeText]}>
             {notificationTimeDraft || strings.settings.notificationTimePlaceholder}
           </Text>
@@ -262,9 +263,15 @@ export function SettingsScreen({
       </View>
 
       <View style={styles.card}>
-        <SettingsAction icon="▢" label={strings.settings.resetTitle} onPress={onResetGoals} />
+        <Text style={styles.sectionEyebrow}>{strings.settings.accountSectionTitle}</Text>
+        <SettingsAction icon="□" label={strings.settings.resetTitle} onPress={onResetGoals} tintColor={theme.accent} />
         <View style={styles.divider} />
-        <SettingsAction icon="ⓘ" label={strings.settings.aboutApp} onPress={() => setIsAboutOpen(true)} />
+        <SettingsAction
+          icon="i"
+          label={strings.settings.aboutApp}
+          onPress={() => setIsAboutOpen(true)}
+          tintColor={theme.accent}
+        />
       </View>
 
       <ParentAdSlot isPremium={settings.isPremium} />
@@ -349,8 +356,24 @@ const styles = StyleSheet.create({
   },
   settingIcon: {
     color: colors.accentDark,
-    fontSize: 28,
-    width: 38
+    fontSize: 22,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  settingIconBubble: {
+    alignItems: "center",
+    backgroundColor: colors.primarySoft,
+    borderRadius: radii.md,
+    height: 48,
+    justifyContent: "center",
+    width: 48
+  },
+  sectionEyebrow: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase"
   },
   lineTitle: {
     color: colors.text,
@@ -609,15 +632,20 @@ const styles = StyleSheet.create({
   },
   timePickerDoneButton: {
     alignItems: "center",
+    alignSelf: "stretch",
     backgroundColor: colors.accent,
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 56
+    minHeight: 56,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
   },
   timePickerDoneText: {
     color: colors.surface,
     fontSize: 18,
-    fontWeight: "800"
+    fontWeight: "800",
+    lineHeight: 24,
+    textAlign: "center"
   },
   aboutCard: {
     backgroundColor: colors.surface,
@@ -730,10 +758,28 @@ const styles = StyleSheet.create({
   }
 });
 
-function SettingsAction({ icon, label, onPress }: { icon: string; label: string; onPress?: () => void }) {
+function SettingsIconBubble({ icon, tintColor }: { icon: string; tintColor: string }) {
+  return (
+    <View style={styles.settingIconBubble}>
+      <Text style={[styles.settingIcon, { color: tintColor }]}>{icon}</Text>
+    </View>
+  );
+}
+
+function SettingsAction({
+  icon,
+  label,
+  onPress,
+  tintColor
+}: {
+  icon: string;
+  label: string;
+  onPress?: () => void;
+  tintColor: string;
+}) {
   return (
     <Pressable accessibilityRole="button" disabled={!onPress} onPress={onPress} style={styles.actionLine}>
-      <Text style={styles.settingIcon}>{icon}</Text>
+      <SettingsIconBubble icon={icon} tintColor={tintColor} />
       <Text style={styles.actionLabel}>{label}</Text>
       <Text style={styles.chevron}>›</Text>
     </Pressable>

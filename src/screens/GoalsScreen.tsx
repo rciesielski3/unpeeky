@@ -177,7 +177,11 @@ export function GoalsScreen({
           accessibilityRole="button"
           disabled={hasReachedFreeLimit}
           onPress={onAddGoal}
-          style={[styles.addButton, { borderColor: theme.accentSoft }, hasReachedFreeLimit && styles.disabledButton]}
+          style={[
+            styles.addButton,
+            { backgroundColor: theme.accentSoft, borderColor: theme.accent },
+            hasReachedFreeLimit && styles.disabledButton
+          ]}
         >
           <Text style={[styles.addIcon, { color: theme.accentDark }]}>+</Text>
           <Text style={[styles.addButtonText, { color: theme.accentDark }]}>{strings.goals.newGoalButton}</Text>
