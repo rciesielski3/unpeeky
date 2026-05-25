@@ -56,7 +56,7 @@ export function GoalsScreen({
           onPress={() => setIsInfoOpen(true)}
           style={[styles.settingsCircle, { backgroundColor: theme.accentSoft }]}
         >
-          <Text style={[styles.settingsIcon, { color: theme.accentDark }]}>i</Text>
+          <Text style={[styles.settingsIcon, { color: theme.accentDark }]}>?</Text>
         </Pressable>
       </View>
 
@@ -178,11 +178,7 @@ export function GoalsScreen({
           accessibilityRole="button"
           disabled={hasReachedFreeLimit}
           onPress={onAddGoal}
-          style={[
-            styles.addButton,
-            { backgroundColor: theme.accent, borderColor: theme.accentDark },
-            hasReachedFreeLimit && styles.disabledButton
-          ]}
+          style={[styles.addButton, { backgroundColor: theme.accent }, hasReachedFreeLimit && styles.disabledButton]}
         >
           <Text style={styles.addIcon}>+</Text>
           <Text style={styles.addButtonText}>{strings.goals.newGoalButton}</Text>
@@ -259,7 +255,7 @@ const styles = StyleSheet.create({
   },
   settingsIcon: {
     fontFamily: fonts.heading,
-    fontSize: 30,
+    fontSize: 31,
     fontWeight: "800",
     lineHeight: 34
   },
@@ -339,17 +335,17 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: colors.text,
     flex: 1,
-    fontSize: 15,
+    fontSize: 18,
     fontWeight: "800"
   },
   childName: {
     color: colors.textMuted,
-    fontSize: 12,
+    fontSize: 15,
     fontWeight: "600"
   },
   tasksText: {
     color: colors.text,
-    fontSize: 12
+    fontSize: 13
   },
   completedTasks: {
     fontWeight: "800"
@@ -436,9 +432,6 @@ const styles = StyleSheet.create({
   addButton: {
     alignItems: "center",
     backgroundColor: colors.primary,
-    borderColor: colors.decorationPrimary,
-    borderStyle: "solid",
-    borderWidth: 2,
     borderRadius: radii.pill,
     flexDirection: "row",
     gap: spacing.md,

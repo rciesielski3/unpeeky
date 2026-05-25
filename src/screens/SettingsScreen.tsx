@@ -191,7 +191,7 @@ export function SettingsScreen({
       <View style={styles.card}>
         <Text style={styles.sectionEyebrow}>{strings.settings.notificationsSectionTitle}</Text>
         <View style={styles.settingLine}>
-          <SettingsIconBubble backgroundColor={theme.accentSoft} icon="🔔" tintColor={theme.accentDark} />
+          <SettingsIconBubble backgroundColor={theme.accentSoft} name="bell" tintColor={theme.accentDark} />
           <Text style={styles.lineTitle}>{strings.settings.dailyReminderTitle}</Text>
           <Switch
             onValueChange={(isEnabled) => void handleReminderToggle(isEnabled)}
@@ -203,7 +203,7 @@ export function SettingsScreen({
         </View>
         <View style={styles.divider} />
         <Pressable accessibilityRole="button" onPress={handleOpenTimePicker} style={styles.settingLine}>
-          <SettingsIconBubble backgroundColor={theme.accentSoft} icon="⚡" tintColor={theme.accentDark} />
+          <SettingsIconBubble backgroundColor={theme.accentSoft} name="bolt" tintColor={theme.accentDark} />
           <Text style={[styles.timeValue, !isNotificationTimeValid && styles.invalidTimeText]}>
             {notificationTimeDraft || strings.settings.notificationTimePlaceholder}
           </Text>
@@ -265,7 +265,7 @@ export function SettingsScreen({
       <View style={styles.card}>
         <Text style={styles.sectionEyebrow}>{strings.settings.accountSectionTitle}</Text>
         <SettingsAction
-          icon="🗑"
+          iconName="trash"
           label={strings.settings.resetTitle}
           onPress={onResetGoals}
           tintColor={theme.accentDark}
@@ -273,7 +273,7 @@ export function SettingsScreen({
         />
         <View style={styles.divider} />
         <SettingsAction
-          icon="i"
+          iconName="info"
           label={strings.settings.aboutApp}
           onPress={() => setIsAboutOpen(true)}
           tintColor={theme.accentDark}
@@ -374,6 +374,80 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: "center",
     width: 48
+  },
+  vectorIcon: {
+    alignItems: "center",
+    height: 28,
+    justifyContent: "center",
+    width: 28
+  },
+  bellDome: {
+    borderRadius: 9,
+    borderTopWidth: 2,
+    borderLeftWidth: 2,
+    borderRightWidth: 2,
+    height: 17,
+    width: 18
+  },
+  bellBase: {
+    borderRadius: 999,
+    height: 2,
+    marginTop: -1,
+    width: 22
+  },
+  bellClapper: {
+    borderRadius: 999,
+    height: 4,
+    marginTop: 3,
+    width: 4
+  },
+  boltTop: {
+    borderBottomWidth: 16,
+    borderLeftColor: "transparent",
+    borderLeftWidth: 8,
+    borderRightColor: "transparent",
+    borderRightWidth: 3,
+    height: 0,
+    marginLeft: 4,
+    transform: [{ rotate: "12deg" }],
+    width: 0
+  },
+  boltBottom: {
+    borderLeftColor: "transparent",
+    borderLeftWidth: 3,
+    borderRightColor: "transparent",
+    borderRightWidth: 8,
+    borderTopWidth: 16,
+    height: 0,
+    marginRight: 4,
+    marginTop: -4,
+    transform: [{ rotate: "12deg" }],
+    width: 0
+  },
+  trashLid: {
+    borderRadius: 999,
+    height: 3,
+    marginBottom: 3,
+    width: 18
+  },
+  trashBin: {
+    borderRadius: 3,
+    borderWidth: 2,
+    height: 18,
+    width: 15
+  },
+  infoCircle: {
+    alignItems: "center",
+    borderRadius: 999,
+    borderWidth: 2,
+    height: 24,
+    justifyContent: "center",
+    width: 24
+  },
+  infoLetter: {
+    fontSize: 16,
+    fontWeight: "900",
+    lineHeight: 18
   },
   sectionEyebrow: {
     color: colors.textMuted,
@@ -765,41 +839,81 @@ const styles = StyleSheet.create({
   }
 });
 
+type SettingsIconName = "bell" | "bolt" | "trash" | "info";
+
 function SettingsIconBubble({
   backgroundColor,
-  icon,
+  name,
   tintColor
 }: {
   backgroundColor: string;
-  icon: string;
+  name: SettingsIconName;
   tintColor: string;
 }) {
   return (
     <View style={[styles.settingIconBubble, { backgroundColor }]}>
-      <Text style={[styles.settingIcon, { color: tintColor }]}>{icon}</Text>
+      <SettingsVectorIcon name={name} tintColor={tintColor} />
     </View>
   );
 }
 
 function SettingsAction({
-  icon,
+  iconName,
   label,
   onPress,
   backgroundColor,
   tintColor
 }: {
   backgroundColor: string;
-  icon: string;
+  iconName: SettingsIconName;
   label: string;
   onPress?: () => void;
   tintColor: string;
 }) {
   return (
     <Pressable accessibilityRole="button" disabled={!onPress} onPress={onPress} style={styles.actionLine}>
-      <SettingsIconBubble backgroundColor={backgroundColor} icon={icon} tintColor={tintColor} />
+      <SettingsIconBubble backgroundColor={backgroundColor} name={iconName} tintColor={tintColor} />
       <Text style={styles.actionLabel}>{label}</Text>
       <Text style={styles.chevron}>›</Text>
     </Pressable>
+  );
+}
+
+function SettingsVectorIcon({ name, tintColor }: { name: SettingsIconName; tintColor: string }) {
+  if (name === "bell") {
+    return (
+      <View style={styles.vectorIcon}>
+        <View style={[styles.bellDome, { borderColor: tintColor }]} />
+        <View style={[styles.bellBase, { backgroundColor: tintColor }]} />
+        <View style={[styles.bellClapper, { backgroundColor: tintColor }]} />
+      </View>
+    );
+  }
+
+  if (name === "bolt") {
+    return (
+      <View style={styles.vectorIcon}>
+        <View style={[styles.boltTop, { borderBottomColor: tintColor }]} />
+        <View style={[styles.boltBottom, { borderTopColor: tintColor }]} />
+      </View>
+    );
+  }
+
+  if (name === "trash") {
+    return (
+      <View style={styles.vectorIcon}>
+        <View style={[styles.trashLid, { backgroundColor: tintColor }]} />
+        <View style={[styles.trashBin, { borderColor: tintColor }]} />
+      </View>
+    );
+  }
+
+  return (
+    <View style={styles.vectorIcon}>
+      <View style={[styles.infoCircle, { borderColor: tintColor }]}>
+        <Text style={[styles.infoLetter, { color: tintColor }]}>i</Text>
+      </View>
+    </View>
   );
 }
 

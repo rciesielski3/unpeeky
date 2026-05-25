@@ -401,8 +401,8 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
-    justifyContent: "center"
+    rowGap: spacing.md,
+    justifyContent: "space-between"
   },
   avatarOption: {
     alignItems: "center",
@@ -410,13 +410,13 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
     borderRadius: 999,
     borderWidth: 2,
-    height: 52,
+    height: 44,
     justifyContent: "center",
-    width: 52
+    width: "15%"
   },
   avatarEmoji: {
-    fontSize: 31,
-    lineHeight: 36
+    fontSize: 27,
+    lineHeight: 32
   },
   photoBox: {
     alignItems: "center",
