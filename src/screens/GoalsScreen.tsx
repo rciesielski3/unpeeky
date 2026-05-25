@@ -3,6 +3,7 @@ import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
+import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ProgressBar } from "../components/ProgressBar";
 import { ScreenDecorations } from "../components/ScreenDecorations";
 import { FREE_GOAL_LIMIT, getGoalProgress, isGoalComplete } from "../domain/goal";
@@ -162,6 +163,12 @@ export function GoalsScreen({
           <Text style={styles.limitTitle}>{strings.goals.freeLimitTitle}</Text>
           <Text style={styles.limitText}>{strings.goals.freeLimitText(FREE_GOAL_LIMIT)}</Text>
           <Button label={strings.goals.freeLimitButton} onPress={onOpenSettings} variant="ghost" />
+        </View>
+      ) : null}
+
+      {!isPremium ? (
+        <View style={styles.adSlotWrap}>
+          <ParentAdSlot isPremium={isPremium} />
         </View>
       ) : null}
 
@@ -411,6 +418,9 @@ const styles = StyleSheet.create({
   },
   footer: {
     paddingBottom: spacing.lg,
+    paddingTop: spacing.sm
+  },
+  adSlotWrap: {
     paddingTop: spacing.sm
   },
   addButton: {

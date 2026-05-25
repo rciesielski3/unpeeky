@@ -194,6 +194,7 @@ export default function App() {
       {route === "addGoal" ? (
         <AddGoalScreen
           initialGoal={activeGoal ?? null}
+          isPremium={settings.isPremium}
           onBack={() => setRoute("goals")}
           onSave={handleSaveGoal}
           theme={appTheme}
@@ -208,6 +209,7 @@ export default function App() {
           onBack={() => setRoute("goals")}
           onOpenChildView={() => setRoute("child")}
           parentPin={settings.parentPin}
+          isPremium={settings.isPremium}
           theme={appTheme}
         />
       ) : null}

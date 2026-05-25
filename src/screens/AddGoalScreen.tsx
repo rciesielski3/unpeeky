@@ -13,6 +13,7 @@ import {
 } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
+import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
 import { AVATARS, DEFAULT_AVATAR_ID } from "../domain/avatar";
 import type { AvatarId } from "../domain/avatar";
@@ -27,12 +28,19 @@ type ImageSource = "camera" | "gallery";
 
 type AddGoalScreenProps = {
   initialGoal?: Goal | null;
+  isPremium: boolean;
   onBack: () => void;
   onSave: (draft: GoalDraft) => void;
   theme?: AppTheme;
 };
 
-export function AddGoalScreen({ initialGoal = null, onBack, onSave, theme = defaultAppTheme }: AddGoalScreenProps) {
+export function AddGoalScreen({
+  initialGoal = null,
+  isPremium,
+  onBack,
+  onSave,
+  theme = defaultAppTheme
+}: AddGoalScreenProps) {
   const isEditing = initialGoal !== null;
   const [childName, setChildName] = useState(initialGoal?.childName ?? "");
   const [rewardName, setRewardName] = useState(initialGoal?.rewardName ?? "");
@@ -258,6 +266,8 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave, theme = defa
             </Text>
           </Pressable>
         </View>
+
+        <ParentAdSlot isPremium={isPremium} />
       </ScrollView>
     </KeyboardAvoidingView>
   );

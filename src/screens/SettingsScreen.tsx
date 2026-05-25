@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
+import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
@@ -262,6 +263,8 @@ export function SettingsScreen({
         <View style={styles.divider} />
         <SettingsAction icon="ⓘ" label={strings.settings.aboutApp} onPress={() => setIsAboutOpen(true)} />
       </View>
+
+      <ParentAdSlot isPremium={settings.isPremium} />
 
       <AboutModal onClose={() => setIsAboutOpen(false)} visible={isAboutOpen} />
       <TimePickerModal
