@@ -30,7 +30,22 @@
           "photosPermission": "Pozwól Unpeeky wybrać zdjęcie nagrody z galerii.",
           "cameraPermission": "Pozwól Unpeeky zrobić zdjęcie nagrody."
         }
+      ],
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511",
+          "optimizeInitialization": true,
+          "optimizeAdLoading": true
+        }
       ]
-    ]
+    ],
+    "react-native-google-mobile-ads": {
+      "android_app_id": "ca-app-pub-3940256099942544~3347511713",
+      "ios_app_id": "ca-app-pub-3940256099942544~1458002511",
+      "optimize_initialization": true,
+      "optimize_ad_loading": true
+    }
   }
 }

@@ -1,5 +1,8 @@
+import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
+import { BannerAd, BannerAdSize } from "react-native-google-mobile-ads";
 
+import { getParentBannerAdUnitId } from "../ads/adMob";
 import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
 
@@ -8,14 +11,30 @@ type ParentAdSlotProps = {
 };
 
 export function ParentAdSlot({ isPremium }: ParentAdSlotProps) {
+  const [hasAdError, setHasAdError] = useState(false);
+
   if (isPremium) {
     return null;
   }
 
   return (
     <View accessibilityLabel={strings.ads.placeholderLabel} accessibilityRole="summary" style={styles.slot}>
-      <Text style={styles.label}>{strings.ads.placeholderTitle}</Text>
-      <Text style={styles.text}>{strings.ads.placeholderText}</Text>
+      {hasAdError ? (
+        <>
+          <Text style={styles.label}>{strings.ads.placeholderTitle}</Text>
+          <Text style={styles.text}>{strings.ads.placeholderText}</Text>
+        </>
+      ) : (
+        <>
+          <Text style={styles.label}>{strings.ads.loadingTitle}</Text>
+          <BannerAd
+            onAdFailedToLoad={() => setHasAdError(true)}
+            requestOptions={{ requestNonPersonalizedAdsOnly: true }}
+            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
+            unitId={getParentBannerAdUnitId()}
+          />
+        </>
+      )}
     </View>
   );
 }
@@ -23,11 +42,8 @@ export function ParentAdSlot({ isPremium }: ParentAdSlotProps) {
 const styles = StyleSheet.create({
   slot: {
     alignItems: "center",
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.border,
-    borderRadius: 8,
-    borderStyle: "dashed",
-    borderWidth: 1,
+    backgroundColor: colors.surface,
+    borderRadius: 16,
     gap: spacing.xs,
     justifyContent: "center",
     minHeight: 72,

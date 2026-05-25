@@ -159,7 +159,8 @@ export const strings = {
   ads: {
     placeholderLabel: "Miejsce na reklamę",
     placeholderTitle: "Baner reklamowy",
-    placeholderText: "W tej wersji MVP reklamę może wyświetlać tylko rodzic."
+    placeholderText: "W tej wersji MVP reklamę może wyświetlać tylko rodzic.",
+    loadingTitle: "Ładowanie reklamy"
   },
   premium: {
     activeBadge: "ON",
