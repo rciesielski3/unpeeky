@@ -356,7 +356,7 @@ const styles = StyleSheet.create({
     fontWeight: "800"
   },
   resetConfirmText: {
-    color: colors.surface,
+    color: colors.text,
     fontSize: 16,
     fontWeight: "800"
   }

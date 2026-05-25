@@ -468,13 +468,13 @@ const styles = StyleSheet.create({
     opacity: 0.45
   },
   addIcon: {
-    color: colors.surface,
+    color: colors.text,
     fontSize: 30,
     fontWeight: "300",
     lineHeight: 34
   },
   addButtonText: {
-    color: colors.surface,
+    color: colors.text,
     fontSize: 18,
     fontWeight: "800"
   },

@@ -410,7 +410,7 @@ const styles = StyleSheet.create({
     borderColor: "transparent",
     borderRadius: 999,
     borderWidth: 2,
-    height: 44,
+    aspectRatio: 1,
     justifyContent: "center",
     width: "15%"
   },
