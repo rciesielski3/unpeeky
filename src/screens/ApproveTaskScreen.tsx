@@ -301,8 +301,10 @@ const styles = StyleSheet.create({
   },
   backButton: {
     alignItems: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
     borderRadius: radii.pill,
+    borderWidth: 1,
     justifyContent: "center",
     minHeight: 58
   },
@@ -320,7 +322,7 @@ const styles = StyleSheet.create({
     fontWeight: "800"
   },
   backButtonText: {
-    color: colors.primaryDark,
+    color: colors.text,
     fontSize: 18,
     fontWeight: "800"
   }

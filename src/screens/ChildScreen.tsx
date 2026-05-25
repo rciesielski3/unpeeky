@@ -300,14 +300,16 @@ const styles = StyleSheet.create({
   },
   rejectButton: {
     alignItems: "center",
-    backgroundColor: colors.surfaceMuted,
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
     borderRadius: radii.md,
+    borderWidth: 1,
     flex: 0.9,
     justifyContent: "center",
     minHeight: 52
   },
   rejectButtonText: {
-    color: colors.textMuted,
+    color: colors.text,
     fontSize: 16,
     fontWeight: "800"
   },
