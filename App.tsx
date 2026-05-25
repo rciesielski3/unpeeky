@@ -167,7 +167,7 @@ export default function App() {
 
   if (!isHydrated || !settings) {
     return (
-      <SafeAreaView style={styles.safeArea}>
+      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.parentBackground }]}>
         <StatusBar style="dark" />
         <AppLoader />
       </SafeAreaView>

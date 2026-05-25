@@ -43,6 +43,7 @@ const styles = StyleSheet.create({
     height: 152,
     justifyContent: "center",
     shadowColor: defaultAppTheme.accentDark,
+    elevation: 8,
     shadowOffset: { height: 14, width: 0 },
     shadowOpacity: 0.12,
     shadowRadius: 28,
