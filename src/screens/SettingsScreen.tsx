@@ -34,6 +34,7 @@ export function SettingsScreen({
   const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
+  const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const isReminderEnabled = notificationTimeDraft.trim().length > 0;
   const isNotificationTimeValid = !isReminderEnabled || parseNotificationTime(notificationTimeDraft) !== null;
   const isParentPinValid = validateParentPin(parentPinDraft);
@@ -152,10 +153,12 @@ export function SettingsScreen({
         <Pressable
           accessibilityRole="button"
           accessibilityState={{ selected: settings.isPremium }}
-          onPress={() => updateSettings({ isPremium: !settings.isPremium })}
+          onPress={() => setIsPremiumOpen(true)}
           style={styles.premiumButton}
         >
-          <Text style={styles.premiumButtonText}>{strings.settings.premiumUpgradeButton}</Text>
+          <Text style={styles.premiumButtonText}>
+            {settings.isPremium ? strings.settings.premiumActiveButton : strings.settings.premiumUpgradeButton}
+          </Text>
         </Pressable>
       </View>
 
@@ -186,8 +189,9 @@ export function SettingsScreen({
       </View>
 
       <View style={styles.card}>
+        <Text style={styles.sectionEyebrow}>{strings.settings.notificationsSectionTitle}</Text>
         <View style={styles.settingLine}>
-          <Text style={styles.settingIcon}>🔔</Text>
+          <SettingsIconBubble icon="♢" tintColor={theme.accent} />
           <Text style={styles.lineTitle}>{strings.settings.dailyReminderTitle}</Text>
           <Switch
             onValueChange={(isEnabled) => void handleReminderToggle(isEnabled)}
@@ -199,7 +203,7 @@ export function SettingsScreen({
         </View>
         <View style={styles.divider} />
         <Pressable accessibilityRole="button" onPress={handleOpenTimePicker} style={styles.settingLine}>
-          <Text style={styles.settingIcon}>◷</Text>
+          <SettingsIconBubble icon="↯" tintColor={theme.accent} />
           <Text style={[styles.timeValue, !isNotificationTimeValid && styles.invalidTimeText]}>
             {notificationTimeDraft || strings.settings.notificationTimePlaceholder}
           </Text>
@@ -259,14 +263,30 @@ export function SettingsScreen({
       </View>
 
       <View style={styles.card}>
-        <SettingsAction icon="▢" label={strings.settings.resetTitle} onPress={onResetGoals} />
+        <Text style={styles.sectionEyebrow}>{strings.settings.accountSectionTitle}</Text>
+        <SettingsAction icon="□" label={strings.settings.resetTitle} onPress={onResetGoals} tintColor={theme.accent} />
         <View style={styles.divider} />
-        <SettingsAction icon="ⓘ" label={strings.settings.aboutApp} onPress={() => setIsAboutOpen(true)} />
+        <SettingsAction
+          icon="i"
+          label={strings.settings.aboutApp}
+          onPress={() => setIsAboutOpen(true)}
+          tintColor={theme.accent}
+        />
       </View>
 
       <ParentAdSlot isPremium={settings.isPremium} />
 
       <AboutModal onClose={() => setIsAboutOpen(false)} visible={isAboutOpen} />
+      <PremiumModal
+        isPremium={settings.isPremium}
+        onActivate={() => {
+          updateSettings({ isPremium: true });
+          setIsPremiumOpen(false);
+        }}
+        onClose={() => setIsPremiumOpen(false)}
+        theme={theme}
+        visible={isPremiumOpen}
+      />
       <TimePickerModal
         notificationTime={notificationTimeDraft || "18:30"}
         onClose={() => setIsTimePickerOpen(false)}
@@ -336,8 +356,24 @@ const styles = StyleSheet.create({
   },
   settingIcon: {
     color: colors.accentDark,
-    fontSize: 28,
-    width: 38
+    fontSize: 22,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  settingIconBubble: {
+    alignItems: "center",
+    backgroundColor: colors.primarySoft,
+    borderRadius: radii.md,
+    height: 48,
+    justifyContent: "center",
+    width: 48
+  },
+  sectionEyebrow: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: "900",
+    letterSpacing: 0.8,
+    textTransform: "uppercase"
   },
   lineTitle: {
     color: colors.text,
@@ -596,15 +632,20 @@ const styles = StyleSheet.create({
   },
   timePickerDoneButton: {
     alignItems: "center",
+    alignSelf: "stretch",
     backgroundColor: colors.accent,
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 56
+    minHeight: 56,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
   },
   timePickerDoneText: {
     color: colors.surface,
     fontSize: 18,
-    fontWeight: "800"
+    fontWeight: "800",
+    lineHeight: 24,
+    textAlign: "center"
   },
   aboutCard: {
     backgroundColor: colors.surface,
@@ -616,6 +657,85 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.16,
     shadowRadius: 24,
     width: "100%"
+  },
+  premiumModalCard: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    padding: spacing.xl,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    width: "100%"
+  },
+  premiumModalBadge: {
+    alignItems: "center",
+    borderRadius: radii.pill,
+    height: 72,
+    justifyContent: "center",
+    width: 72
+  },
+  premiumModalIcon: {
+    color: colors.warning,
+    fontSize: 36,
+    fontWeight: "800"
+  },
+  premiumBenefits: {
+    alignSelf: "stretch",
+    gap: spacing.sm,
+    marginVertical: spacing.xs
+  },
+  premiumBenefitRow: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radii.md,
+    flexDirection: "row",
+    gap: spacing.sm,
+    padding: spacing.md
+  },
+  premiumBenefitIcon: {
+    fontSize: 18,
+    fontWeight: "800",
+    width: 24
+  },
+  premiumBenefitText: {
+    color: colors.text,
+    flex: 1,
+    fontSize: 15,
+    fontWeight: "700"
+  },
+  premiumPriceRow: {
+    alignItems: "baseline",
+    flexDirection: "row",
+    gap: spacing.sm
+  },
+  premiumPrice: {
+    color: colors.text,
+    fontSize: 30,
+    fontWeight: "800"
+  },
+  premiumPriceMeta: {
+    color: colors.textMuted,
+    fontSize: 14,
+    fontWeight: "700"
+  },
+  premiumDisclosure: {
+    color: colors.textMuted,
+    fontSize: 13,
+    lineHeight: 19,
+    textAlign: "center"
+  },
+  modalGhostButton: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 48,
+    paddingHorizontal: spacing.lg
+  },
+  modalGhostButtonText: {
+    fontSize: 16,
+    fontWeight: "800"
   },
   aboutTitle: {
     color: colors.text,
@@ -638,10 +758,28 @@ const styles = StyleSheet.create({
   }
 });
 
-function SettingsAction({ icon, label, onPress }: { icon: string; label: string; onPress?: () => void }) {
+function SettingsIconBubble({ icon, tintColor }: { icon: string; tintColor: string }) {
+  return (
+    <View style={styles.settingIconBubble}>
+      <Text style={[styles.settingIcon, { color: tintColor }]}>{icon}</Text>
+    </View>
+  );
+}
+
+function SettingsAction({
+  icon,
+  label,
+  onPress,
+  tintColor
+}: {
+  icon: string;
+  label: string;
+  onPress?: () => void;
+  tintColor: string;
+}) {
   return (
     <Pressable accessibilityRole="button" disabled={!onPress} onPress={onPress} style={styles.actionLine}>
-      <Text style={styles.settingIcon}>{icon}</Text>
+      <SettingsIconBubble icon={icon} tintColor={tintColor} />
       <Text style={styles.actionLabel}>{label}</Text>
       <Text style={styles.chevron}>›</Text>
     </Pressable>
@@ -726,6 +864,67 @@ function AboutModal({ onClose, visible }: { onClose: () => void; visible: boolea
           <Text style={styles.aboutOwner}>{strings.settings.aboutOwner}</Text>
           <Pressable accessibilityRole="button" onPress={onClose} style={styles.timePickerDoneButton}>
             <Text style={styles.timePickerDoneText}>{strings.settings.aboutClose}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
+
+function PremiumModal({
+  isPremium,
+  onActivate,
+  onClose,
+  theme,
+  visible
+}: {
+  isPremium: boolean;
+  onActivate: () => void;
+  onClose: () => void;
+  theme: AppTheme;
+  visible: boolean;
+}) {
+  return (
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.premiumModalCard}>
+          <View style={[styles.premiumModalBadge, { backgroundColor: theme.accentSoft }]}>
+            <Text style={styles.premiumModalIcon}>♕</Text>
+          </View>
+          <Text style={styles.aboutTitle}>
+            {isPremium ? strings.premium.activeTitle : strings.settings.premiumModalTitle}
+          </Text>
+          <Text style={styles.aboutBody}>
+            {isPremium ? strings.premium.activeMeta : strings.settings.premiumModalMeta}
+          </Text>
+          <View style={styles.premiumBenefits}>
+            {strings.premium.benefits.map((benefit) => (
+              <View key={benefit} style={styles.premiumBenefitRow}>
+                <Text style={[styles.premiumBenefitIcon, { color: theme.accent }]}>✓</Text>
+                <Text style={styles.premiumBenefitText}>{benefit}</Text>
+              </View>
+            ))}
+          </View>
+          {!isPremium ? (
+            <View style={styles.premiumPriceRow}>
+              <Text style={styles.premiumPrice}>{strings.premium.price}</Text>
+              <Text style={styles.premiumPriceMeta}>{strings.premium.priceMeta}</Text>
+            </View>
+          ) : null}
+          {!isPremium ? <Text style={styles.premiumDisclosure}>{strings.settings.premiumModalDisclosure}</Text> : null}
+          {!isPremium ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={onActivate}
+              style={[styles.timePickerDoneButton, { backgroundColor: theme.accent }]}
+            >
+              <Text style={styles.timePickerDoneText}>{strings.settings.premiumActivateButton}</Text>
+            </Pressable>
+          ) : null}
+          <Pressable accessibilityRole="button" onPress={onClose} style={styles.modalGhostButton}>
+            <Text style={[styles.modalGhostButtonText, { color: theme.accentDark }]}>
+              {isPremium ? strings.settings.aboutClose : strings.settings.premiumCloseButton}
+            </Text>
           </Pressable>
         </View>
       </View>
