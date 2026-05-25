@@ -6,6 +6,7 @@ import { AvatarBadge } from "../components/AvatarBadge";
 import { ProgressBar } from "../components/ProgressBar";
 import { ScreenDecorations } from "../components/ScreenDecorations";
 import { TileGrid } from "../components/TileGrid";
+import { playCompletionSound } from "../audio/playCompletionSound";
 import { getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -46,6 +47,7 @@ export function ChildScreen({
   useEffect(() => {
     if (isComplete && !hasPlayedCompletionFeedback.current) {
       Vibration.vibrate([0, 120, 80, 160]);
+      void playCompletionSound();
       hasPlayedCompletionFeedback.current = true;
     }
   }, [isComplete]);
