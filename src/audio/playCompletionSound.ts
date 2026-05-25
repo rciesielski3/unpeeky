@@ -9,22 +9,30 @@ let audioModePromise: Promise<void> | null = null;
 function ensureAudioMode(): Promise<void> {
   audioModePromise ??= Audio.setAudioModeAsync({
     playsInSilentModeIOS: true
+  }).catch((error: unknown) => {
+    audioModePromise = null;
+    throw error;
   });
 
   return audioModePromise;
 }
 
 export async function playCompletionSound(): Promise<void> {
-  await ensureAudioMode();
+  try {
+    await ensureAudioMode();
 
-  const { sound } = await Audio.Sound.createAsync(completionSound, {
-    shouldPlay: true,
-    volume: 0.7
-  });
+    const { sound } = await Audio.Sound.createAsync(completionSound, {
+      shouldPlay: true,
+      volume: 0.7
+    });
 
-  sound.setOnPlaybackStatusUpdate((status) => {
-    if (status.isLoaded && status.didJustFinish) {
-      void sound.unloadAsync();
-    }
-  });
+    sound.setOnPlaybackStatusUpdate((status) => {
+      if (status.isLoaded && status.didJustFinish) {
+        sound.setOnPlaybackStatusUpdate(null);
+        void sound.unloadAsync();
+      }
+    });
+  } catch (error) {
+    console.warn("Failed to play completion sound:", error);
+  }
 }
