@@ -1,6 +1,5 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import {
-  Alert,
   Modal,
   Platform,
   Pressable,
@@ -35,10 +34,15 @@ export default function App() {
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [pendingRevealGoalId, setPendingRevealGoalId] = useState<string | null>(null);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
+  const [goalIdPendingDelete, setGoalIdPendingDelete] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const shouldSkipNextGoalsSave = useRef(true);
   const shouldSkipNextSettingsSave = useRef(true);
   const activeGoal = useMemo(() => goals.find((goal) => goal.id === selectedGoalId), [goals, selectedGoalId]);
+  const goalPendingDelete = useMemo(
+    () => goals.find((goal) => goal.id === goalIdPendingDelete) ?? null,
+    [goalIdPendingDelete, goals]
+  );
 
   useEffect(() => {
     async function hydrateApp() {
@@ -126,26 +130,28 @@ export default function App() {
   }
 
   function handleDeleteGoal(goalId: string) {
-    const goal = goals.find((currentGoal) => currentGoal.id === goalId);
+    setGoalIdPendingDelete(goalId);
+  }
 
-    if (!goal) {
+  function handleCancelDeleteGoal() {
+    setGoalIdPendingDelete(null);
+  }
+
+  function handleConfirmDeleteGoal() {
+    if (!goalPendingDelete) {
+      setGoalIdPendingDelete(null);
       return;
     }
 
-    Alert.alert(strings.goals.deleteTitle, strings.goals.deleteMeta(goal.rewardName), [
-      { text: strings.settings.backButton, style: "cancel" },
-      {
-        text: strings.goals.deleteButton,
-        style: "destructive",
-        onPress: () => {
-          setGoals((currentGoals) => currentGoals.filter((currentGoal) => currentGoal.id !== goalId));
+    const goalId = goalPendingDelete.id;
 
-          if (selectedGoalId === goalId) {
-            setSelectedGoalId(null);
-          }
-        }
-      }
-    ]);
+    setGoals((currentGoals) => currentGoals.filter((currentGoal) => currentGoal.id !== goalId));
+
+    if (selectedGoalId === goalId) {
+      setSelectedGoalId(null);
+    }
+
+    setGoalIdPendingDelete(null);
   }
 
   function handleResetGoals() {
@@ -267,6 +273,14 @@ export default function App() {
           themeAccent={appTheme.accent}
           themeAccentSoft={appTheme.accentSoft}
           visible={isResetConfirmOpen}
+        />
+        <GoalDeleteConfirmModal
+          goal={goalPendingDelete}
+          onCancel={handleCancelDeleteGoal}
+          onConfirm={handleConfirmDeleteGoal}
+          themeAccent={appTheme.accent}
+          themeAccentSoft={appTheme.accentSoft}
+          visible={goalPendingDelete !== null}
         />
       </View>
     </SafeAreaView>
@@ -412,6 +426,58 @@ function ResetConfirmModal({
             </Pressable>
           </View>
         </View>
+      </View>
+    </Modal>
+  );
+}
+
+function GoalDeleteConfirmModal({
+  goal,
+  onCancel,
+  onConfirm,
+  themeAccent,
+  themeAccentSoft,
+  visible
+}: {
+  goal: Goal | null;
+  onCancel: () => void;
+  onConfirm: () => void;
+  themeAccent: string;
+  themeAccentSoft: string;
+  visible: boolean;
+}) {
+  const lastGoal = useRef<Goal | null>(null);
+
+  if (goal) {
+    lastGoal.current = goal;
+  }
+
+  const activeGoal = goal ?? lastGoal.current;
+
+  return (
+    <Modal animationType="fade" onRequestClose={onCancel} transparent visible={visible}>
+      <View style={styles.modalOverlay}>
+        {activeGoal ? (
+          <View style={styles.resetCard}>
+            <View style={[styles.resetIconBubble, { backgroundColor: themeAccentSoft }]}>
+              <Text style={[styles.resetIcon, { color: themeAccent }]}>×</Text>
+            </View>
+            <Text style={styles.resetTitle}>{strings.goals.deleteTitle}</Text>
+            <Text style={styles.resetMeta}>{strings.goals.deleteMeta(activeGoal.rewardName)}</Text>
+            <View style={styles.resetActions}>
+              <Pressable accessibilityRole="button" onPress={onCancel} style={styles.resetCancelButton}>
+                <Text style={styles.resetCancelText}>{strings.settings.backButton}</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={onConfirm}
+                style={[styles.resetConfirmButton, { backgroundColor: themeAccent }]}
+              >
+                <Text style={styles.resetConfirmText}>{strings.goals.deleteButton}</Text>
+              </Pressable>
+            </View>
+          </View>
+        ) : null}
       </View>
     </Modal>
   );
