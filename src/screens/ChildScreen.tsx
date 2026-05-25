@@ -1,5 +1,5 @@
 import { useEffect, useRef } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, Vibration, View } from "react-native";
+import { Pressable, StyleSheet, Text, Vibration, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
 
 import { AvatarBadge } from "../components/AvatarBadge";
@@ -51,10 +51,7 @@ export function ChildScreen({
   }, [isComplete]);
 
   return (
-    <ScrollView
-      contentContainerStyle={[styles.screen, { backgroundColor: theme.childBackground }]}
-      style={[styles.scroll, { backgroundColor: theme.childBackground }]}
-    >
+    <View style={[styles.screen, { backgroundColor: theme.childBackground }]}>
       <ScreenDecorations variant="clouds" />
       <View style={styles.cloudLeft} />
       <View style={styles.cloudRight} />
@@ -130,22 +127,19 @@ export function ChildScreen({
           </Text>
         </Pressable>
       </View>
-    </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  scroll: {
-    backgroundColor: colors.childBackground
-  },
   screen: {
     backgroundColor: colors.childBackground,
-    flexGrow: 1,
-    gap: spacing.lg,
+    flex: 1,
+    gap: spacing.sm,
     overflow: "hidden",
-    paddingBottom: spacing.xl,
+    paddingBottom: spacing.md,
     paddingHorizontal: spacing.lg,
-    paddingTop: spacing.xl
+    paddingTop: spacing.md
   },
   cloudLeft: {
     backgroundColor: "rgba(255,255,255,0.8)",
@@ -182,19 +176,19 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flexDirection: "row",
     gap: spacing.md,
-    minHeight: 72
+    minHeight: 58
   },
   circleButton: {
     alignItems: "center",
     backgroundColor: colors.primarySoft,
     borderRadius: radii.pill,
-    height: 48,
+    height: 44,
     justifyContent: "center",
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
-    width: 48
+    width: 44
   },
   closeIcon: {
     color: colors.primary,
@@ -208,9 +202,9 @@ const styles = StyleSheet.create({
     borderColor: colors.decorationPrimary,
     borderRadius: radii.pill,
     borderWidth: 4,
-    height: 64,
+    height: 58,
     justifyContent: "center",
-    width: 64
+    width: 58
   },
   childCopy: {
     flex: 1
@@ -228,11 +222,13 @@ const styles = StyleSheet.create({
     lineHeight: 30
   },
   gridWrap: {
+    alignSelf: "center",
     borderRadius: radii.lg,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 12, width: 0 },
     shadowOpacity: 0.08,
-    shadowRadius: 24
+    shadowRadius: 24,
+    width: "88%"
   },
   progressBlock: {
     alignItems: "center",
@@ -241,7 +237,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.lg,
     justifyContent: "space-between",
-    padding: spacing.md,
+    padding: spacing.sm,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 10, width: 0 },
     shadowOpacity: 0.07,
@@ -249,15 +245,15 @@ const styles = StyleSheet.create({
   },
   progressCopy: {
     flex: 1,
-    gap: spacing.md
+    gap: spacing.sm
   },
   progressText: {
     color: colors.text,
-    fontSize: 20,
+    fontSize: 17,
     fontWeight: "800"
   },
   progressStar: {
-    fontSize: 52
+    fontSize: 42
   },
   messageCard: {
     alignItems: "center",
@@ -268,9 +264,9 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
     justifyContent: "space-between",
-    minHeight: 150,
+    minHeight: 104,
     overflow: "hidden",
-    padding: spacing.xl,
+    padding: spacing.lg,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.06,
@@ -282,16 +278,16 @@ const styles = StyleSheet.create({
   },
   messageTitle: {
     color: colors.text,
-    fontSize: 22,
+    fontSize: 19,
     fontWeight: "800"
   },
   messageBody: {
     color: colors.text,
-    fontSize: 16,
+    fontSize: 14,
     marginTop: spacing.sm
   },
   cloudEmoji: {
-    fontSize: 58
+    fontSize: 42
   },
   actionsRow: {
     flexDirection: "row",
@@ -303,7 +299,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.md,
     flex: 0.9,
     justifyContent: "center",
-    minHeight: 58
+    minHeight: 52
   },
   rejectButtonText: {
     color: colors.textMuted,
@@ -316,7 +312,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     flex: 1.7,
     justifyContent: "center",
-    minHeight: 58
+    minHeight: 52
   },
   disabledButton: {
     opacity: 0.45

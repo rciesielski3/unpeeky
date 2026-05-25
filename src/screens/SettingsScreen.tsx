@@ -191,7 +191,7 @@ export function SettingsScreen({
       <View style={styles.card}>
         <Text style={styles.sectionEyebrow}>{strings.settings.notificationsSectionTitle}</Text>
         <View style={styles.settingLine}>
-          <SettingsIconBubble icon="♢" tintColor={theme.accent} />
+          <SettingsIconBubble backgroundColor={theme.accentSoft} icon="🔔" tintColor={theme.accentDark} />
           <Text style={styles.lineTitle}>{strings.settings.dailyReminderTitle}</Text>
           <Switch
             onValueChange={(isEnabled) => void handleReminderToggle(isEnabled)}
@@ -203,7 +203,7 @@ export function SettingsScreen({
         </View>
         <View style={styles.divider} />
         <Pressable accessibilityRole="button" onPress={handleOpenTimePicker} style={styles.settingLine}>
-          <SettingsIconBubble icon="↯" tintColor={theme.accent} />
+          <SettingsIconBubble backgroundColor={theme.accentSoft} icon="⚡" tintColor={theme.accentDark} />
           <Text style={[styles.timeValue, !isNotificationTimeValid && styles.invalidTimeText]}>
             {notificationTimeDraft || strings.settings.notificationTimePlaceholder}
           </Text>
@@ -264,13 +264,20 @@ export function SettingsScreen({
 
       <View style={styles.card}>
         <Text style={styles.sectionEyebrow}>{strings.settings.accountSectionTitle}</Text>
-        <SettingsAction icon="□" label={strings.settings.resetTitle} onPress={onResetGoals} tintColor={theme.accent} />
+        <SettingsAction
+          icon="🗑"
+          label={strings.settings.resetTitle}
+          onPress={onResetGoals}
+          tintColor={theme.accentDark}
+          backgroundColor={theme.accentSoft}
+        />
         <View style={styles.divider} />
         <SettingsAction
           icon="i"
           label={strings.settings.aboutApp}
           onPress={() => setIsAboutOpen(true)}
-          tintColor={theme.accent}
+          tintColor={theme.accentDark}
+          backgroundColor={theme.accentSoft}
         />
       </View>
 
@@ -758,9 +765,17 @@ const styles = StyleSheet.create({
   }
 });
 
-function SettingsIconBubble({ icon, tintColor }: { icon: string; tintColor: string }) {
+function SettingsIconBubble({
+  backgroundColor,
+  icon,
+  tintColor
+}: {
+  backgroundColor: string;
+  icon: string;
+  tintColor: string;
+}) {
   return (
-    <View style={styles.settingIconBubble}>
+    <View style={[styles.settingIconBubble, { backgroundColor }]}>
       <Text style={[styles.settingIcon, { color: tintColor }]}>{icon}</Text>
     </View>
   );
@@ -770,8 +785,10 @@ function SettingsAction({
   icon,
   label,
   onPress,
+  backgroundColor,
   tintColor
 }: {
+  backgroundColor: string;
   icon: string;
   label: string;
   onPress?: () => void;
@@ -779,7 +796,7 @@ function SettingsAction({
 }) {
   return (
     <Pressable accessibilityRole="button" disabled={!onPress} onPress={onPress} style={styles.actionLine}>
-      <SettingsIconBubble icon={icon} tintColor={tintColor} />
+      <SettingsIconBubble backgroundColor={backgroundColor} icon={icon} tintColor={tintColor} />
       <Text style={styles.actionLabel}>{label}</Text>
       <Text style={styles.chevron}>›</Text>
     </Pressable>

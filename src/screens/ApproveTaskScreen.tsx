@@ -14,6 +14,7 @@ import {
 import { AvatarBadge } from "../components/AvatarBadge";
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ProgressBar } from "../components/ProgressBar";
+import { ScreenDecorations } from "../components/ScreenDecorations";
 import { getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
@@ -56,6 +57,8 @@ export function ApproveTaskScreen({
         keyboardShouldPersistTaps="handled"
         style={[styles.scroll, { backgroundColor: theme.parentBackground }]}
       >
+        <View style={[styles.glowTop, { backgroundColor: theme.accentSoft }]} />
+        <ScreenDecorations variant="stars" />
         <View style={styles.header}>
           <Text style={styles.title}>{strings.approveTask.title}</Text>
           <Text style={styles.subtitle}>{strings.approveTask.subtitle}</Text>
@@ -122,7 +125,7 @@ export function ApproveTaskScreen({
             onPress={onOpenChildView}
             style={[styles.childButton, { backgroundColor: theme.accent }]}
           >
-            <Text style={styles.filledButtonText}>{strings.approveTask.childViewButton}</Text>
+            <Text style={styles.childButtonText}>{strings.approveTask.childViewButton}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={onBack} style={styles.backButton}>
             <Text style={styles.backButtonText}>{strings.approveTask.backButton}</Text>
@@ -143,19 +146,29 @@ const styles = StyleSheet.create({
   screen: {
     backgroundColor: colors.parentBackground,
     flexGrow: 1,
-    gap: spacing.lg,
+    gap: spacing.md,
+    overflow: "hidden",
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl
   },
+  glowTop: {
+    borderRadius: 180,
+    height: 220,
+    position: "absolute",
+    right: -84,
+    top: 96,
+    width: 220
+  },
   header: {
     alignItems: "center",
-    gap: spacing.sm
+    gap: spacing.xs,
+    marginBottom: spacing.sm
   },
   title: {
     color: colors.text,
     fontFamily: fonts.heading,
-    fontSize: 28,
+    fontSize: 30,
     fontWeight: "800",
     lineHeight: 40,
     textAlign: "center"
@@ -168,12 +181,10 @@ const styles = StyleSheet.create({
   card: {
     alignItems: "center",
     backgroundColor: colors.surface,
-    borderColor: colors.border,
     borderRadius: radii.lg,
-    borderWidth: 1,
     flexDirection: "row",
     gap: spacing.md,
-    padding: spacing.md,
+    padding: spacing.lg,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 10, width: 0 },
     shadowOpacity: 0.06,
@@ -181,9 +192,9 @@ const styles = StyleSheet.create({
   },
   thumbnail: {
     backgroundColor: colors.surfaceMuted,
-    borderRadius: radii.md,
-    height: 112,
-    width: 112
+    borderRadius: 22,
+    height: 124,
+    width: 124
   },
   cardCopy: {
     flex: 1,
@@ -191,7 +202,7 @@ const styles = StyleSheet.create({
   },
   rewardName: {
     color: colors.text,
-    fontSize: 22,
+    fontSize: 24,
     fontWeight: "800"
   },
   childRow: {
@@ -205,11 +216,9 @@ const styles = StyleSheet.create({
   },
   progressBlock: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
     borderRadius: radii.lg,
-    borderWidth: 1,
     gap: spacing.md,
-    padding: spacing.md,
+    padding: spacing.lg,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.05,
@@ -226,11 +235,9 @@ const styles = StyleSheet.create({
   },
   pinBlock: {
     backgroundColor: colors.surface,
-    borderColor: colors.border,
     borderRadius: radii.lg,
-    borderWidth: 1,
     gap: spacing.md,
-    padding: spacing.md,
+    padding: spacing.lg,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.05,
@@ -272,29 +279,42 @@ const styles = StyleSheet.create({
   },
   approveButton: {
     alignItems: "center",
-    backgroundColor: "#FFD483",
+    backgroundColor: colors.ctaWarning,
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 62
+    minHeight: 58,
+    shadowColor: colors.warningDark,
+    shadowOffset: { height: 8, width: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 14
   },
   childButton: {
     alignItems: "center",
     backgroundColor: colors.primary,
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 62
+    minHeight: 58,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 8, width: 0 },
+    shadowOpacity: 0.14,
+    shadowRadius: 14
   },
   backButton: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 62
+    minHeight: 58
   },
   disabledButton: {
     opacity: 0.55
   },
   filledButtonText: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  childButtonText: {
     color: colors.surface,
     fontSize: 18,
     fontWeight: "800"
