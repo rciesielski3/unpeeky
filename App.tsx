@@ -1,5 +1,15 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import { Alert, Platform, SafeAreaView, StatusBar as NativeStatusBar, StyleSheet, View } from "react-native";
+import {
+  Alert,
+  Modal,
+  Platform,
+  Pressable,
+  SafeAreaView,
+  StatusBar as NativeStatusBar,
+  StyleSheet,
+  Text,
+  View
+} from "react-native";
 import { StatusBar } from "expo-status-bar";
 
 import { AppLoader } from "./src/components/AppLoader";
@@ -16,7 +26,7 @@ import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
 import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
 import { getAppTheme } from "./src/ui/appTheme";
-import { colors } from "./src/ui/theme";
+import { colors, fonts, radii, spacing } from "./src/ui/theme";
 
 export default function App() {
   const [route, setRoute] = useState<AppRoute>("goals");
@@ -24,6 +34,7 @@ export default function App() {
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [pendingRevealGoalId, setPendingRevealGoalId] = useState<string | null>(null);
+  const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
   const [isHydrated, setIsHydrated] = useState(false);
   const shouldSkipNextGoalsSave = useRef(true);
   const shouldSkipNextSettingsSave = useRef(true);
@@ -138,18 +149,14 @@ export default function App() {
   }
 
   function handleResetGoals() {
-    Alert.alert(strings.settings.resetTitle, strings.settings.resetMeta, [
-      { text: strings.settings.backButton, style: "cancel" },
-      {
-        text: strings.settings.resetButton,
-        style: "destructive",
-        onPress: () => {
-          setGoals([]);
-          setSelectedGoalId(null);
-          setRoute("goals");
-        }
-      }
-    ]);
+    setIsResetConfirmOpen(true);
+  }
+
+  function handleConfirmResetGoals() {
+    setGoals([]);
+    setSelectedGoalId(null);
+    setIsResetConfirmOpen(false);
+    setRoute("goals");
   }
 
   function handleSelectMode(appMode: AppSettings["appMode"]) {
@@ -254,6 +261,13 @@ export default function App() {
             theme={appTheme}
           />
         ) : null}
+        <ResetConfirmModal
+          onCancel={() => setIsResetConfirmOpen(false)}
+          onConfirm={handleConfirmResetGoals}
+          themeAccent={appTheme.accent}
+          themeAccentSoft={appTheme.accentSoft}
+          visible={isResetConfirmOpen}
+        />
       </View>
     </SafeAreaView>
   );
@@ -270,6 +284,81 @@ const styles = StyleSheet.create({
   },
   screenSlot: {
     flex: 1
+  },
+  modalOverlay: {
+    alignItems: "center",
+    backgroundColor: colors.modalOverlay,
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg
+  },
+  resetCard: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    padding: spacing.xl,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    width: "100%"
+  },
+  resetIconBubble: {
+    alignItems: "center",
+    borderRadius: radii.pill,
+    height: 64,
+    justifyContent: "center",
+    width: 64
+  },
+  resetIcon: {
+    fontFamily: fonts.heading,
+    fontSize: 36,
+    fontWeight: "900"
+  },
+  resetTitle: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  resetMeta: {
+    color: colors.textMuted,
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "center"
+  },
+  resetActions: {
+    alignSelf: "stretch",
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginTop: spacing.sm
+  },
+  resetCancelButton: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radii.pill,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 52
+  },
+  resetConfirmButton: {
+    alignItems: "center",
+    borderRadius: radii.pill,
+    flex: 1.25,
+    justifyContent: "center",
+    minHeight: 52
+  },
+  resetCancelText: {
+    color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  resetConfirmText: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "800"
   }
 });
 
@@ -286,4 +375,44 @@ function getRouteBackground(route: AppRoute, appTheme: ReturnType<typeof getAppT
     default:
       return appTheme.parentBackground;
   }
+}
+
+function ResetConfirmModal({
+  onCancel,
+  onConfirm,
+  themeAccent,
+  themeAccentSoft,
+  visible
+}: {
+  onCancel: () => void;
+  onConfirm: () => void;
+  themeAccent: string;
+  themeAccentSoft: string;
+  visible: boolean;
+}) {
+  return (
+    <Modal animationType="fade" onRequestClose={onCancel} transparent visible={visible}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.resetCard}>
+          <View style={[styles.resetIconBubble, { backgroundColor: themeAccentSoft }]}>
+            <Text style={[styles.resetIcon, { color: themeAccent }]}>!</Text>
+          </View>
+          <Text style={styles.resetTitle}>{strings.settings.resetTitle}</Text>
+          <Text style={styles.resetMeta}>{strings.settings.resetMeta}</Text>
+          <View style={styles.resetActions}>
+            <Pressable accessibilityRole="button" onPress={onCancel} style={styles.resetCancelButton}>
+              <Text style={styles.resetCancelText}>{strings.settings.backButton}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onConfirm}
+              style={[styles.resetConfirmButton, { backgroundColor: themeAccent }]}
+            >
+              <Text style={styles.resetConfirmText}>{strings.settings.resetButton}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
 }

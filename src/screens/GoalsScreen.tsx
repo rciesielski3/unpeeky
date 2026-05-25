@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -12,6 +12,10 @@ import { strings } from "../i18n/strings";
 import type { AppTheme } from "../ui/appTheme";
 import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
+
+// React Native bundles static image assets through require().
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const INFO_ICON_SOURCE = require("../../assets/icons/settings-info.png");
 
 type GoalsScreenProps = {
   goals: Goal[];
@@ -35,6 +39,7 @@ export function GoalsScreen({
   theme = defaultAppTheme
 }: GoalsScreenProps) {
   const [openMenuGoalId, setOpenMenuGoalId] = useState<string | null>(null);
+  const [isInfoOpen, setIsInfoOpen] = useState(false);
   const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
   const hasReachedFreeLimit = !isPremium && activeGoalsCount >= FREE_GOAL_LIMIT;
   const sortedGoals = useMemo(() => [...goals].sort(compareGoalsByStatus), [goals]);
@@ -50,12 +55,14 @@ export function GoalsScreen({
           <Text style={styles.title}>{strings.goals.title}</Text>
         </View>
         <Pressable
-          accessibilityLabel={strings.goals.settingsButton}
+          accessibilityLabel={strings.goals.infoButton}
           accessibilityRole="button"
-          onPress={onOpenSettings}
+          onPress={() => setIsInfoOpen(true)}
           style={[styles.settingsCircle, { backgroundColor: theme.accentSoft }]}
         >
-          <Text style={styles.settingsIcon}>🔔</Text>
+          <View style={[styles.infoIconGlow, { backgroundColor: theme.accent }]} />
+          <Image source={INFO_ICON_SOURCE} style={[styles.settingsIcon, { tintColor: theme.accentDark }]} />
+          <Text style={styles.infoSparkle}>✦</Text>
         </Pressable>
       </View>
 
@@ -177,16 +184,14 @@ export function GoalsScreen({
           accessibilityRole="button"
           disabled={hasReachedFreeLimit}
           onPress={onAddGoal}
-          style={[
-            styles.addButton,
-            { backgroundColor: theme.accentSoft, borderColor: theme.accent },
-            hasReachedFreeLimit && styles.disabledButton
-          ]}
+          style={[styles.addButton, { backgroundColor: theme.accent }, hasReachedFreeLimit && styles.disabledButton]}
         >
-          <Text style={[styles.addIcon, { color: theme.accentDark }]}>+</Text>
-          <Text style={[styles.addButtonText, { color: theme.accentDark }]}>{strings.goals.newGoalButton}</Text>
+          <Text style={styles.addIcon}>+</Text>
+          <Text style={styles.addButtonText}>{strings.goals.newGoalButton}</Text>
         </Pressable>
       </View>
+
+      <InfoModal onClose={() => setIsInfoOpen(false)} theme={theme} visible={isInfoOpen} />
     </View>
   );
 }
@@ -248,6 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     height: 64,
     justifyContent: "center",
+    overflow: "hidden",
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.1,
@@ -255,7 +261,25 @@ const styles = StyleSheet.create({
     width: 64
   },
   settingsIcon: {
-    fontSize: 28
+    height: 30,
+    width: 30,
+    zIndex: 2
+  },
+  infoIconGlow: {
+    borderRadius: radii.pill,
+    height: 42,
+    opacity: 0.18,
+    position: "absolute",
+    width: 42
+  },
+  infoSparkle: {
+    color: colors.surface,
+    fontSize: 13,
+    fontWeight: "800",
+    position: "absolute",
+    right: 12,
+    top: 12,
+    zIndex: 3
   },
   list: {
     flexGrow: 1,
@@ -309,15 +333,15 @@ const styles = StyleSheet.create({
   thumbnail: {
     backgroundColor: colors.surfaceMuted,
     borderRadius: radii.md,
-    height: 92,
-    width: 92
+    height: 116,
+    width: 116
   },
   cardCopy: {
     flex: 1,
     gap: spacing.xs,
     justifyContent: "center",
-    paddingRight: spacing.xl,
-    paddingVertical: spacing.sm
+    paddingRight: spacing.lg,
+    paddingVertical: spacing.xs
   },
   titleRow: {
     alignItems: "flex-start",
@@ -333,12 +357,12 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: colors.text,
     flex: 1,
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: "800"
   },
   childName: {
     color: colors.textMuted,
-    fontSize: 13,
+    fontSize: 15,
     fontWeight: "600"
   },
   tasksText: {
@@ -358,7 +382,7 @@ const styles = StyleSheet.create({
   },
   percent: {
     color: colors.textMuted,
-    fontSize: 12,
+    fontSize: 11,
     fontWeight: "700"
   },
   menuButton: {
@@ -429,10 +453,7 @@ const styles = StyleSheet.create({
   },
   addButton: {
     alignItems: "center",
-    backgroundColor: "transparent",
-    borderColor: colors.decorationPrimary,
-    borderStyle: "dashed",
-    borderWidth: 2,
+    backgroundColor: colors.primary,
     borderRadius: radii.pill,
     flexDirection: "row",
     gap: spacing.md,
@@ -447,13 +468,13 @@ const styles = StyleSheet.create({
     opacity: 0.45
   },
   addIcon: {
-    color: colors.primaryDark,
+    color: colors.text,
     fontSize: 30,
     fontWeight: "300",
     lineHeight: 34
   },
   addButtonText: {
-    color: colors.primaryDark,
+    color: colors.text,
     fontSize: 18,
     fontWeight: "800"
   },
@@ -473,8 +494,87 @@ const styles = StyleSheet.create({
   limitText: {
     color: colors.textMuted,
     fontSize: 13
+  },
+  modalOverlay: {
+    alignItems: "center",
+    backgroundColor: colors.modalOverlay,
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg
+  },
+  infoCard: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    padding: spacing.xl,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    width: "100%"
+  },
+  infoIcon: {
+    alignItems: "center",
+    borderRadius: radii.pill,
+    height: 64,
+    justifyContent: "center",
+    width: 64
+  },
+  infoIconText: {
+    fontFamily: fonts.heading,
+    fontSize: 34,
+    fontWeight: "800"
+  },
+  infoTitle: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  infoBody: {
+    color: colors.textMuted,
+    fontSize: 16,
+    lineHeight: 24,
+    textAlign: "center"
+  },
+  infoButton: {
+    alignItems: "center",
+    alignSelf: "stretch",
+    borderRadius: radii.pill,
+    justifyContent: "center",
+    minHeight: 54
+  },
+  infoButtonText: {
+    color: colors.surface,
+    fontSize: 17,
+    fontWeight: "800"
   }
 });
+
+function InfoModal({ onClose, theme, visible }: { onClose: () => void; theme: AppTheme; visible: boolean }) {
+  return (
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      <View style={styles.modalOverlay}>
+        <View style={styles.infoCard}>
+          <View style={[styles.infoIcon, { backgroundColor: theme.accentSoft }]}>
+            <Text style={[styles.infoIconText, { color: theme.accentDark }]}>i</Text>
+          </View>
+          <Text style={styles.infoTitle}>{strings.goals.infoTitle}</Text>
+          <Text style={styles.infoBody}>{strings.goals.infoBody}</Text>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onClose}
+            style={[styles.infoButton, { backgroundColor: theme.accent }]}
+          >
+            <Text style={styles.infoButtonText}>{strings.goals.infoClose}</Text>
+          </Pressable>
+        </View>
+      </View>
+    </Modal>
+  );
+}
 
 function compareGoalsByStatus(firstGoal: Goal, secondGoal: Goal): number {
   return Number(isGoalComplete(firstGoal)) - Number(isGoalComplete(secondGoal));

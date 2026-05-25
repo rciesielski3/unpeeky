@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
@@ -22,6 +22,16 @@ type SettingsScreenProps = {
 const MODE_OPTIONS: AppMode[] = ["singleDevice", "twoDevices"];
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => hour);
 const MINUTE_OPTIONS = [0, 15, 30, 45];
+
+// React Native bundles static image assets through require().
+/* eslint-disable @typescript-eslint/no-var-requires */
+const SETTINGS_ICON_SOURCES = {
+  bell: require("../../assets/icons/settings-bell.png"),
+  bolt: require("../../assets/icons/settings-bolt.png"),
+  info: require("../../assets/icons/settings-info.png"),
+  trash: require("../../assets/icons/settings-trash.png")
+} as const;
+/* eslint-enable @typescript-eslint/no-var-requires */
 
 export function SettingsScreen({
   onResetGoals,
@@ -191,7 +201,7 @@ export function SettingsScreen({
       <View style={styles.card}>
         <Text style={styles.sectionEyebrow}>{strings.settings.notificationsSectionTitle}</Text>
         <View style={styles.settingLine}>
-          <SettingsIconBubble icon="♢" tintColor={theme.accent} />
+          <SettingsIconBubble backgroundColor={theme.accentSoft} name="bell" tintColor={theme.accentDark} />
           <Text style={styles.lineTitle}>{strings.settings.dailyReminderTitle}</Text>
           <Switch
             onValueChange={(isEnabled) => void handleReminderToggle(isEnabled)}
@@ -203,7 +213,7 @@ export function SettingsScreen({
         </View>
         <View style={styles.divider} />
         <Pressable accessibilityRole="button" onPress={handleOpenTimePicker} style={styles.settingLine}>
-          <SettingsIconBubble icon="↯" tintColor={theme.accent} />
+          <SettingsIconBubble backgroundColor={theme.accentSoft} name="bolt" tintColor={theme.accentDark} />
           <Text style={[styles.timeValue, !isNotificationTimeValid && styles.invalidTimeText]}>
             {notificationTimeDraft || strings.settings.notificationTimePlaceholder}
           </Text>
@@ -264,13 +274,20 @@ export function SettingsScreen({
 
       <View style={styles.card}>
         <Text style={styles.sectionEyebrow}>{strings.settings.accountSectionTitle}</Text>
-        <SettingsAction icon="□" label={strings.settings.resetTitle} onPress={onResetGoals} tintColor={theme.accent} />
+        <SettingsAction
+          iconName="trash"
+          label={strings.settings.resetTitle}
+          onPress={onResetGoals}
+          tintColor={theme.accentDark}
+          backgroundColor={theme.accentSoft}
+        />
         <View style={styles.divider} />
         <SettingsAction
-          icon="i"
+          iconName="info"
           label={strings.settings.aboutApp}
           onPress={() => setIsAboutOpen(true)}
-          tintColor={theme.accent}
+          tintColor={theme.accentDark}
+          backgroundColor={theme.accentSoft}
         />
       </View>
 
@@ -367,6 +384,10 @@ const styles = StyleSheet.create({
     height: 48,
     justifyContent: "center",
     width: 48
+  },
+  settingIconImage: {
+    height: 26,
+    width: 26
   },
   sectionEyebrow: {
     color: colors.textMuted,
@@ -568,7 +589,7 @@ const styles = StyleSheet.create({
   },
   modalOverlay: {
     alignItems: "center",
-    backgroundColor: "rgba(16, 24, 40, 0.28)",
+    backgroundColor: colors.modalOverlay,
     flex: 1,
     justifyContent: "center",
     padding: spacing.lg
@@ -758,28 +779,40 @@ const styles = StyleSheet.create({
   }
 });
 
-function SettingsIconBubble({ icon, tintColor }: { icon: string; tintColor: string }) {
+type SettingsIconName = "bell" | "bolt" | "trash" | "info";
+
+function SettingsIconBubble({
+  backgroundColor,
+  name,
+  tintColor
+}: {
+  backgroundColor: string;
+  name: SettingsIconName;
+  tintColor: string;
+}) {
   return (
-    <View style={styles.settingIconBubble}>
-      <Text style={[styles.settingIcon, { color: tintColor }]}>{icon}</Text>
+    <View style={[styles.settingIconBubble, { backgroundColor }]}>
+      <Image source={SETTINGS_ICON_SOURCES[name]} style={[styles.settingIconImage, { tintColor }]} />
     </View>
   );
 }
 
 function SettingsAction({
-  icon,
+  iconName,
   label,
   onPress,
+  backgroundColor,
   tintColor
 }: {
-  icon: string;
+  backgroundColor: string;
+  iconName: SettingsIconName;
   label: string;
   onPress?: () => void;
   tintColor: string;
 }) {
   return (
     <Pressable accessibilityRole="button" disabled={!onPress} onPress={onPress} style={styles.actionLine}>
-      <SettingsIconBubble icon={icon} tintColor={tintColor} />
+      <SettingsIconBubble backgroundColor={backgroundColor} name={iconName} tintColor={tintColor} />
       <Text style={styles.actionLabel}>{label}</Text>
       <Text style={styles.chevron}>›</Text>
     </Pressable>

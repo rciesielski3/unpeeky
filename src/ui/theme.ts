@@ -32,6 +32,7 @@ export const colors = {
   confettiBlue: "#74C0FC",
   confettiPink: "#FAA2C1",
   confettiGreen: "#8CE99A",
+  modalOverlay: "rgba(16, 24, 40, 0.28)",
   avatarPastelBackgrounds: ["#E7F8D9", "#EEF0FF", "#F0E4FF", "#FFF0D7", "#FFF5C8", "#F1E8FF"]
 } as const;
 
