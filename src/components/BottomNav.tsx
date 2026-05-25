@@ -2,6 +2,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { strings } from "../i18n/strings";
 import type { AppRoute } from "../navigation/routes";
+import type { AppTheme } from "../ui/appTheme";
+import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type BottomNavProps = {
@@ -11,6 +13,7 @@ type BottomNavProps = {
   onOpenChild: () => void;
   onOpenGoals: () => void;
   onOpenSettings: () => void;
+  theme?: AppTheme;
 };
 
 type NavItem = {
@@ -27,12 +30,13 @@ export function BottomNav({
   onAddGoal,
   onOpenChild,
   onOpenGoals,
-  onOpenSettings
+  onOpenSettings,
+  theme = defaultAppTheme
 }: BottomNavProps) {
   const items: NavItem[] = [
-    { id: "goals", icon: "▣", label: strings.navigation.goals, onPress: onOpenGoals },
+    { id: "goals", icon: "⌂", label: strings.navigation.goals, onPress: onOpenGoals },
     { id: "addGoal", icon: "+", label: strings.navigation.add, onPress: onAddGoal },
-    { id: "child", disabled: !hasChildView, icon: "♟", label: strings.navigation.child, onPress: onOpenChild },
+    { id: "child", disabled: !hasChildView, icon: "☆", label: strings.navigation.child, onPress: onOpenChild },
     { id: "settings", icon: "⚙", label: strings.navigation.settings, onPress: onOpenSettings }
   ];
 
@@ -49,10 +53,32 @@ export function BottomNav({
             disabled={item.disabled}
             key={item.id}
             onPress={item.onPress}
-            style={[styles.item, isActive && styles.activeItem, item.disabled && styles.disabledItem]}
+            style={[
+              styles.item,
+              isActive && { backgroundColor: theme.accentSoft },
+              item.id === "addGoal" && styles.addItem,
+              isActive && item.id === "addGoal" && { backgroundColor: theme.accent },
+              item.disabled && styles.disabledItem
+            ]}
           >
-            <Text style={[styles.icon, isActive && styles.activeText]}>{item.icon}</Text>
-            <Text style={[styles.label, isActive && styles.activeText]}>{item.label}</Text>
+            <Text
+              style={[
+                styles.icon,
+                isActive && { color: theme.accentDark },
+                isActive && item.id === "addGoal" && styles.activeAddText
+              ]}
+            >
+              {item.icon}
+            </Text>
+            <Text
+              style={[
+                styles.label,
+                isActive && { color: theme.accentDark },
+                isActive && item.id === "addGoal" && styles.activeAddText
+              ]}
+            >
+              {item.label}
+            </Text>
           </Pressable>
         );
       })}
@@ -68,9 +94,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     marginHorizontal: spacing.lg,
-    padding: spacing.sm,
+    padding: spacing.xs,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 10, width: 0 },
     shadowOpacity: 0.1,
@@ -83,8 +109,8 @@ const styles = StyleSheet.create({
     gap: 2,
     paddingVertical: spacing.sm
   },
-  activeItem: {
-    backgroundColor: colors.primarySoft
+  addItem: {
+    marginHorizontal: spacing.sm
   },
   disabledItem: {
     opacity: 0.35
@@ -101,7 +127,7 @@ const styles = StyleSheet.create({
     fontSize: 12,
     fontWeight: "700"
   },
-  activeText: {
-    color: colors.primaryDark
+  activeAddText: {
+    color: colors.surface
   }
 });

@@ -4,9 +4,12 @@ import { FlatList, Image, Pressable, StyleSheet, Text, View } from "react-native
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
 import { ProgressBar } from "../components/ProgressBar";
+import { ScreenDecorations } from "../components/ScreenDecorations";
 import { FREE_GOAL_LIMIT, getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
+import type { AppTheme } from "../ui/appTheme";
+import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type GoalsScreenProps = {
@@ -17,6 +20,7 @@ type GoalsScreenProps = {
   onEditGoal: (goalId: string) => void;
   onOpenGoal: (goalId: string) => void;
   onOpenSettings: () => void;
+  theme?: AppTheme;
 };
 
 export function GoalsScreen({
@@ -26,7 +30,8 @@ export function GoalsScreen({
   onDeleteGoal,
   onEditGoal,
   onOpenGoal,
-  onOpenSettings
+  onOpenSettings,
+  theme = defaultAppTheme
 }: GoalsScreenProps) {
   const [openMenuGoalId, setOpenMenuGoalId] = useState<string | null>(null);
   const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
@@ -34,9 +39,10 @@ export function GoalsScreen({
   const sortedGoals = useMemo(() => [...goals].sort(compareGoalsByStatus), [goals]);
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.glowTop} />
-      <View style={styles.glowBottom} />
+    <View style={[styles.screen, { backgroundColor: theme.parentBackground }]}>
+      <View style={[styles.glowTop, { backgroundColor: theme.accentSoft }]} />
+      <View style={[styles.glowBottom, { backgroundColor: theme.accentSoft }]} />
+      <ScreenDecorations variant="stars" />
       <View style={styles.header}>
         <View style={styles.headerCopy}>
           <Text style={styles.hello}>{strings.goals.greeting}</Text>
@@ -46,7 +52,7 @@ export function GoalsScreen({
           accessibilityLabel={strings.goals.settingsButton}
           accessibilityRole="button"
           onPress={onOpenSettings}
-          style={styles.settingsCircle}
+          style={[styles.settingsCircle, { backgroundColor: theme.accentSoft }]}
         >
           <Text style={styles.settingsIcon}>🔔</Text>
         </Pressable>
@@ -66,7 +72,7 @@ export function GoalsScreen({
           const isCompleted = isGoalComplete(item);
           const progress = getGoalProgress(item);
           const progressPercent = Math.round(progress * 100);
-          const progressColor = getGoalAccent(item.id);
+          const progressColor = getGoalAccent(item.id, theme);
           const isMenuOpen = openMenuGoalId === item.id;
 
           return (
@@ -164,10 +170,10 @@ export function GoalsScreen({
           accessibilityRole="button"
           disabled={hasReachedFreeLimit}
           onPress={onAddGoal}
-          style={[styles.addButton, hasReachedFreeLimit && styles.disabledButton]}
+          style={[styles.addButton, { borderColor: theme.accentSoft }, hasReachedFreeLimit && styles.disabledButton]}
         >
-          <Text style={styles.addIcon}>+</Text>
-          <Text style={styles.addButtonText}>{strings.goals.newGoalButton}</Text>
+          <Text style={[styles.addIcon, { color: theme.accentDark }]}>+</Text>
+          <Text style={[styles.addButtonText, { color: theme.accentDark }]}>{strings.goals.newGoalButton}</Text>
         </Pressable>
       </View>
     </View>
@@ -287,17 +293,17 @@ const styles = StyleSheet.create({
   cardHeader: {
     alignItems: "stretch",
     flexDirection: "row",
-    gap: spacing.xl
+    gap: spacing.md
   },
   thumbnail: {
     backgroundColor: colors.surfaceMuted,
-    borderRadius: radii.lg,
-    height: 166,
-    width: 166
+    borderRadius: radii.md,
+    height: 92,
+    width: 92
   },
   cardCopy: {
     flex: 1,
-    gap: spacing.md,
+    gap: spacing.xs,
     justifyContent: "center",
     paddingRight: spacing.xl,
     paddingVertical: spacing.sm
@@ -316,17 +322,17 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: colors.text,
     flex: 1,
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "800"
   },
   childName: {
     color: colors.textMuted,
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "600"
   },
   tasksText: {
     color: colors.text,
-    fontSize: 16
+    fontSize: 13
   },
   completedTasks: {
     fontWeight: "800"
@@ -341,7 +347,7 @@ const styles = StyleSheet.create({
   },
   percent: {
     color: colors.textMuted,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "700"
   },
   menuButton: {
@@ -409,7 +415,10 @@ const styles = StyleSheet.create({
   },
   addButton: {
     alignItems: "center",
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
+    borderColor: colors.decorationPrimary,
+    borderStyle: "dashed",
+    borderWidth: 2,
     borderRadius: radii.pill,
     flexDirection: "row",
     gap: spacing.md,
@@ -424,13 +433,13 @@ const styles = StyleSheet.create({
     opacity: 0.45
   },
   addIcon: {
-    color: colors.surface,
+    color: colors.primaryDark,
     fontSize: 30,
     fontWeight: "300",
     lineHeight: 34
   },
   addButtonText: {
-    color: colors.surface,
+    color: colors.primaryDark,
     fontSize: 18,
     fontWeight: "800"
   },
@@ -457,9 +466,9 @@ function compareGoalsByStatus(firstGoal: Goal, secondGoal: Goal): number {
   return Number(isGoalComplete(firstGoal)) - Number(isGoalComplete(secondGoal));
 }
 
-function getGoalAccent(goalId: string): string {
-  const accents = [colors.primary, colors.warning, colors.accent] as const;
+function getGoalAccent(goalId: string, theme: AppTheme): string {
+  const accents = [theme.accent, colors.warning, colors.accent] as const;
   const hash = goalId.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0);
 
-  return accents[hash % accents.length] ?? colors.primary;
+  return accents[hash % accents.length] ?? theme.accent;
 }

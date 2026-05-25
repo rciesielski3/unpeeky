@@ -9,11 +9,12 @@ import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { ModeSelectionScreen } from "./src/screens/ModeSelectionScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
-import { completeTask, createGoal, getTileColor, normalizeSettings, updateGoal } from "./src/domain/goal";
+import { completeTask, createGoal, normalizeSettings, updateGoal } from "./src/domain/goal";
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
 import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
+import { getAppTheme } from "./src/ui/appTheme";
 import { colors } from "./src/ui/theme";
 
 export default function App() {
@@ -21,6 +22,7 @@ export default function App() {
   const [goals, setGoals] = useState<Goal[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
+  const [pendingRevealGoalId, setPendingRevealGoalId] = useState<string | null>(null);
   const [isHydrated, setIsHydrated] = useState(false);
   const shouldSkipNextGoalsSave = useRef(true);
   const shouldSkipNextSettingsSave = useRef(true);
@@ -101,8 +103,14 @@ export default function App() {
     setRoute("approveTask");
   }
 
-  function handleCompleteTask(goalId: string) {
-    setGoals((currentGoals) => currentGoals.map((goal) => (goal.id === goalId ? completeTask(goal) : goal)));
+  function handleApproveTask(goalId: string) {
+    setPendingRevealGoalId(goalId);
+    setRoute("child");
+  }
+
+  function handleRevealTile(goalId: string, tileId: number) {
+    setGoals((currentGoals) => currentGoals.map((goal) => (goal.id === goalId ? completeTask(goal, tileId) : goal)));
+    setPendingRevealGoalId(null);
   }
 
   function handleDeleteGoal(goalId: string) {
@@ -167,6 +175,7 @@ export default function App() {
     );
   }
 
+  const appTheme = getAppTheme(settings.tileColorId);
   const screen = !settings.appMode ? (
     <ModeSelectionScreen initialMode={settings.appMode} onSelectMode={handleSelectMode} />
   ) : (
@@ -180,29 +189,38 @@ export default function App() {
           onEditGoal={handleStartEditGoal}
           onOpenGoal={handleOpenGoal}
           onOpenSettings={() => setRoute("settings")}
+          theme={appTheme}
         />
       ) : null}
       {route === "addGoal" ? (
-        <AddGoalScreen initialGoal={activeGoal ?? null} onBack={() => setRoute("goals")} onSave={handleSaveGoal} />
+        <AddGoalScreen
+          initialGoal={activeGoal ?? null}
+          onBack={() => setRoute("goals")}
+          onSave={handleSaveGoal}
+          theme={appTheme}
+        />
       ) : null}
       {route === "approveTask" && activeGoal ? (
         <ApproveTaskScreen
           goal={activeGoal}
           onApproveTask={() => {
-            handleCompleteTask(activeGoal.id);
-            setRoute("child");
+            handleApproveTask(activeGoal.id);
           }}
           onBack={() => setRoute("goals")}
           onOpenChildView={() => setRoute("child")}
           parentPin={settings.parentPin}
+          theme={appTheme}
         />
       ) : null}
       {route === "child" && activeGoal ? (
         <ChildScreen
+          canRevealTile={pendingRevealGoalId === activeGoal.id}
           goal={activeGoal}
           onBack={() => setRoute("approveTask")}
           onCompleteTask={() => setRoute("approveTask")}
-          tileColor={getTileColor(settings.tileColorId)}
+          onRevealTile={(tileId) => handleRevealTile(activeGoal.id, tileId)}
+          theme={appTheme}
+          tileColor={appTheme.tile}
         />
       ) : null}
       {route === "settings" ? (
@@ -211,12 +229,13 @@ export default function App() {
           onResetGoals={handleResetGoals}
           onSettingsChange={setSettings}
           settings={settings}
+          theme={appTheme}
         />
       ) : null}
     </>
   );
   const shouldShowBottomNav = Boolean(settings.appMode) && route !== "approveTask";
-  const routeBackground = getRouteBackground(route);
+  const routeBackground = getRouteBackground(route, appTheme);
 
   return (
     <SafeAreaView style={[styles.safeArea, { backgroundColor: routeBackground }]}>
@@ -231,6 +250,7 @@ export default function App() {
             onOpenChild={handleOpenChildTab}
             onOpenGoals={() => setRoute("goals")}
             onOpenSettings={() => setRoute("settings")}
+            theme={appTheme}
           />
         ) : null}
       </View>
@@ -261,17 +281,17 @@ const styles = StyleSheet.create({
   }
 });
 
-function getRouteBackground(route: AppRoute): string {
+function getRouteBackground(route: AppRoute, appTheme: ReturnType<typeof getAppTheme>): string {
   switch (route) {
     case "addGoal":
-      return colors.addBackground;
+      return appTheme.addBackground;
     case "child":
-      return colors.childBackground;
+      return appTheme.childBackground;
     case "settings":
-      return colors.settingsBackground;
+      return appTheme.settingsBackground;
     case "approveTask":
     case "goals":
     default:
-      return colors.parentBackground;
+      return appTheme.parentBackground;
   }
 }

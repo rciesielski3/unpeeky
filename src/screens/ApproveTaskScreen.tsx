@@ -16,6 +16,8 @@ import { ProgressBar } from "../components/ProgressBar";
 import { getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
+import type { AppTheme } from "../ui/appTheme";
+import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ApproveTaskScreenProps = {
@@ -24,9 +26,17 @@ type ApproveTaskScreenProps = {
   onBack: () => void;
   onOpenChildView: () => void;
   parentPin: string;
+  theme?: AppTheme;
 };
 
-export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView, parentPin }: ApproveTaskScreenProps) {
+export function ApproveTaskScreen({
+  goal,
+  onApproveTask,
+  onBack,
+  onOpenChildView,
+  parentPin,
+  theme = defaultAppTheme
+}: ApproveTaskScreenProps) {
   const [pinDraft, setPinDraft] = useState("");
   const isComplete = goal.completed;
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
@@ -38,7 +48,11 @@ export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView
       keyboardVerticalOffset={spacing.lg}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={[styles.screen, { backgroundColor: theme.parentBackground }]}
+        keyboardShouldPersistTaps="handled"
+        style={[styles.scroll, { backgroundColor: theme.parentBackground }]}
+      >
         <View style={styles.header}>
           <Text style={styles.title}>{strings.approveTask.title}</Text>
           <Text style={styles.subtitle}>{strings.approveTask.subtitle}</Text>
@@ -61,7 +75,7 @@ export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView
         </View>
 
         <View style={styles.progressBlock}>
-          <ProgressBar progress={getGoalProgress(goal)} />
+          <ProgressBar color={theme.accent} progress={getGoalProgress(goal)} />
           <Text style={styles.progressText}>{strings.approveTask.progress(goal.completedTasks, goal.totalTasks)}</Text>
           {!isComplete && <Text style={styles.remainingText}>{strings.approveTask.remaining(remainingTasks)}</Text>}
         </View>
@@ -98,7 +112,11 @@ export function ApproveTaskScreen({ goal, onApproveTask, onBack, onOpenChildView
               <Text style={styles.filledButtonText}>{strings.approveTask.approveButton}</Text>
             </Pressable>
           ) : null}
-          <Pressable accessibilityRole="button" onPress={onOpenChildView} style={styles.childButton}>
+          <Pressable
+            accessibilityRole="button"
+            onPress={onOpenChildView}
+            style={[styles.childButton, { backgroundColor: theme.accent }]}
+          >
             <Text style={styles.filledButtonText}>{strings.approveTask.childViewButton}</Text>
           </Pressable>
           <Pressable accessibilityRole="button" onPress={onBack} style={styles.backButton}>
@@ -120,7 +138,7 @@ const styles = StyleSheet.create({
   screen: {
     backgroundColor: colors.parentBackground,
     flexGrow: 1,
-    gap: spacing.xl,
+    gap: spacing.lg,
     paddingBottom: spacing.xl,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl
@@ -132,25 +150,25 @@ const styles = StyleSheet.create({
   title: {
     color: colors.text,
     fontFamily: fonts.heading,
-    fontSize: 34,
+    fontSize: 28,
     fontWeight: "800",
     lineHeight: 40,
     textAlign: "center"
   },
   subtitle: {
     color: colors.textMuted,
-    fontSize: 22,
+    fontSize: 18,
     textAlign: "center"
   },
   card: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 30,
+    borderRadius: radii.lg,
     borderWidth: 1,
     flexDirection: "row",
-    gap: spacing.lg,
-    padding: spacing.xl,
+    gap: spacing.md,
+    padding: spacing.md,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 10, width: 0 },
     shadowOpacity: 0.06,
@@ -158,17 +176,17 @@ const styles = StyleSheet.create({
   },
   thumbnail: {
     backgroundColor: colors.surfaceMuted,
-    borderRadius: radii.lg,
-    height: 154,
-    width: 154
+    borderRadius: radii.md,
+    height: 112,
+    width: 112
   },
   cardCopy: {
     flex: 1,
-    gap: spacing.lg
+    gap: spacing.md
   },
   rewardName: {
     color: colors.text,
-    fontSize: 30,
+    fontSize: 22,
     fontWeight: "800"
   },
   childRow: {
@@ -178,15 +196,15 @@ const styles = StyleSheet.create({
   },
   meta: {
     color: colors.textMuted,
-    fontSize: 22
+    fontSize: 18
   },
   progressBlock: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 26,
+    borderRadius: radii.lg,
     borderWidth: 1,
     gap: spacing.md,
-    padding: spacing.xl,
+    padding: spacing.md,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.05,
@@ -194,20 +212,20 @@ const styles = StyleSheet.create({
   },
   progressText: {
     color: colors.text,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "800"
   },
   remainingText: {
     color: colors.textMuted,
-    fontSize: 22
+    fontSize: 18
   },
   pinBlock: {
     backgroundColor: colors.surface,
     borderColor: colors.border,
-    borderRadius: 26,
+    borderRadius: radii.lg,
     borderWidth: 1,
     gap: spacing.md,
-    padding: spacing.xl,
+    padding: spacing.md,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.05,
@@ -215,12 +233,12 @@ const styles = StyleSheet.create({
   },
   pinTitle: {
     color: colors.text,
-    fontSize: 24,
+    fontSize: 20,
     fontWeight: "800"
   },
   pinMeta: {
     color: colors.textMuted,
-    fontSize: 20,
+    fontSize: 16,
     marginTop: spacing.xs
   },
   pinInput: {
@@ -229,7 +247,7 @@ const styles = StyleSheet.create({
     borderRadius: 20,
     borderWidth: 1,
     color: colors.text,
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "800",
     letterSpacing: 8,
     paddingHorizontal: spacing.md,
@@ -252,33 +270,33 @@ const styles = StyleSheet.create({
     backgroundColor: "#FFD483",
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 90
+    minHeight: 62
   },
   childButton: {
     alignItems: "center",
     backgroundColor: colors.primary,
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 90
+    minHeight: 62
   },
   backButton: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 90
+    minHeight: 62
   },
   disabledButton: {
     opacity: 0.55
   },
   filledButtonText: {
     color: colors.surface,
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "800"
   },
   backButtonText: {
     color: colors.primaryDark,
-    fontSize: 22,
+    fontSize: 18,
     fontWeight: "800"
   }
 });

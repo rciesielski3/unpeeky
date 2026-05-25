@@ -13,11 +13,14 @@ import {
 } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
+import { ScreenDecorations } from "../components/ScreenDecorations";
 import { AVATARS, DEFAULT_AVATAR_ID } from "../domain/avatar";
 import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { Goal, GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
+import type { AppTheme } from "../ui/appTheme";
+import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ImageSource = "camera" | "gallery";
@@ -26,9 +29,10 @@ type AddGoalScreenProps = {
   initialGoal?: Goal | null;
   onBack: () => void;
   onSave: (draft: GoalDraft) => void;
+  theme?: AppTheme;
 };
 
-export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScreenProps) {
+export function AddGoalScreen({ initialGoal = null, onBack, onSave, theme = defaultAppTheme }: AddGoalScreenProps) {
   const isEditing = initialGoal !== null;
   const [childName, setChildName] = useState(initialGoal?.childName ?? "");
   const [rewardName, setRewardName] = useState(initialGoal?.rewardName ?? "");
@@ -113,7 +117,12 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
       keyboardVerticalOffset={spacing.lg}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={[styles.screen, { backgroundColor: theme.addBackground }]}
+        keyboardShouldPersistTaps="handled"
+        style={[styles.scroll, { backgroundColor: theme.addBackground }]}
+      >
+        <ScreenDecorations variant="sunny" />
         <View style={styles.header}>
           <Pressable
             accessibilityLabel={strings.addGoal.backButton}
@@ -121,12 +130,25 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
             onPress={onBack}
             style={styles.backButton}
           >
-            <Text style={styles.backIcon}>‹</Text>
+            <Text style={[styles.backIcon, { color: theme.accent }]}>×</Text>
           </Pressable>
-          <Text style={styles.title}>{isEditing ? strings.addGoal.editTitle : strings.addGoal.title}</Text>
-          <View accessibilityRole="image" style={styles.starBadge}>
-            <Text style={styles.starIcon}>⭐</Text>
+          <View style={styles.headerCopy}>
+            <Text style={styles.title}>{isEditing ? strings.addGoal.editTitle : strings.addGoal.title}</Text>
+            <Text style={styles.subtitle}>{strings.addGoal.subtitle}</Text>
           </View>
+          <View style={styles.headerSpacer} />
+        </View>
+        <View accessibilityRole="progressbar" style={styles.stepIndicator}>
+          {[0, 1, 2, 3, 4].map((stepIndex) => (
+            <View
+              key={stepIndex}
+              style={[
+                styles.stepSegment,
+                { backgroundColor: theme.accentSoft },
+                stepIndex < 3 && { backgroundColor: theme.accent }
+              ]}
+            />
+          ))}
         </View>
 
         <View style={styles.formCard}>
@@ -179,7 +201,10 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
                   accessibilityState={{ selected: option === totalTasks }}
                   key={option}
                   onPress={() => setTotalTasks(option)}
-                  style={[styles.tileOption, option === totalTasks && styles.selectedTile]}
+                  style={[
+                    styles.tileOption,
+                    option === totalTasks && { backgroundColor: theme.accent, borderColor: theme.accentDark }
+                  ]}
                 >
                   <Text style={[styles.tileOptionText, option === totalTasks && styles.selectedTileText]}>
                     {option}
@@ -226,7 +251,7 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
             accessibilityRole="button"
             disabled={!canSave}
             onPress={handleSave}
-            style={[styles.saveButton, !canSave && styles.disabledButton]}
+            style={[styles.saveButton, { backgroundColor: theme.accent }, !canSave && styles.disabledButton]}
           >
             <Text style={styles.saveButtonText}>
               {isEditing ? strings.addGoal.updateButton : strings.addGoal.saveButton}
@@ -258,48 +283,62 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.md,
     justifyContent: "space-between",
-    minHeight: 84
+    minHeight: 70
   },
   backButton: {
     alignItems: "center",
     backgroundColor: colors.surface,
     borderRadius: radii.pill,
-    height: 58,
+    height: 48,
     justifyContent: "center",
     shadowColor: colors.warningDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.12,
     shadowRadius: 14,
-    width: 58
+    width: 48
   },
   backIcon: {
-    color: colors.warning,
-    fontSize: 42,
+    color: colors.primary,
+    fontSize: 34,
     fontWeight: "700",
-    lineHeight: 46
+    lineHeight: 38
   },
-  starBadge: {
-    alignItems: "center",
-    height: 72,
-    justifyContent: "center",
-    width: 72
-  },
-  starIcon: {
-    fontSize: 56
+  headerCopy: {
+    alignItems: "flex-start",
+    flex: 1
   },
   title: {
     color: colors.text,
     fontFamily: fonts.heading,
-    flex: 1,
-    fontSize: 28,
+    fontSize: 22,
     fontWeight: "800",
-    textAlign: "center"
+    lineHeight: 28
+  },
+  subtitle: {
+    color: colors.textMuted,
+    fontSize: 14,
+    fontWeight: "600",
+    marginTop: 2
+  },
+  headerSpacer: {
+    width: 48
+  },
+  stepIndicator: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginBottom: spacing.sm
+  },
+  stepSegment: {
+    backgroundColor: colors.primarySoft,
+    borderRadius: radii.pill,
+    flex: 1,
+    height: 6
   },
   formCard: {
     backgroundColor: colors.surface,
-    borderRadius: 26,
-    gap: spacing.lg,
-    padding: spacing.lg,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    padding: spacing.md,
     shadowColor: colors.warningDark,
     shadowOffset: { height: 12, width: 0 },
     shadowOpacity: 0.08,
@@ -329,7 +368,7 @@ const styles = StyleSheet.create({
   tileOptions: {
     flexDirection: "row",
     flexWrap: "wrap",
-    gap: spacing.sm,
+    gap: spacing.xs,
     justifyContent: "space-between"
   },
   tileOption: {
@@ -339,7 +378,7 @@ const styles = StyleSheet.create({
     borderRadius: 16,
     borderWidth: 1,
     justifyContent: "center",
-    minHeight: 54,
+    minHeight: 46,
     width: "22%"
   },
   tileOptionText: {
@@ -347,10 +386,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "700",
     textAlign: "center"
-  },
-  selectedTile: {
-    borderColor: colors.warning,
-    backgroundColor: "#FFD338"
   },
   selectedTileText: {
     color: colors.text,
@@ -366,9 +401,9 @@ const styles = StyleSheet.create({
     borderColor: colors.border,
     borderRadius: 999,
     borderWidth: 2,
-    height: 50,
+    height: 46,
     justifyContent: "center",
-    width: 50
+    width: 46
   },
   selectedAvatar: {
     borderColor: colors.warning,
@@ -383,8 +418,8 @@ const styles = StyleSheet.create({
     borderWidth: 2,
     gap: spacing.md,
     justifyContent: "center",
-    minHeight: 190,
-    padding: spacing.lg
+    minHeight: 150,
+    padding: spacing.md
   },
   photoPreview: {
     aspectRatio: 1,
@@ -421,7 +456,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.ctaWarning,
     borderRadius: radii.pill,
     justifyContent: "center",
-    minHeight: 60,
+    minHeight: 54,
     shadowColor: colors.warningDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.2,
