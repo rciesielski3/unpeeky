@@ -1,5 +1,5 @@
 import { useEffect, useMemo } from "react";
-import { ImageBackground, StyleSheet, Text, View } from "react-native";
+import { ImageBackground, Pressable, StyleSheet, Text, View } from "react-native";
 import Animated, { useAnimatedStyle, useSharedValue, withSpring } from "react-native-reanimated";
 
 import { DEFAULT_TILE_COUNT } from "../domain/goal";
@@ -11,11 +11,13 @@ type TileGridProps = {
   totalTiles?: number;
   revealedCount: number;
   revealOrder: number[];
+  onTilePress?: (tileId: number) => void;
   tileColor?: string;
 };
 
 export function TileGrid({
   imageUri,
+  onTilePress,
   totalTiles = DEFAULT_TILE_COUNT,
   revealedCount,
   revealOrder,
@@ -25,6 +27,7 @@ export function TileGrid({
   const revealedTileIds = useMemo(() => getRevealedTileIds(revealOrder, revealedCount), [revealOrder, revealedCount]);
   const layout = useMemo(() => getTileGridLayout(totalTiles), [totalTiles]);
   const tileRows = useMemo(() => createTileRows(tiles, layout.columns), [layout.columns, tiles]);
+  const canRevealTile = typeof onTilePress === "function";
 
   return (
     <ImageBackground source={{ uri: imageUri }} resizeMode="cover" style={styles.image} imageStyle={styles.imageRadius}>
@@ -34,7 +37,15 @@ export function TileGrid({
             <View key={rowIndex} style={styles.tileRow}>
               {rowTiles.map((tile) => (
                 <View key={tile} style={styles.tileSlot}>
-                  <AnimatedTile isRevealed={revealedTileIds.has(tile)} tileColor={tileColor} />
+                  <Pressable
+                    accessibilityLabel={`Kafelek ${tile + 1}`}
+                    accessibilityRole={canRevealTile ? "button" : "image"}
+                    disabled={!canRevealTile || revealedTileIds.has(tile)}
+                    onPress={() => onTilePress?.(tile)}
+                    style={styles.tilePressable}
+                  >
+                    <AnimatedTile isRevealed={revealedTileIds.has(tile)} tileColor={tileColor} />
+                  </Pressable>
                 </View>
               ))}
             </View>
@@ -110,6 +121,9 @@ const styles = StyleSheet.create({
     borderRadius: 6,
     flex: 1,
     overflow: "hidden"
+  },
+  tilePressable: {
+    flex: 1
   },
   tile: {
     alignItems: "center",

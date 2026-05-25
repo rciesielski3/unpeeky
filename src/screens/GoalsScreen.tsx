@@ -8,6 +8,8 @@ import { ScreenDecorations } from "../components/ScreenDecorations";
 import { FREE_GOAL_LIMIT, getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
+import type { AppTheme } from "../ui/appTheme";
+import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type GoalsScreenProps = {
@@ -18,6 +20,7 @@ type GoalsScreenProps = {
   onEditGoal: (goalId: string) => void;
   onOpenGoal: (goalId: string) => void;
   onOpenSettings: () => void;
+  theme?: AppTheme;
 };
 
 export function GoalsScreen({
@@ -27,7 +30,8 @@ export function GoalsScreen({
   onDeleteGoal,
   onEditGoal,
   onOpenGoal,
-  onOpenSettings
+  onOpenSettings,
+  theme = defaultAppTheme
 }: GoalsScreenProps) {
   const [openMenuGoalId, setOpenMenuGoalId] = useState<string | null>(null);
   const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
@@ -35,9 +39,9 @@ export function GoalsScreen({
   const sortedGoals = useMemo(() => [...goals].sort(compareGoalsByStatus), [goals]);
 
   return (
-    <View style={styles.screen}>
-      <View style={styles.glowTop} />
-      <View style={styles.glowBottom} />
+    <View style={[styles.screen, { backgroundColor: theme.parentBackground }]}>
+      <View style={[styles.glowTop, { backgroundColor: theme.accentSoft }]} />
+      <View style={[styles.glowBottom, { backgroundColor: theme.accentSoft }]} />
       <ScreenDecorations variant="stars" />
       <View style={styles.header}>
         <View style={styles.headerCopy}>
@@ -48,7 +52,7 @@ export function GoalsScreen({
           accessibilityLabel={strings.goals.settingsButton}
           accessibilityRole="button"
           onPress={onOpenSettings}
-          style={styles.settingsCircle}
+          style={[styles.settingsCircle, { backgroundColor: theme.accentSoft }]}
         >
           <Text style={styles.settingsIcon}>🔔</Text>
         </Pressable>
@@ -68,7 +72,7 @@ export function GoalsScreen({
           const isCompleted = isGoalComplete(item);
           const progress = getGoalProgress(item);
           const progressPercent = Math.round(progress * 100);
-          const progressColor = getGoalAccent(item.id);
+          const progressColor = getGoalAccent(item.id, theme);
           const isMenuOpen = openMenuGoalId === item.id;
 
           return (
@@ -166,10 +170,10 @@ export function GoalsScreen({
           accessibilityRole="button"
           disabled={hasReachedFreeLimit}
           onPress={onAddGoal}
-          style={[styles.addButton, hasReachedFreeLimit && styles.disabledButton]}
+          style={[styles.addButton, { borderColor: theme.accentSoft }, hasReachedFreeLimit && styles.disabledButton]}
         >
-          <Text style={styles.addIcon}>+</Text>
-          <Text style={styles.addButtonText}>{strings.goals.newGoalButton}</Text>
+          <Text style={[styles.addIcon, { color: theme.accentDark }]}>+</Text>
+          <Text style={[styles.addButtonText, { color: theme.accentDark }]}>{strings.goals.newGoalButton}</Text>
         </Pressable>
       </View>
     </View>
@@ -462,9 +466,9 @@ function compareGoalsByStatus(firstGoal: Goal, secondGoal: Goal): number {
   return Number(isGoalComplete(firstGoal)) - Number(isGoalComplete(secondGoal));
 }
 
-function getGoalAccent(goalId: string): string {
-  const accents = [colors.primary, colors.warning, colors.accent] as const;
+function getGoalAccent(goalId: string, theme: AppTheme): string {
+  const accents = [theme.accent, colors.warning, colors.accent] as const;
   const hash = goalId.split("").reduce((sum, character) => sum + character.charCodeAt(0), 0);
 
-  return accents[hash % accents.length] ?? colors.primary;
+  return accents[hash % accents.length] ?? theme.accent;
 }

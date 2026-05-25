@@ -135,12 +135,36 @@ export function isGoalComplete(goal: Pick<Goal, "completedTasks" | "totalTasks">
   return goal.completed === true || goal.completedTasks >= goal.totalTasks;
 }
 
-export function completeTask(goal: Goal): Goal {
+export function completeTask(goal: Goal, selectedTileId?: number): Goal {
+  const revealOrder =
+    selectedTileId === undefined
+      ? goal.revealOrder
+      : moveTileToNextReveal(goal.revealOrder, goal.completedTasks, selectedTileId);
   const completedTasks = Math.min(goal.totalTasks, goal.completedTasks + 1);
 
   return {
     ...goal,
+    revealOrder,
     completedTasks,
     completed: completedTasks === goal.totalTasks
   };
+}
+
+function moveTileToNextReveal(revealOrder: number[], completedTasks: number, selectedTileId: number): number[] {
+  const selectedIndex = revealOrder.indexOf(selectedTileId);
+
+  if (selectedIndex < completedTasks || selectedIndex === -1) {
+    return revealOrder;
+  }
+
+  const nextRevealOrder = [...revealOrder];
+  const [selectedTile] = nextRevealOrder.splice(selectedIndex, 1);
+
+  if (selectedTile === undefined) {
+    return revealOrder;
+  }
+
+  nextRevealOrder.splice(completedTasks, 0, selectedTile);
+
+  return nextRevealOrder;
 }

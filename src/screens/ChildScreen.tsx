@@ -9,16 +9,29 @@ import { TileGrid } from "../components/TileGrid";
 import { getGoalProgress, isGoalComplete } from "../domain/goal";
 import type { Goal } from "../domain/goal";
 import { strings } from "../i18n/strings";
+import type { AppTheme } from "../ui/appTheme";
+import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ChildScreenProps = {
+  canRevealTile: boolean;
   goal: Goal;
   onBack: () => void;
   onCompleteTask: () => void;
+  onRevealTile: (tileId: number) => void;
+  theme?: AppTheme;
   tileColor: string;
 };
 
-export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildScreenProps) {
+export function ChildScreen({
+  canRevealTile,
+  goal,
+  onBack,
+  onCompleteTask,
+  onRevealTile,
+  theme = defaultAppTheme,
+  tileColor
+}: ChildScreenProps) {
   const isComplete = isGoalComplete(goal);
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
   const progress = getGoalProgress(goal);
@@ -38,7 +51,10 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
   }, [isComplete]);
 
   return (
-    <ScrollView contentContainerStyle={styles.screen} style={styles.scroll}>
+    <ScrollView
+      contentContainerStyle={[styles.screen, { backgroundColor: theme.childBackground }]}
+      style={[styles.scroll, { backgroundColor: theme.childBackground }]}
+    >
       <ScreenDecorations variant="clouds" />
       <View style={styles.cloudLeft} />
       <View style={styles.cloudRight} />
@@ -57,15 +73,16 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
           accessibilityLabel={strings.child.backToParentButton}
           accessibilityRole="button"
           onPress={onBack}
-          style={styles.circleButton}
+          style={[styles.circleButton, { backgroundColor: theme.accentSoft }]}
         >
-          <Text style={styles.closeIcon}>×</Text>
+          <Text style={[styles.closeIcon, { color: theme.accent }]}>×</Text>
         </Pressable>
       </View>
 
       <View style={styles.gridWrap}>
         <TileGrid
           imageUri={goal.imageUri}
+          onTilePress={canRevealTile ? onRevealTile : undefined}
           revealOrder={goal.revealOrder}
           revealedCount={goal.completedTasks}
           tileColor={tileColor}
@@ -76,7 +93,7 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
       <View style={styles.progressBlock}>
         <View style={styles.progressCopy}>
           <Text style={styles.progressText}>{strings.approveTask.progress(goal.completedTasks, goal.totalTasks)}</Text>
-          <ProgressBar color={colors.accent} progress={progress} />
+          <ProgressBar color={theme.accent} progress={progress} />
         </View>
         <Text style={styles.progressStar}>⭐</Text>
       </View>
@@ -88,7 +105,11 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
             {isComplete ? strings.child.completedTitle : strings.child.encouragementTitle}
           </Text>
           <Text style={styles.messageBody}>
-            {isComplete ? strings.child.completedBody : strings.child.remaining(remainingTasks)}
+            {isComplete
+              ? strings.child.completedBody
+              : canRevealTile
+                ? strings.child.pickTileHint
+                : strings.child.remaining(remainingTasks)}
           </Text>
         </View>
         <Text style={styles.cloudEmoji}>☁️</Text>
@@ -102,7 +123,7 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
           accessibilityRole="button"
           disabled={isComplete}
           onPress={onCompleteTask}
-          style={[styles.approveButton, isComplete && styles.disabledButton]}
+          style={[styles.approveButton, { backgroundColor: theme.accent }, isComplete && styles.disabledButton]}
         >
           <Text style={styles.approveButtonText}>
             {isComplete ? strings.child.completeButton : `✓ ${strings.child.approveTaskButton} ✨`}

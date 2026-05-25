@@ -19,6 +19,8 @@ import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { Goal, GoalDraft, TileCount } from "../domain/goal";
 import { strings } from "../i18n/strings";
+import type { AppTheme } from "../ui/appTheme";
+import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ImageSource = "camera" | "gallery";
@@ -27,9 +29,10 @@ type AddGoalScreenProps = {
   initialGoal?: Goal | null;
   onBack: () => void;
   onSave: (draft: GoalDraft) => void;
+  theme?: AppTheme;
 };
 
-export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScreenProps) {
+export function AddGoalScreen({ initialGoal = null, onBack, onSave, theme = defaultAppTheme }: AddGoalScreenProps) {
   const isEditing = initialGoal !== null;
   const [childName, setChildName] = useState(initialGoal?.childName ?? "");
   const [rewardName, setRewardName] = useState(initialGoal?.rewardName ?? "");
@@ -114,7 +117,11 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
       keyboardVerticalOffset={spacing.lg}
       style={styles.container}
     >
-      <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.scroll}>
+      <ScrollView
+        contentContainerStyle={[styles.screen, { backgroundColor: theme.addBackground }]}
+        keyboardShouldPersistTaps="handled"
+        style={[styles.scroll, { backgroundColor: theme.addBackground }]}
+      >
         <ScreenDecorations variant="sunny" />
         <View style={styles.header}>
           <Pressable
@@ -123,7 +130,7 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
             onPress={onBack}
             style={styles.backButton}
           >
-            <Text style={styles.backIcon}>×</Text>
+            <Text style={[styles.backIcon, { color: theme.accent }]}>×</Text>
           </Pressable>
           <View style={styles.headerCopy}>
             <Text style={styles.title}>{isEditing ? strings.addGoal.editTitle : strings.addGoal.title}</Text>
@@ -133,7 +140,14 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
         </View>
         <View accessibilityRole="progressbar" style={styles.stepIndicator}>
           {[0, 1, 2, 3, 4].map((stepIndex) => (
-            <View key={stepIndex} style={[styles.stepSegment, stepIndex < 3 && styles.activeStepSegment]} />
+            <View
+              key={stepIndex}
+              style={[
+                styles.stepSegment,
+                { backgroundColor: theme.accentSoft },
+                stepIndex < 3 && { backgroundColor: theme.accent }
+              ]}
+            />
           ))}
         </View>
 
@@ -187,7 +201,10 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
                   accessibilityState={{ selected: option === totalTasks }}
                   key={option}
                   onPress={() => setTotalTasks(option)}
-                  style={[styles.tileOption, option === totalTasks && styles.selectedTile]}
+                  style={[
+                    styles.tileOption,
+                    option === totalTasks && { backgroundColor: theme.accent, borderColor: theme.accentDark }
+                  ]}
                 >
                   <Text style={[styles.tileOptionText, option === totalTasks && styles.selectedTileText]}>
                     {option}
@@ -234,7 +251,7 @@ export function AddGoalScreen({ initialGoal = null, onBack, onSave }: AddGoalScr
             accessibilityRole="button"
             disabled={!canSave}
             onPress={handleSave}
-            style={[styles.saveButton, !canSave && styles.disabledButton]}
+            style={[styles.saveButton, { backgroundColor: theme.accent }, !canSave && styles.disabledButton]}
           >
             <Text style={styles.saveButtonText}>
               {isEditing ? strings.addGoal.updateButton : strings.addGoal.saveButton}
@@ -317,9 +334,6 @@ const styles = StyleSheet.create({
     flex: 1,
     height: 6
   },
-  activeStepSegment: {
-    backgroundColor: colors.primary
-  },
   formCard: {
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
@@ -372,10 +386,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "700",
     textAlign: "center"
-  },
-  selectedTile: {
-    borderColor: colors.warning,
-    backgroundColor: "#FFD338"
   },
   selectedTileText: {
     color: colors.text,

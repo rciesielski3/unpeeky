@@ -2,6 +2,8 @@ import { Pressable, StyleSheet, Text, View } from "react-native";
 
 import { strings } from "../i18n/strings";
 import type { AppRoute } from "../navigation/routes";
+import type { AppTheme } from "../ui/appTheme";
+import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type BottomNavProps = {
@@ -11,6 +13,7 @@ type BottomNavProps = {
   onOpenChild: () => void;
   onOpenGoals: () => void;
   onOpenSettings: () => void;
+  theme?: AppTheme;
 };
 
 type NavItem = {
@@ -27,7 +30,8 @@ export function BottomNav({
   onAddGoal,
   onOpenChild,
   onOpenGoals,
-  onOpenSettings
+  onOpenSettings,
+  theme = defaultAppTheme
 }: BottomNavProps) {
   const items: NavItem[] = [
     { id: "goals", icon: "⌂", label: strings.navigation.goals, onPress: onOpenGoals },
@@ -51,16 +55,16 @@ export function BottomNav({
             onPress={item.onPress}
             style={[
               styles.item,
-              isActive && styles.activeItem,
+              isActive && { backgroundColor: theme.accentSoft },
               item.id === "addGoal" && styles.addItem,
-              isActive && item.id === "addGoal" && styles.activeAddItem,
+              isActive && item.id === "addGoal" && { backgroundColor: theme.accent },
               item.disabled && styles.disabledItem
             ]}
           >
             <Text
               style={[
                 styles.icon,
-                isActive && styles.activeText,
+                isActive && { color: theme.accentDark },
                 isActive && item.id === "addGoal" && styles.activeAddText
               ]}
             >
@@ -69,7 +73,7 @@ export function BottomNav({
             <Text
               style={[
                 styles.label,
-                isActive && styles.activeText,
+                isActive && { color: theme.accentDark },
                 isActive && item.id === "addGoal" && styles.activeAddText
               ]}
             >
@@ -105,14 +109,8 @@ const styles = StyleSheet.create({
     gap: 2,
     paddingVertical: spacing.sm
   },
-  activeItem: {
-    backgroundColor: colors.primarySoft
-  },
   addItem: {
     marginHorizontal: spacing.sm
-  },
-  activeAddItem: {
-    backgroundColor: colors.primary
   },
   disabledItem: {
     opacity: 0.35
@@ -128,9 +126,6 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 12,
     fontWeight: "700"
-  },
-  activeText: {
-    color: colors.primaryDark
   },
   activeAddText: {
     color: colors.surface

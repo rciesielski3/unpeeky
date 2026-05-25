@@ -6,6 +6,8 @@ import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OP
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
+import type { AppTheme } from "../ui/appTheme";
+import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type SettingsScreenProps = {
@@ -13,13 +15,19 @@ type SettingsScreenProps = {
   onResetGoals: () => void;
   onSettingsChange: (settings: AppSettings) => void;
   settings: AppSettings;
+  theme?: AppTheme;
 };
 
 const MODE_OPTIONS: AppMode[] = ["singleDevice", "twoDevices"];
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => hour);
 const MINUTE_OPTIONS = [0, 15, 30, 45];
 
-export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: SettingsScreenProps) {
+export function SettingsScreen({
+  onResetGoals,
+  onSettingsChange,
+  settings,
+  theme = defaultAppTheme
+}: SettingsScreenProps) {
   const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);
   const [parentPinDraft, setParentPinDraft] = useState(settings.parentPin);
   const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
@@ -121,14 +129,18 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
   }
 
   return (
-    <ScrollView contentContainerStyle={styles.screen} keyboardShouldPersistTaps="handled" style={styles.container}>
+    <ScrollView
+      contentContainerStyle={[styles.screen, { backgroundColor: theme.settingsBackground }]}
+      keyboardShouldPersistTaps="handled"
+      style={styles.container}
+    >
       <ScreenDecorations variant="garden" />
       <View style={styles.hero}>
         <Text style={styles.title}>{strings.settings.title}</Text>
         <Text style={styles.subtitle}>{strings.settings.subtitle}</Text>
       </View>
 
-      <View style={styles.premiumCard}>
+      <View style={[styles.premiumCard, { backgroundColor: theme.accent }]}>
         <View style={styles.premiumHeader}>
           <Text style={[styles.settingIcon, styles.premiumIcon]}>♕</Text>
           <View style={styles.premiumCopy}>
@@ -162,7 +174,7 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
                 accessibilityState={{ selected: isSelected }}
                 key={tileColor.id}
                 onPress={() => handleChangeTileColor(tileColor.id)}
-                style={[styles.tileColorOption, isSelected && styles.selectedTileColorOption]}
+                style={[styles.tileColorOption, isSelected && { borderColor: theme.accent }]}
               >
                 <View style={[styles.tileColorSwatch, { backgroundColor: tileColor.color }]} />
                 <Text style={styles.tileColorLabel}>{strings.tileColors[tileColor.labelKey]}</Text>
@@ -180,7 +192,7 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
             onValueChange={(isEnabled) => void handleReminderToggle(isEnabled)}
             style={styles.notificationSwitch}
             thumbColor={colors.surface}
-            trackColor={{ false: colors.border, true: colors.accent }}
+            trackColor={{ false: colors.border, true: theme.accent }}
             value={isReminderEnabled}
           />
         </View>
@@ -235,7 +247,7 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
                 accessibilityState={{ selected: isSelected }}
                 key={appMode}
                 onPress={() => handleChangeMode(appMode)}
-                style={[styles.modeOption, isSelected && styles.selectedModeOption]}
+                style={[styles.modeOption, isSelected && { backgroundColor: theme.accent, borderColor: theme.accent }]}
               >
                 <Text style={[styles.modeTitle, isSelected && styles.selectedModeText]}>{getModeTitle(appMode)}</Text>
                 <Text style={[styles.modeMeta, isSelected && styles.selectedModeMeta]}>{getModeMeta(appMode)}</Text>
