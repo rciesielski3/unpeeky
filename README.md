@@ -29,6 +29,10 @@ Adateo Rafal Ciesielski
 npm install
 ```
 
+## Release Notes
+
+Before release, replace the Google Mobile Ads test app IDs and banner unit ID with production AdMob keys.
+
 ## Run
 
 ```bash

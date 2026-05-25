@@ -12,6 +12,7 @@ type ParentAdSlotProps = {
 
 export function ParentAdSlot({ isPremium }: ParentAdSlotProps) {
   const [hasAdError, setHasAdError] = useState(false);
+  const [isAdLoaded, setIsAdLoaded] = useState(false);
 
   if (isPremium) {
     return null;
@@ -26,8 +27,9 @@ export function ParentAdSlot({ isPremium }: ParentAdSlotProps) {
         </>
       ) : (
         <>
-          <Text style={styles.label}>{strings.ads.loadingTitle}</Text>
+          {!isAdLoaded ? <Text style={styles.label}>{strings.ads.loadingTitle}</Text> : null}
           <BannerAd
+            onAdLoaded={() => setIsAdLoaded(true)}
             onAdFailedToLoad={() => setHasAdError(true)}
             requestOptions={{ requestNonPersonalizedAdsOnly: true }}
             size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
