@@ -105,6 +105,13 @@ export const strings = {
     premiumVersionTitle: "Wersja Premium",
     premiumVersionMeta: "Odblokuj wszystkie awatary, nielimitowane cele i usuń reklamy.",
     premiumUpgradeButton: "◇  Przejdź na Premium",
+    premiumActiveButton: "Premium aktywny",
+    premiumModalTitle: "Odblokuj Premium",
+    premiumModalMeta: "Jednorazowy zakup odblokuje nielimitowane cele i usunie reklamy z widoków rodzica.",
+    premiumModalDisclosure:
+      "Zakup w aplikacji zostanie podłączony w kolejnym kroku. Teraz aktywujesz tryb Premium lokalnie.",
+    premiumActivateButton: "Włącz Premium",
+    premiumCloseButton: "Może później",
     aboutApp: "O aplikacji",
     aboutTitle: "O Unpeeky",
     aboutBody:
