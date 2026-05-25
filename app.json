@@ -4,14 +4,21 @@
     "slug": "unpeeky",
     "version": "0.1.0",
     "orientation": "portrait",
+    "icon": "./assets/images/icon.png",
     "userInterfaceStyle": "light",
     "assetBundlePatterns": ["**/*"],
+    "splash": {
+      "image": "./assets/images/splash.png",
+      "resizeMode": "contain",
+      "backgroundColor": "#FAF8FF"
+    },
     "ios": {
       "supportsTablet": true
     },
     "android": {
       "adaptiveIcon": {
-        "backgroundColor": "#4F46E5"
+        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "backgroundColor": "#EDE8FF"
       },
       "permissions": [],
       "package": "com.adateo.unpeeky"
