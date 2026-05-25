@@ -14,6 +14,7 @@ export const strings = {
   },
   addGoal: {
     title: "Dodaj nowy cel",
+    subtitle: "Utwórz nagrodę",
     editTitle: "Edytuj cel",
     childNamePlaceholder: "Np. Kuba",
     rewardNamePlaceholder: "Np. Hulajnoga, Zabawka, Wyjście do kina",
@@ -36,6 +37,7 @@ export const strings = {
     backButton: "Wróć"
   },
   child: {
+    subtitle: "Odkrywasz nagrodę",
     greeting: (childName: string) => `Hej, ${childName}!`,
     reward: (rewardName: string) => `Nagroda: ${rewardName}`,
     progress: (completedTasks: number, totalTasks: number) => `${completedTasks} z ${totalTasks} kafelków odkrytych`,
@@ -44,6 +46,7 @@ export const strings = {
     completedTitle: "Brawo!",
     completedBody: "Nagroda jest odkryta. Czas świętować!",
     completeButton: "Nagroda gotowa",
+    rejectButton: "Odrzuć",
     approveTaskButton: "Zatwierdź zadanie",
     backToParentButton: "Wróć do rodzica",
     soundButton: "Dźwięk"
@@ -63,7 +66,7 @@ export const strings = {
     backButton: "Wróć"
   },
   goals: {
-    greeting: "Cześć, Rodzicu! 👋",
+    greeting: "Cześć, Mama! 👋",
     title: "Twoje cele",
     subtitle: "Twoje nagrody",
     settingsButton: "Ustawienia",
@@ -88,10 +91,11 @@ export const strings = {
     goals: "Cele",
     add: "Dodaj",
     child: "Dziecko",
-    settings: "Ustawienia"
+    settings: "Opcje"
   },
   settings: {
     title: "Ustawienia",
+    subtitle: "Dostosuj aplikację",
     dailyReminderTitle: "Codzienne przypomnienie",
     premiumTitle: "Premium",
     premiumMeta: "Reklamy będą tylko w widoku rodzica",
@@ -121,7 +125,7 @@ export const strings = {
     appModeSingleDeviceMeta: "Rodzic zatwierdza PIN-em, dziecko odkrywa na tym samym telefonie.",
     appModeTwoDevices: "Dwa telefony",
     appModeTwoDevicesMeta: "Przygotowane pod późniejsze powiadomienia na telefon dziecka.",
-    tileColorTitle: "Kolor kafelków",
+    tileColorTitle: "Motyw kolorów",
     tileColorMeta: "Wybierz pastelowy kolor zasłony zdjęcia.",
     resetTitle: "Reset danych",
     resetMeta: "Usuń lokalne cele i postępy",

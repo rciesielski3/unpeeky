@@ -45,29 +45,22 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
       <Text style={styles.sparkleLeft}>✦</Text>
       <Text style={styles.sparkleRight}>⭐</Text>
 
-      <View style={styles.topBar}>
+      <View style={styles.childHeader}>
+        <View style={styles.avatarHalo}>
+          <AvatarBadge avatarId={goal.avatarId} size="md" />
+        </View>
+        <View style={styles.childCopy}>
+          <Text style={styles.childSubtitle}>{strings.child.subtitle}</Text>
+          <Text style={styles.greeting}>{goal.childName}</Text>
+        </View>
         <Pressable
           accessibilityLabel={strings.child.backToParentButton}
           accessibilityRole="button"
           onPress={onBack}
           style={styles.circleButton}
         >
-          <Text style={styles.backIcon}>‹</Text>
+          <Text style={styles.closeIcon}>×</Text>
         </Pressable>
-        <Pressable
-          accessibilityLabel={strings.child.soundButton}
-          accessibilityRole="button"
-          style={styles.circleButton}
-        >
-          <Text style={styles.soundIcon}>♬</Text>
-        </Pressable>
-      </View>
-
-      <View style={styles.profile}>
-        <View style={styles.avatarHalo}>
-          <AvatarBadge avatarId={goal.avatarId} size="lg" />
-        </View>
-        <Text style={styles.greeting}>{goal.childName}</Text>
       </View>
 
       <View style={styles.gridWrap}>
@@ -101,16 +94,21 @@ export function ChildScreen({ goal, onBack, onCompleteTask, tileColor }: ChildSc
         <Text style={styles.cloudEmoji}>☁️</Text>
       </View>
 
-      <Pressable
-        accessibilityRole="button"
-        disabled={isComplete}
-        onPress={onCompleteTask}
-        style={[styles.approveButton, isComplete && styles.disabledButton]}
-      >
-        <Text style={styles.approveButtonText}>
-          {isComplete ? strings.child.completeButton : strings.child.approveTaskButton}
-        </Text>
-      </Pressable>
+      <View style={styles.actionsRow}>
+        <Pressable accessibilityRole="button" onPress={onBack} style={styles.rejectButton}>
+          <Text style={styles.rejectButtonText}>× {strings.child.rejectButton}</Text>
+        </Pressable>
+        <Pressable
+          accessibilityRole="button"
+          disabled={isComplete}
+          onPress={onCompleteTask}
+          style={[styles.approveButton, isComplete && styles.disabledButton]}
+        >
+          <Text style={styles.approveButtonText}>
+            {isComplete ? strings.child.completeButton : `✓ ${strings.child.approveTaskButton} ✨`}
+          </Text>
+        </Pressable>
+      </View>
     </ScrollView>
   );
 }
@@ -159,55 +157,54 @@ const styles = StyleSheet.create({
     right: 74,
     top: 162
   },
-  topBar: {
+  childHeader: {
+    alignItems: "center",
     flexDirection: "row",
-    justifyContent: "space-between"
+    gap: spacing.md,
+    minHeight: 72
   },
   circleButton: {
     alignItems: "center",
-    backgroundColor: colors.surface,
+    backgroundColor: colors.primarySoft,
     borderRadius: radii.pill,
-    height: 60,
+    height: 48,
     justifyContent: "center",
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.08,
     shadowRadius: 16,
-    width: 60
+    width: 48
   },
-  backIcon: {
+  closeIcon: {
     color: colors.primary,
-    fontSize: 44,
+    fontSize: 32,
     fontWeight: "700",
-    lineHeight: 46
-  },
-  soundIcon: {
-    color: colors.primary,
-    fontSize: 30,
-    fontWeight: "800"
-  },
-  profile: {
-    alignItems: "center",
-    marginTop: -spacing.md
+    lineHeight: 36
   },
   avatarHalo: {
     alignItems: "center",
-    backgroundColor: "#F9D7F0",
-    borderColor: colors.surface,
+    backgroundColor: colors.primarySoft,
+    borderColor: colors.decorationPrimary,
     borderRadius: radii.pill,
-    borderWidth: 12,
-    height: 132,
+    borderWidth: 4,
+    height: 64,
     justifyContent: "center",
-    marginBottom: spacing.sm,
-    width: 132
+    width: 64
+  },
+  childCopy: {
+    flex: 1
+  },
+  childSubtitle: {
+    color: colors.textMuted,
+    fontSize: 13,
+    fontWeight: "700"
   },
   greeting: {
     color: colors.text,
     fontFamily: fonts.heading,
-    fontSize: 40,
+    fontSize: 24,
     fontWeight: "800",
-    lineHeight: 46,
-    textAlign: "center"
+    lineHeight: 30
   },
   gridWrap: {
     borderRadius: radii.lg,
@@ -223,7 +220,7 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     gap: spacing.lg,
     justifyContent: "space-between",
-    padding: spacing.xl,
+    padding: spacing.md,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 10, width: 0 },
     shadowOpacity: 0.07,
@@ -275,12 +272,30 @@ const styles = StyleSheet.create({
   cloudEmoji: {
     fontSize: 58
   },
+  actionsRow: {
+    flexDirection: "row",
+    gap: spacing.md
+  },
+  rejectButton: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radii.md,
+    flex: 0.9,
+    justifyContent: "center",
+    minHeight: 58
+  },
+  rejectButtonText: {
+    color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: "800"
+  },
   approveButton: {
     alignItems: "center",
     backgroundColor: colors.primary,
     borderRadius: radii.pill,
+    flex: 1.7,
     justifyContent: "center",
-    minHeight: 62
+    minHeight: 58
   },
   disabledButton: {
     opacity: 0.45

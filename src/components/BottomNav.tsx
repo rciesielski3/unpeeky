@@ -30,9 +30,9 @@ export function BottomNav({
   onOpenSettings
 }: BottomNavProps) {
   const items: NavItem[] = [
-    { id: "goals", icon: "▣", label: strings.navigation.goals, onPress: onOpenGoals },
+    { id: "goals", icon: "⌂", label: strings.navigation.goals, onPress: onOpenGoals },
     { id: "addGoal", icon: "+", label: strings.navigation.add, onPress: onAddGoal },
-    { id: "child", disabled: !hasChildView, icon: "♟", label: strings.navigation.child, onPress: onOpenChild },
+    { id: "child", disabled: !hasChildView, icon: "☆", label: strings.navigation.child, onPress: onOpenChild },
     { id: "settings", icon: "⚙", label: strings.navigation.settings, onPress: onOpenSettings }
   ];
 
@@ -49,10 +49,32 @@ export function BottomNav({
             disabled={item.disabled}
             key={item.id}
             onPress={item.onPress}
-            style={[styles.item, isActive && styles.activeItem, item.disabled && styles.disabledItem]}
+            style={[
+              styles.item,
+              isActive && styles.activeItem,
+              item.id === "addGoal" && styles.addItem,
+              isActive && item.id === "addGoal" && styles.activeAddItem,
+              item.disabled && styles.disabledItem
+            ]}
           >
-            <Text style={[styles.icon, isActive && styles.activeText]}>{item.icon}</Text>
-            <Text style={[styles.label, isActive && styles.activeText]}>{item.label}</Text>
+            <Text
+              style={[
+                styles.icon,
+                isActive && styles.activeText,
+                isActive && item.id === "addGoal" && styles.activeAddText
+              ]}
+            >
+              {item.icon}
+            </Text>
+            <Text
+              style={[
+                styles.label,
+                isActive && styles.activeText,
+                isActive && item.id === "addGoal" && styles.activeAddText
+              ]}
+            >
+              {item.label}
+            </Text>
           </Pressable>
         );
       })}
@@ -68,9 +90,9 @@ const styles = StyleSheet.create({
     borderRadius: radii.lg,
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: spacing.md,
+    marginBottom: spacing.sm,
     marginHorizontal: spacing.lg,
-    padding: spacing.sm,
+    padding: spacing.xs,
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 10, width: 0 },
     shadowOpacity: 0.1,
@@ -85,6 +107,12 @@ const styles = StyleSheet.create({
   },
   activeItem: {
     backgroundColor: colors.primarySoft
+  },
+  addItem: {
+    marginHorizontal: spacing.sm
+  },
+  activeAddItem: {
+    backgroundColor: colors.primary
   },
   disabledItem: {
     opacity: 0.35
@@ -103,5 +131,8 @@ const styles = StyleSheet.create({
   },
   activeText: {
     color: colors.primaryDark
+  },
+  activeAddText: {
+    color: colors.surface
   }
 });

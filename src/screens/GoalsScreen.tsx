@@ -289,17 +289,17 @@ const styles = StyleSheet.create({
   cardHeader: {
     alignItems: "stretch",
     flexDirection: "row",
-    gap: spacing.xl
+    gap: spacing.md
   },
   thumbnail: {
     backgroundColor: colors.surfaceMuted,
-    borderRadius: radii.lg,
-    height: 166,
-    width: 166
+    borderRadius: radii.md,
+    height: 92,
+    width: 92
   },
   cardCopy: {
     flex: 1,
-    gap: spacing.md,
+    gap: spacing.xs,
     justifyContent: "center",
     paddingRight: spacing.xl,
     paddingVertical: spacing.sm
@@ -318,17 +318,17 @@ const styles = StyleSheet.create({
   cardTitle: {
     color: colors.text,
     flex: 1,
-    fontSize: 20,
+    fontSize: 16,
     fontWeight: "800"
   },
   childName: {
     color: colors.textMuted,
-    fontSize: 16,
+    fontSize: 13,
     fontWeight: "600"
   },
   tasksText: {
     color: colors.text,
-    fontSize: 16
+    fontSize: 13
   },
   completedTasks: {
     fontWeight: "800"
@@ -343,7 +343,7 @@ const styles = StyleSheet.create({
   },
   percent: {
     color: colors.textMuted,
-    fontSize: 14,
+    fontSize: 12,
     fontWeight: "700"
   },
   menuButton: {
@@ -411,7 +411,10 @@ const styles = StyleSheet.create({
   },
   addButton: {
     alignItems: "center",
-    backgroundColor: colors.primary,
+    backgroundColor: "transparent",
+    borderColor: colors.decorationPrimary,
+    borderStyle: "dashed",
+    borderWidth: 2,
     borderRadius: radii.pill,
     flexDirection: "row",
     gap: spacing.md,
@@ -426,13 +429,13 @@ const styles = StyleSheet.create({
     opacity: 0.45
   },
   addIcon: {
-    color: colors.surface,
+    color: colors.primaryDark,
     fontSize: 30,
     fontWeight: "300",
     lineHeight: 34
   },
   addButtonText: {
-    color: colors.surface,
+    color: colors.primaryDark,
     fontSize: 18,
     fontWeight: "800"
   },

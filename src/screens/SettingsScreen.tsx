@@ -125,6 +125,51 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
       <ScreenDecorations variant="garden" />
       <View style={styles.hero}>
         <Text style={styles.title}>{strings.settings.title}</Text>
+        <Text style={styles.subtitle}>{strings.settings.subtitle}</Text>
+      </View>
+
+      <View style={styles.premiumCard}>
+        <View style={styles.premiumHeader}>
+          <Text style={[styles.settingIcon, styles.premiumIcon]}>♕</Text>
+          <View style={styles.premiumCopy}>
+            <Text style={styles.premiumTitle}>{strings.settings.premiumVersionTitle}</Text>
+            <Text style={styles.premiumMeta}>{strings.settings.premiumVersionMeta}</Text>
+          </View>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ selected: settings.isPremium }}
+          onPress={() => updateSettings({ isPremium: !settings.isPremium })}
+          style={styles.premiumButton}
+        >
+          <Text style={styles.premiumButtonText}>{strings.settings.premiumUpgradeButton}</Text>
+        </Pressable>
+      </View>
+
+      <View style={styles.card}>
+        <View>
+          <Text style={styles.rowTitle}>{strings.settings.tileColorTitle}</Text>
+          <Text style={styles.rowMeta}>{strings.settings.tileColorMeta}</Text>
+        </View>
+        <View style={styles.tileColorOptions}>
+          {TILE_COLOR_OPTIONS.map((tileColor) => {
+            const isSelected = settings.tileColorId === tileColor.id;
+
+            return (
+              <Pressable
+                accessibilityLabel={strings.tileColors[tileColor.labelKey]}
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                key={tileColor.id}
+                onPress={() => handleChangeTileColor(tileColor.id)}
+                style={[styles.tileColorOption, isSelected && styles.selectedTileColorOption]}
+              >
+                <View style={[styles.tileColorSwatch, { backgroundColor: tileColor.color }]} />
+                <Text style={styles.tileColorLabel}>{strings.tileColors[tileColor.labelKey]}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
       </View>
 
       <View style={styles.card}>
@@ -201,48 +246,6 @@ export function SettingsScreen({ onResetGoals, onSettingsChange, settings }: Set
       </View>
 
       <View style={styles.card}>
-        <View>
-          <Text style={styles.rowTitle}>{strings.settings.tileColorTitle}</Text>
-          <Text style={styles.rowMeta}>{strings.settings.tileColorMeta}</Text>
-        </View>
-        <View style={styles.tileColorOptions}>
-          {TILE_COLOR_OPTIONS.map((tileColor) => {
-            const isSelected = settings.tileColorId === tileColor.id;
-
-            return (
-              <Pressable
-                accessibilityLabel={strings.tileColors[tileColor.labelKey]}
-                accessibilityRole="button"
-                accessibilityState={{ selected: isSelected }}
-                key={tileColor.id}
-                onPress={() => handleChangeTileColor(tileColor.id)}
-                style={[styles.tileColorOption, isSelected && styles.selectedTileColorOption]}
-              >
-                <View style={[styles.tileColorSwatch, { backgroundColor: tileColor.color }]} />
-                <Text style={styles.tileColorLabel}>{strings.tileColors[tileColor.labelKey]}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
-      </View>
-
-      <View style={styles.card}>
-        <View style={styles.premiumHeader}>
-          <Text style={styles.settingIcon}>👑</Text>
-          <View style={styles.premiumCopy}>
-            <Text style={styles.rowTitle}>{strings.settings.premiumVersionTitle}</Text>
-            <Text style={styles.rowMeta}>{strings.settings.premiumVersionMeta}</Text>
-          </View>
-        </View>
-        <Pressable
-          accessibilityRole="button"
-          accessibilityState={{ selected: settings.isPremium }}
-          onPress={() => updateSettings({ isPremium: !settings.isPremium })}
-          style={styles.premiumButton}
-        >
-          <Text style={styles.premiumButtonText}>{strings.settings.premiumUpgradeButton}</Text>
-        </Pressable>
-        <View style={styles.divider} />
         <SettingsAction icon="▢" label={strings.settings.resetTitle} onPress={onResetGoals} />
         <View style={styles.divider} />
         <SettingsAction icon="ⓘ" label={strings.settings.aboutApp} onPress={() => setIsAboutOpen(true)} />
@@ -272,9 +275,8 @@ const styles = StyleSheet.create({
     paddingTop: spacing.xl
   },
   hero: {
-    alignItems: "center",
-    flexDirection: "row",
-    justifyContent: "flex-start",
+    alignItems: "flex-start",
+    justifyContent: "center",
     minHeight: 96
   },
   title: {
@@ -283,14 +285,31 @@ const styles = StyleSheet.create({
     fontSize: 34,
     fontWeight: "800"
   },
+  subtitle: {
+    color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: "600",
+    marginTop: spacing.xs
+  },
   card: {
     backgroundColor: colors.surface,
-    borderRadius: 24,
-    gap: spacing.lg,
-    padding: spacing.xl,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    padding: spacing.lg,
     shadowColor: colors.accentDark,
     shadowOffset: { height: 10, width: 0 },
     shadowOpacity: 0.08,
+    shadowRadius: 22
+  },
+  premiumCard: {
+    backgroundColor: colors.primary,
+    borderRadius: radii.lg,
+    gap: spacing.lg,
+    overflow: "hidden",
+    padding: spacing.lg,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.16,
     shadowRadius: 22
   },
   settingLine: {
@@ -378,22 +397,36 @@ const styles = StyleSheet.create({
   premiumCopy: {
     flex: 1
   },
+  premiumIcon: {
+    color: colors.warning
+  },
+  premiumTitle: {
+    color: colors.surface,
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  premiumMeta: {
+    color: colors.primarySoft,
+    fontSize: 14,
+    fontWeight: "600",
+    lineHeight: 21,
+    marginTop: spacing.xs
+  },
   premiumButton: {
     alignItems: "center",
-    alignSelf: "center",
-    backgroundColor: colors.accent,
+    alignSelf: "stretch",
+    backgroundColor: colors.warning,
     borderRadius: radii.pill,
     justifyContent: "center",
     minHeight: 58,
     paddingHorizontal: spacing.xl,
-    shadowColor: colors.accentDark,
+    shadowColor: colors.warningDark,
     shadowOffset: { height: 7, width: 0 },
     shadowOpacity: 0.2,
-    shadowRadius: 14,
-    width: "86%"
+    shadowRadius: 14
   },
   premiumButtonText: {
-    color: colors.surface,
+    color: colors.text,
     fontSize: 18,
     fontWeight: "800"
   },
