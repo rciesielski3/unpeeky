@@ -12,6 +12,7 @@ import {
 } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
+import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ProgressBar } from "../components/ProgressBar";
 import { getGoalProgress } from "../domain/goal";
 import type { Goal } from "../domain/goal";
@@ -26,6 +27,7 @@ type ApproveTaskScreenProps = {
   onBack: () => void;
   onOpenChildView: () => void;
   parentPin: string;
+  isPremium: boolean;
   theme?: AppTheme;
 };
 
@@ -35,6 +37,7 @@ export function ApproveTaskScreen({
   onBack,
   onOpenChildView,
   parentPin,
+  isPremium,
   theme = defaultAppTheme
 }: ApproveTaskScreenProps) {
   const [pinDraft, setPinDraft] = useState("");
@@ -100,6 +103,8 @@ export function ApproveTaskScreen({
             ) : null}
           </View>
         ) : null}
+
+        <ParentAdSlot isPremium={isPremium} />
 
         <View style={styles.actions}>
           {!isComplete ? (
