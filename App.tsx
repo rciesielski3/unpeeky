@@ -446,32 +446,38 @@ function GoalDeleteConfirmModal({
   themeAccentSoft: string;
   visible: boolean;
 }) {
-  if (!goal) {
-    return null;
+  const lastGoal = useRef<Goal | null>(null);
+
+  if (goal) {
+    lastGoal.current = goal;
   }
+
+  const activeGoal = goal ?? lastGoal.current;
 
   return (
     <Modal animationType="fade" onRequestClose={onCancel} transparent visible={visible}>
       <View style={styles.modalOverlay}>
-        <View style={styles.resetCard}>
-          <View style={[styles.resetIconBubble, { backgroundColor: themeAccentSoft }]}>
-            <Text style={[styles.resetIcon, { color: themeAccent }]}>×</Text>
+        {activeGoal ? (
+          <View style={styles.resetCard}>
+            <View style={[styles.resetIconBubble, { backgroundColor: themeAccentSoft }]}>
+              <Text style={[styles.resetIcon, { color: themeAccent }]}>×</Text>
+            </View>
+            <Text style={styles.resetTitle}>{strings.goals.deleteTitle}</Text>
+            <Text style={styles.resetMeta}>{strings.goals.deleteMeta(activeGoal.rewardName)}</Text>
+            <View style={styles.resetActions}>
+              <Pressable accessibilityRole="button" onPress={onCancel} style={styles.resetCancelButton}>
+                <Text style={styles.resetCancelText}>{strings.settings.backButton}</Text>
+              </Pressable>
+              <Pressable
+                accessibilityRole="button"
+                onPress={onConfirm}
+                style={[styles.resetConfirmButton, { backgroundColor: themeAccent }]}
+              >
+                <Text style={styles.resetConfirmText}>{strings.goals.deleteButton}</Text>
+              </Pressable>
+            </View>
           </View>
-          <Text style={styles.resetTitle}>{strings.goals.deleteTitle}</Text>
-          <Text style={styles.resetMeta}>{strings.goals.deleteMeta(goal.rewardName)}</Text>
-          <View style={styles.resetActions}>
-            <Pressable accessibilityRole="button" onPress={onCancel} style={styles.resetCancelButton}>
-              <Text style={styles.resetCancelText}>{strings.settings.backButton}</Text>
-            </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={onConfirm}
-              style={[styles.resetConfirmButton, { backgroundColor: themeAccent }]}
-            >
-              <Text style={styles.resetConfirmText}>{strings.goals.deleteButton}</Text>
-            </Pressable>
-          </View>
-        </View>
+        ) : null}
       </View>
     </Modal>
   );
