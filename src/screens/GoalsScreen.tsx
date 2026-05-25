@@ -166,9 +166,11 @@ export function GoalsScreen({
         </View>
       ) : null}
 
-      <View style={styles.adSlotWrap}>
-        <ParentAdSlot isPremium={isPremium} />
-      </View>
+      {!isPremium ? (
+        <View style={styles.adSlotWrap}>
+          <ParentAdSlot isPremium={isPremium} />
+        </View>
+      ) : null}
 
       <View style={styles.footer}>
         <Pressable

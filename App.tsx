@@ -231,7 +231,6 @@ export default function App() {
           onResetGoals={handleResetGoals}
           onSettingsChange={setSettings}
           settings={settings}
-          isPremium={settings.isPremium}
           theme={appTheme}
         />
       ) : null}

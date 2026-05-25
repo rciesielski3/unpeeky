@@ -16,7 +16,6 @@ type SettingsScreenProps = {
   onResetGoals: () => void;
   onSettingsChange: (settings: AppSettings) => void;
   settings: AppSettings;
-  isPremium: boolean;
   theme?: AppTheme;
 };
 
@@ -25,7 +24,6 @@ const HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => hour);
 const MINUTE_OPTIONS = [0, 15, 30, 45];
 
 export function SettingsScreen({
-  isPremium,
   onResetGoals,
   onSettingsChange,
   settings,
@@ -266,7 +264,7 @@ export function SettingsScreen({
         <SettingsAction icon="ⓘ" label={strings.settings.aboutApp} onPress={() => setIsAboutOpen(true)} />
       </View>
 
-      <ParentAdSlot isPremium={isPremium} />
+      <ParentAdSlot isPremium={settings.isPremium} />
 
       <AboutModal onClose={() => setIsAboutOpen(false)} visible={isAboutOpen} />
       <TimePickerModal
