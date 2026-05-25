@@ -13,6 +13,7 @@ Adateo Rafal Ciesielski
 - AsyncStorage for local-only data
 - expo-image-picker for reward photos
 - expo-notifications for reminders
+- react-native-google-mobile-ads for parent-only ads
 - react-native-reanimated for tile reveal animation
 - ESLint + Prettier
 
@@ -27,6 +28,10 @@ Adateo Rafal Ciesielski
 ```bash
 npm install
 ```
+
+## Release Notes
+
+Before release, replace the Google Mobile Ads test app IDs and banner unit ID with production AdMob keys.
 
 ## Run
 

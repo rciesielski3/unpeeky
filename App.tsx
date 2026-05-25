@@ -10,6 +10,7 @@ import {
   View
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import mobileAds from "react-native-google-mobile-ads";
 
 import { AppLoader } from "./src/components/AppLoader";
 import { BottomNav } from "./src/components/BottomNav";
@@ -43,6 +44,12 @@ export default function App() {
     () => goals.find((goal) => goal.id === goalIdPendingDelete) ?? null,
     [goalIdPendingDelete, goals]
   );
+
+  useEffect(() => {
+    void mobileAds()
+      .initialize()
+      .catch(() => undefined);
+  }, []);
 
   useEffect(() => {
     async function hydrateApp() {
