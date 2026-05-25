@@ -13,6 +13,10 @@ import type { AppTheme } from "../ui/appTheme";
 import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
+// React Native bundles static image assets through require().
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const INFO_ICON_SOURCE = require("../../assets/icons/settings-info.png");
+
 type GoalsScreenProps = {
   goals: Goal[];
   isPremium: boolean;
@@ -56,7 +60,9 @@ export function GoalsScreen({
           onPress={() => setIsInfoOpen(true)}
           style={[styles.settingsCircle, { backgroundColor: theme.accentSoft }]}
         >
-          <Text style={[styles.settingsIcon, { color: theme.accentDark }]}>?</Text>
+          <View style={[styles.infoIconGlow, { backgroundColor: theme.accent }]} />
+          <Image source={INFO_ICON_SOURCE} style={[styles.settingsIcon, { tintColor: theme.accentDark }]} />
+          <Text style={styles.infoSparkle}>✦</Text>
         </Pressable>
       </View>
 
@@ -247,6 +253,7 @@ const styles = StyleSheet.create({
     borderRadius: radii.pill,
     height: 64,
     justifyContent: "center",
+    overflow: "hidden",
     shadowColor: colors.primaryDark,
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.1,
@@ -254,10 +261,25 @@ const styles = StyleSheet.create({
     width: 64
   },
   settingsIcon: {
-    fontFamily: fonts.heading,
-    fontSize: 31,
+    height: 30,
+    width: 30,
+    zIndex: 2
+  },
+  infoIconGlow: {
+    borderRadius: radii.pill,
+    height: 42,
+    opacity: 0.18,
+    position: "absolute",
+    width: 42
+  },
+  infoSparkle: {
+    color: colors.surface,
+    fontSize: 13,
     fontWeight: "800",
-    lineHeight: 34
+    position: "absolute",
+    right: 12,
+    top: 12,
+    zIndex: 3
   },
   list: {
     flexGrow: 1,

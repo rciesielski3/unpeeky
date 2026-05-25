@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
@@ -22,6 +22,16 @@ type SettingsScreenProps = {
 const MODE_OPTIONS: AppMode[] = ["singleDevice", "twoDevices"];
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => hour);
 const MINUTE_OPTIONS = [0, 15, 30, 45];
+
+// React Native bundles static image assets through require().
+/* eslint-disable @typescript-eslint/no-var-requires */
+const SETTINGS_ICON_SOURCES = {
+  bell: require("../../assets/icons/settings-bell.png"),
+  bolt: require("../../assets/icons/settings-bolt.png"),
+  info: require("../../assets/icons/settings-info.png"),
+  trash: require("../../assets/icons/settings-trash.png")
+} as const;
+/* eslint-enable @typescript-eslint/no-var-requires */
 
 export function SettingsScreen({
   onResetGoals,
@@ -375,79 +385,9 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     width: 48
   },
-  vectorIcon: {
-    alignItems: "center",
-    height: 28,
-    justifyContent: "center",
-    width: 28
-  },
-  bellDome: {
-    borderRadius: 9,
-    borderTopWidth: 2,
-    borderLeftWidth: 2,
-    borderRightWidth: 2,
-    height: 17,
-    width: 18
-  },
-  bellBase: {
-    borderRadius: 999,
-    height: 2,
-    marginTop: -1,
-    width: 22
-  },
-  bellClapper: {
-    borderRadius: 999,
-    height: 4,
-    marginTop: 3,
-    width: 4
-  },
-  boltTop: {
-    borderBottomWidth: 16,
-    borderLeftColor: "transparent",
-    borderLeftWidth: 8,
-    borderRightColor: "transparent",
-    borderRightWidth: 3,
-    height: 0,
-    marginLeft: 4,
-    transform: [{ rotate: "12deg" }],
-    width: 0
-  },
-  boltBottom: {
-    borderLeftColor: "transparent",
-    borderLeftWidth: 3,
-    borderRightColor: "transparent",
-    borderRightWidth: 8,
-    borderTopWidth: 16,
-    height: 0,
-    marginRight: 4,
-    marginTop: -4,
-    transform: [{ rotate: "12deg" }],
-    width: 0
-  },
-  trashLid: {
-    borderRadius: 999,
-    height: 3,
-    marginBottom: 3,
-    width: 18
-  },
-  trashBin: {
-    borderRadius: 3,
-    borderWidth: 2,
-    height: 18,
-    width: 15
-  },
-  infoCircle: {
-    alignItems: "center",
-    borderRadius: 999,
-    borderWidth: 2,
-    height: 24,
-    justifyContent: "center",
-    width: 24
-  },
-  infoLetter: {
-    fontSize: 16,
-    fontWeight: "900",
-    lineHeight: 18
+  settingIconImage: {
+    height: 26,
+    width: 26
   },
   sectionEyebrow: {
     color: colors.textMuted,
@@ -852,7 +792,7 @@ function SettingsIconBubble({
 }) {
   return (
     <View style={[styles.settingIconBubble, { backgroundColor }]}>
-      <SettingsVectorIcon name={name} tintColor={tintColor} />
+      <Image source={SETTINGS_ICON_SOURCES[name]} style={[styles.settingIconImage, { tintColor }]} />
     </View>
   );
 }
@@ -876,44 +816,6 @@ function SettingsAction({
       <Text style={styles.actionLabel}>{label}</Text>
       <Text style={styles.chevron}>›</Text>
     </Pressable>
-  );
-}
-
-function SettingsVectorIcon({ name, tintColor }: { name: SettingsIconName; tintColor: string }) {
-  if (name === "bell") {
-    return (
-      <View style={styles.vectorIcon}>
-        <View style={[styles.bellDome, { borderColor: tintColor }]} />
-        <View style={[styles.bellBase, { backgroundColor: tintColor }]} />
-        <View style={[styles.bellClapper, { backgroundColor: tintColor }]} />
-      </View>
-    );
-  }
-
-  if (name === "bolt") {
-    return (
-      <View style={styles.vectorIcon}>
-        <View style={[styles.boltTop, { borderBottomColor: tintColor }]} />
-        <View style={[styles.boltBottom, { borderTopColor: tintColor }]} />
-      </View>
-    );
-  }
-
-  if (name === "trash") {
-    return (
-      <View style={styles.vectorIcon}>
-        <View style={[styles.trashLid, { backgroundColor: tintColor }]} />
-        <View style={[styles.trashBin, { borderColor: tintColor }]} />
-      </View>
-    );
-  }
-
-  return (
-    <View style={styles.vectorIcon}>
-      <View style={[styles.infoCircle, { borderColor: tintColor }]}>
-        <Text style={[styles.infoLetter, { color: tintColor }]}>i</Text>
-      </View>
-    </View>
   );
 }
 
