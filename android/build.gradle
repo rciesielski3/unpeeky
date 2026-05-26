@@ -24,16 +24,6 @@ buildscript {
 apply plugin: "com.facebook.react.rootproject"
 
 allprojects {
-    configurations.configureEach {
-        resolutionStrategy {
-            force "org.jetbrains.kotlin:kotlin-stdlib:${rootProject.ext.kotlinVersion}"
-            force "org.jetbrains.kotlin:kotlin-stdlib-common:${rootProject.ext.kotlinVersion}"
-            force "org.jetbrains.kotlin:kotlin-stdlib-jdk7:${rootProject.ext.kotlinVersion}"
-            force "org.jetbrains.kotlin:kotlin-stdlib-jdk8:${rootProject.ext.kotlinVersion}"
-            force "org.jetbrains.kotlin:kotlin-reflect:${rootProject.ext.kotlinVersion}"
-        }
-    }
-
     repositories {
         maven {
             // All of React Native (JS, Obj-C sources, Android binaries) is installed from npm

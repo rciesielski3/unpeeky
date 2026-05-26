@@ -26,6 +26,7 @@ import type { AppRoute } from "./src/navigation/routes";
 import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
 import { getAppTheme } from "./src/ui/appTheme";
 import { colors, fonts, radii, spacing } from "./src/ui/theme";
+import MobileAds from "react-native-google-mobile-ads";
 
 export default function App() {
   const [route, setRoute] = useState<AppRoute>("goals");
@@ -43,6 +44,11 @@ export default function App() {
     () => goals.find((goal) => goal.id === goalIdPendingDelete) ?? null,
     [goalIdPendingDelete, goals]
   );
+
+  useEffect(() => {
+    MobileAds().initialize();
+    console.log("Google Mobile Ads SDK initialized");
+  }, []);
 
   useEffect(() => {
     async function hydrateApp() {
