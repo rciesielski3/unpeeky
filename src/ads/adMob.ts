@@ -1,4 +1,5 @@
-import { TestIds } from "react-native-google-mobile-ads";
+// AdMob configuration - stub for MVP (ads deferred to post-MVP monetization)
+// Will be properly configured with react-native-google-mobile-ads when monetization is planned
 
 export const ADMOB_TEST_APP_IDS = {
   android: "ca-app-pub-3940256099942544~3347511713",
@@ -6,5 +7,6 @@ export const ADMOB_TEST_APP_IDS = {
 } as const;
 
 export function getParentBannerAdUnitId(): string {
-  return TestIds.BANNER;
+  // Stub: return empty string for MVP
+  return "";
 }

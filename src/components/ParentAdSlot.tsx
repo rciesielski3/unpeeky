@@ -1,8 +1,5 @@
-import { useState } from "react";
 import { StyleSheet, Text, View } from "react-native";
-import { BannerAd, BannerAdSize } from "react-native-google-mobile-ads";
 
-import { getParentBannerAdUnitId } from "../ads/adMob";
 import { strings } from "../i18n/strings";
 import { colors, spacing } from "../ui/theme";
 
@@ -11,32 +8,16 @@ type ParentAdSlotProps = {
 };
 
 export function ParentAdSlot({ isPremium }: ParentAdSlotProps) {
-  const [hasAdError, setHasAdError] = useState(false);
-  const [isAdLoaded, setIsAdLoaded] = useState(false);
-
+  // Hide ads for premium users
   if (isPremium) {
     return null;
   }
 
+  // MVP: Show placeholder for ad slot (actual ads deferred to post-MVP monetization)
   return (
     <View accessibilityLabel={strings.ads.placeholderLabel} accessibilityRole="summary" style={styles.slot}>
-      {hasAdError ? (
-        <>
-          <Text style={styles.label}>{strings.ads.placeholderTitle}</Text>
-          <Text style={styles.text}>{strings.ads.placeholderText}</Text>
-        </>
-      ) : (
-        <>
-          {!isAdLoaded ? <Text style={styles.label}>{strings.ads.loadingTitle}</Text> : null}
-          <BannerAd
-            onAdLoaded={() => setIsAdLoaded(true)}
-            onAdFailedToLoad={() => setHasAdError(true)}
-            requestOptions={{ requestNonPersonalizedAdsOnly: true }}
-            size={BannerAdSize.ANCHORED_ADAPTIVE_BANNER}
-            unitId={getParentBannerAdUnitId()}
-          />
-        </>
-      )}
+      <Text style={styles.label}>{strings.ads.placeholderTitle}</Text>
+      <Text style={styles.text}>{strings.ads.placeholderText}</Text>
     </View>
   );
 }
