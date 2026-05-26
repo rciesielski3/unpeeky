@@ -29,7 +29,8 @@ const SETTINGS_ICON_SOURCES = {
   bell: require("../../assets/icons/settings-bell.png"),
   bolt: require("../../assets/icons/settings-bolt.png"),
   info: require("../../assets/icons/settings-info.png"),
-  trash: require("../../assets/icons/settings-trash.png")
+  trash: require("../../assets/icons/settings-trash.png"),
+  premium: require("../../assets/icons/settings-premium.png")
 } as const;
 /* eslint-enable @typescript-eslint/no-var-requires */
 
@@ -166,10 +167,21 @@ export function SettingsScreen({
           onPress={() => setIsPremiumOpen(true)}
           style={styles.premiumButton}
         >
+          <Image source={SETTINGS_ICON_SOURCES.premium} style={styles.premiumButtonIcon} />
           <Text style={styles.premiumButtonText}>
             {settings.isPremium ? strings.settings.premiumActiveButton : strings.settings.premiumUpgradeButton}
           </Text>
         </Pressable>
+
+        {__DEV__ ? (
+            <Pressable
+              accessibilityRole="button"
+              onPress={() => updateSettings({ isPremium: false })}
+              style={styles.devPremiumButton}
+            >
+              <Text style={styles.devPremiumButtonText}>Disable Premium</Text>
+            </Pressable>
+          ) : null}
       </View>
 
       <View style={styles.card}>
@@ -489,6 +501,8 @@ const styles = StyleSheet.create({
     alignSelf: "stretch",
     backgroundColor: colors.warning,
     borderRadius: radii.pill,
+    flexDirection: "row",
+    gap: spacing.sm,
     justifyContent: "center",
     minHeight: 58,
     paddingHorizontal: spacing.xl,
@@ -496,6 +510,11 @@ const styles = StyleSheet.create({
     shadowOffset: { height: 7, width: 0 },
     shadowOpacity: 0.2,
     shadowRadius: 14
+  },
+  premiumButtonIcon: {
+    height: 22,
+    tintColor: colors.text,
+    width: 22
   },
   premiumButtonText: {
     color: colors.text,
@@ -776,10 +795,26 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "800",
     textAlign: "center"
-  }
+  },
+  devPremiumButton: {
+  alignItems: "center",
+  alignSelf: "center",
+  backgroundColor: colors.surface,
+  borderColor: colors.warning,
+  borderRadius: radii.pill,
+  borderWidth: 1,
+  paddingHorizontal: spacing.lg,
+  paddingVertical: spacing.sm
+},
+
+devPremiumButtonText: {
+  color: colors.warningDark,
+  fontSize: 13,
+  fontWeight: "800"
+}
 });
 
-type SettingsIconName = "bell" | "bolt" | "trash" | "info";
+type SettingsIconName = "bell" | "bolt" | "trash" | "info" | "premium";
 
 function SettingsIconBubble({
   backgroundColor,

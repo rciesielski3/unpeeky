@@ -109,7 +109,7 @@ export const strings = {
     premiumMeta: "Reklamy będą tylko w widoku rodzica",
     premiumVersionTitle: "Wersja Premium",
     premiumVersionMeta: "Odblokuj wszystkie awatary, nielimitowane cele i usuń reklamy.",
-    premiumUpgradeButton: "◇  Przejdź na Premium",
+    premiumUpgradeButton: "Przejdź na Premium",
     premiumActiveButton: "Premium aktywny",
     premiumModalTitle: "Odblokuj Premium",
     premiumModalMeta: "Jednorazowy zakup odblokuje nielimitowane cele i usunie reklamy z widoków rodzica.",

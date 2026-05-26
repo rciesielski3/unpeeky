@@ -10,7 +10,6 @@ import {
   View
 } from "react-native";
 import { StatusBar } from "expo-status-bar";
-import mobileAds from "react-native-google-mobile-ads";
 
 import { AppLoader } from "./src/components/AppLoader";
 import { BottomNav } from "./src/components/BottomNav";
@@ -27,6 +26,7 @@ import type { AppRoute } from "./src/navigation/routes";
 import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
 import { getAppTheme } from "./src/ui/appTheme";
 import { colors, fonts, radii, spacing } from "./src/ui/theme";
+import MobileAds from "react-native-google-mobile-ads";
 
 export default function App() {
   const [route, setRoute] = useState<AppRoute>("goals");
@@ -46,9 +46,8 @@ export default function App() {
   );
 
   useEffect(() => {
-    void mobileAds()
-      .initialize()
-      .catch(() => undefined);
+    MobileAds().initialize();
+    console.log("Google Mobile Ads SDK initialized");
   }, []);
 
   useEffect(() => {
