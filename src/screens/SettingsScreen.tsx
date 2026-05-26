@@ -7,6 +7,7 @@ import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OP
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
+import { PREMIUM_PRODUCT_ID, purchasePremium } from "../premium/premiumPurchase";
 import type { AppTheme } from "../ui/appTheme";
 import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
@@ -46,6 +47,7 @@ export function SettingsScreen({
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
+  const [premiumMessage, setPremiumMessage] = useState<string | null>(null);
   const isReminderEnabled = notificationTimeDraft.trim().length > 0;
   const isNotificationTimeValid = !isReminderEnabled || parseNotificationTime(notificationTimeDraft) !== null;
   const isParentPinValid = validateParentPin(parentPinDraft);
@@ -308,11 +310,28 @@ export function SettingsScreen({
       <AboutModal onClose={() => setIsAboutOpen(false)} visible={isAboutOpen} />
       <PremiumModal
         isPremium={settings.isPremium}
-        onActivate={() => {
-          updateSettings({ isPremium: true });
+        message={premiumMessage}
+        onActivate={async () => {
+          setPremiumMessage(null);
+
+          try {
+            const purchaseResult = await purchasePremium();
+
+            if (purchaseResult.status === "activated") {
+              updateSettings({ isPremium: true });
+              setIsPremiumOpen(false);
+              return;
+            }
+
+            setPremiumMessage(purchaseResult.message);
+          } catch {
+            setPremiumMessage(strings.settings.premiumPurchaseError);
+          }
+        }}
+        onClose={() => {
+          setPremiumMessage(null);
           setIsPremiumOpen(false);
         }}
-        onClose={() => setIsPremiumOpen(false)}
         theme={theme}
         visible={isPremiumOpen}
       />
@@ -761,6 +780,18 @@ const styles = StyleSheet.create({
     fontSize: 14,
     fontWeight: "700"
   },
+  premiumProductId: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: "700",
+    textAlign: "center"
+  },
+  premiumError: {
+    color: colors.warning,
+    fontSize: 13,
+    fontWeight: "700",
+    textAlign: "center"
+  },
   premiumDisclosure: {
     color: colors.textMuted,
     fontSize: 13,
@@ -776,6 +807,9 @@ const styles = StyleSheet.create({
   modalGhostButtonText: {
     fontSize: 16,
     fontWeight: "800"
+  },
+  disabledButton: {
+    opacity: 0.6
   },
   aboutTitle: {
     color: colors.text,
@@ -941,17 +975,31 @@ function AboutModal({ onClose, visible }: { onClose: () => void; visible: boolea
 
 function PremiumModal({
   isPremium,
+  message,
   onActivate,
   onClose,
   theme,
   visible
 }: {
   isPremium: boolean;
-  onActivate: () => void;
+  message: string | null;
+  onActivate: () => Promise<void>;
   onClose: () => void;
   theme: AppTheme;
   visible: boolean;
 }) {
+  const [isActivating, setIsActivating] = useState(false);
+
+  async function handleActivate() {
+    setIsActivating(true);
+
+    try {
+      await onActivate();
+    } finally {
+      setIsActivating(false);
+    }
+  }
+
   return (
     <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.modalOverlay}>
@@ -979,14 +1027,27 @@ function PremiumModal({
               <Text style={styles.premiumPriceMeta}>{strings.premium.priceMeta}</Text>
             </View>
           ) : null}
+          {!isPremium ? (
+            <Text style={styles.premiumProductId}>
+              {strings.settings.premiumProductLabel}: {PREMIUM_PRODUCT_ID}
+            </Text>
+          ) : null}
+          {message ? <Text style={styles.premiumError}>{message}</Text> : null}
           {!isPremium ? <Text style={styles.premiumDisclosure}>{strings.settings.premiumModalDisclosure}</Text> : null}
           {!isPremium ? (
             <Pressable
               accessibilityRole="button"
-              onPress={onActivate}
-              style={[styles.timePickerDoneButton, { backgroundColor: theme.accent }]}
+              disabled={isActivating}
+              onPress={() => void handleActivate()}
+              style={[
+                styles.timePickerDoneButton,
+                { backgroundColor: theme.accent },
+                isActivating && styles.disabledButton
+              ]}
             >
-              <Text style={styles.timePickerDoneText}>{strings.settings.premiumActivateButton}</Text>
+              <Text style={styles.timePickerDoneText}>
+                {isActivating ? strings.settings.premiumActivatingButton : strings.settings.premiumActivateButton}
+              </Text>
             </Pressable>
           ) : null}
           <Pressable accessibilityRole="button" onPress={onClose} style={styles.modalGhostButton}>

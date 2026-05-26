@@ -117,8 +117,11 @@ export const strings = {
     premiumModalTitle: "Odblokuj Premium",
     premiumModalMeta: "Jednorazowy zakup odblokuje nielimitowane cele i usunie reklamy z widoków rodzica.",
     premiumModalDisclosure:
-      "Zakup w aplikacji zostanie podłączony w kolejnym kroku. Teraz aktywujesz tryb Premium lokalnie.",
+      "W MVP aktywacja jest lokalna. Przed publikacją ten przycisk zostanie podłączony do zakupu w sklepie.",
+    premiumProductLabel: "Produkt",
+    premiumPurchaseError: "Nie udało się włączyć Premium. Spróbuj ponownie.",
     premiumActivateButton: "Włącz Premium",
+    premiumActivatingButton: "Włączanie...",
     premiumCloseButton: "Może później",
     aboutApp: "O aplikacji",
     aboutTitle: "O Unpeeky",
