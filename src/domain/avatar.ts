@@ -13,8 +13,8 @@ export const AVATARS = [
   { id: "rainbow", labelKey: "rainbow", emoji: "🌈" }
 ] as const;
 
+export const FREE_AVATAR_LIMIT = 5;
 export const DEFAULT_AVATAR_ID = AVATARS[0].id;
-
 export type AvatarId = (typeof AVATARS)[number]["id"];
 
 export type Avatar = {
@@ -25,6 +25,10 @@ export type Avatar = {
 
 export type AvatarLabelKey = (typeof AVATARS)[number]["labelKey"];
 
+export function getAvailableAvatars(isPremium: boolean): readonly Avatar[] {
+  return isPremium ? AVATARS : AVATARS.slice(0, FREE_AVATAR_LIMIT);
+}
+
 export function getAvatar(avatarId: string): Avatar {
-  return AVATARS.find((avatar) => avatar.id === avatarId) ?? AVATARS[0];
+  return (AVATARS.find((avatar) => avatar.id === avatarId) ?? AVATARS[0]) as Avatar;
 }
