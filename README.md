@@ -34,6 +34,18 @@ npm install
 Before release, replace the Google Mobile Ads test app IDs and banner unit ID with production AdMob keys.
 Premium currently uses a local MVP purchase and restore flow. Before release, connect `PREMIUM_PRODUCT_ID` to the store product `unpeeky_premium_lifetime`.
 
+Android release builds read these Gradle properties or environment variables:
+
+- `UNPEEKY_VERSION_CODE`
+- `UNPEEKY_VERSION_NAME`
+- `UNPEEKY_ADMOB_ANDROID_APP_ID`
+- `UNPEEKY_RELEASE_STORE_FILE`
+- `UNPEEKY_RELEASE_STORE_PASSWORD`
+- `UNPEEKY_RELEASE_KEY_ALIAS`
+- `UNPEEKY_RELEASE_KEY_PASSWORD`
+
+If release signing values are missing, Gradle does not fall back to the debug keystore.
+
 ## Run
 
 ```bash
