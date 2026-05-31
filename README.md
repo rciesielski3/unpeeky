@@ -32,6 +32,7 @@ npm install
 ## Release Notes
 
 Before release, replace the Google Mobile Ads test app IDs and banner unit ID with production AdMob keys.
+Premium currently uses a local MVP purchase and restore flow. Before release, connect `PREMIUM_PRODUCT_ID` to the store product `unpeeky_premium_lifetime`.
 
 ## Run
 
