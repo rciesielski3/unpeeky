@@ -3,7 +3,7 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
-def DEFAULT_ADMOB_ANDROID_APP_ID = "ca-app-pub-3940256099942544~3347511713"
+def DEFAULT_ADMOB_ANDROID_APP_ID = "ca-app-pub-4185040274135926~7754563632"
 
 def getReleaseProperty(String propertyName) {
     return findProperty(propertyName) ?: System.getenv(propertyName)
