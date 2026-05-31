@@ -6,9 +6,7 @@
     "orientation": "portrait",
     "icon": "./assets/images/Unpeeky_icon.png",
     "userInterfaceStyle": "light",
-    "assetBundlePatterns": [
-      "**/*"
-    ],
+    "assetBundlePatterns": ["**/*"],
     "splash": {
       "image": "./assets/images/Unpeeky_splash.png",
       "resizeMode": "contain",
@@ -23,9 +21,7 @@
         "foregroundImage": "./assets/images/Unpeeky_adaptive-icon.png",
         "backgroundColor": "#EDE8FF"
       },
-      "permissions": [
-        "android.permission.RECORD_AUDIO"
-      ],
+      "permissions": ["android.permission.RECORD_AUDIO"],
       "package": "com.adateo.unpeeky"
     },
     "plugins": [
