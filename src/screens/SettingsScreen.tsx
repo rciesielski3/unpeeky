@@ -174,14 +174,14 @@ export function SettingsScreen({
         </Pressable>
 
         {__DEV__ ? (
-            <Pressable
-              accessibilityRole="button"
-              onPress={() => updateSettings({ isPremium: false })}
-              style={styles.devPremiumButton}
-            >
-              <Text style={styles.devPremiumButtonText}>Disable Premium</Text>
-            </Pressable>
-          ) : null}
+          <Pressable
+            accessibilityRole="button"
+            onPress={() => updateSettings({ isPremium: false })}
+            style={styles.devPremiumButton}
+          >
+            <Text style={styles.devPremiumButtonText}>Disable Premium</Text>
+          </Pressable>
+        ) : null}
       </View>
 
       <View style={styles.card}>
@@ -797,21 +797,21 @@ const styles = StyleSheet.create({
     textAlign: "center"
   },
   devPremiumButton: {
-  alignItems: "center",
-  alignSelf: "center",
-  backgroundColor: colors.surface,
-  borderColor: colors.warning,
-  borderRadius: radii.pill,
-  borderWidth: 1,
-  paddingHorizontal: spacing.lg,
-  paddingVertical: spacing.sm
-},
+    alignItems: "center",
+    alignSelf: "center",
+    backgroundColor: colors.surface,
+    borderColor: colors.warning,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
+  },
 
-devPremiumButtonText: {
-  color: colors.warningDark,
-  fontSize: 13,
-  fontWeight: "800"
-}
+  devPremiumButtonText: {
+    color: colors.warningDark,
+    fontSize: 13,
+    fontWeight: "800"
+  }
 });
 
 type SettingsIconName = "bell" | "bolt" | "trash" | "info" | "premium";

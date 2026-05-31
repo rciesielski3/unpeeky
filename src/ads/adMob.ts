@@ -9,7 +9,5 @@ export const ADMOB_TEST_APP_IDS = {
 } as const;
 
 export function getParentBannerAdUnitId(): string {
-
   return __DEV__ ? TestIds.BANNER : "ca-app-pub-xxxxxxxxxxxxxxxx/yyyyyyyyyy";
-
 }

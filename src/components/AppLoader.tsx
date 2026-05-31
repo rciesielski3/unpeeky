@@ -22,15 +22,15 @@ function TileLoader() {
             toValue: 1.75,
             duration: 280,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: true
           }),
           Animated.timing(anim, {
             toValue: 1,
             duration: 280,
             easing: Easing.inOut(Easing.ease),
-            useNativeDriver: true,
+            useNativeDriver: true
           }),
-          Animated.delay(480),
+          Animated.delay(480)
         ])
       )
     );
@@ -43,10 +43,7 @@ function TileLoader() {
       {anims.map((anim, i) => (
         <Animated.View
           key={i}
-          style={[
-            tileStyles.tile,
-            { backgroundColor: TILE_COLORS[i], transform: [{ scaleY: anim }] },
-          ]}
+          style={[tileStyles.tile, { backgroundColor: TILE_COLORS[i], transform: [{ scaleY: anim }] }]}
         />
       ))}
     </View>
@@ -57,13 +54,13 @@ const tileStyles = StyleSheet.create({
   row: {
     alignItems: "flex-end",
     flexDirection: "row",
-    gap: 10,
+    gap: 10
   },
   tile: {
     borderRadius: 6,
     height: 20,
-    width: 20,
-  },
+    width: 20
+  }
 });
 
 export function AppLoader() {
@@ -92,7 +89,7 @@ const styles = StyleSheet.create({
     alignItems: "center",
     flex: 1,
     justifyContent: "center",
-    padding: spacing.xl,
+    padding: spacing.xl
   },
   logoCard: {
     alignItems: "center",
@@ -105,27 +102,27 @@ const styles = StyleSheet.create({
     shadowOffset: { height: 14, width: 0 },
     shadowOpacity: 0.12,
     shadowRadius: 28,
-    width: 152,
+    width: 152
   },
   logo: {
     height: 128,
-    width: 128,
+    width: 128
   },
   copy: {
     alignItems: "center",
     marginBottom: spacing.xl,
-    marginTop: spacing.lg,
+    marginTop: spacing.lg
   },
   title: {
     color: colors.text,
     fontFamily: fonts.heading,
     fontSize: 32,
-    fontWeight: "800",
+    fontWeight: "800"
   },
   meta: {
     color: colors.textMuted,
     fontSize: 16,
     fontWeight: "600",
-    marginTop: spacing.xs,
-  },
+    marginTop: spacing.xs
+  }
 });
