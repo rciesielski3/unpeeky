@@ -17,6 +17,7 @@ import { colors, fonts, radii, spacing } from "../ui/theme";
 type ChildScreenProps = {
   canRevealTile: boolean;
   goal: Goal;
+  isPremium: boolean;
   onBack: () => void;
   onCompleteTask: () => void;
   onRevealTile: (tileId: number) => void;
@@ -27,6 +28,7 @@ type ChildScreenProps = {
 export function ChildScreen({
   canRevealTile,
   goal,
+  isPremium,
   onBack,
   onCompleteTask,
   onRevealTile,
@@ -65,7 +67,7 @@ export function ChildScreen({
 
       <View style={styles.childHeader}>
         <View style={styles.avatarHalo}>
-          <AvatarBadge avatarId={goal.avatarId} size="md" />
+          <AvatarBadge avatarId={goal.avatarId} isPremium={isPremium} size="md" />
         </View>
         <View style={styles.childCopy}>
           <Text style={styles.childSubtitle}>{strings.child.subtitle}</Text>

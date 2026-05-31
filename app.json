@@ -4,13 +4,13 @@
     "slug": "unpeeky",
     "version": "0.1.0",
     "orientation": "portrait",
-    "icon": "./assets/images/icon.png",
+    "icon": "./assets/images/Unpeeky_icon.png",
     "userInterfaceStyle": "light",
     "assetBundlePatterns": [
       "**/*"
     ],
     "splash": {
-      "image": "./assets/images/splash.png",
+      "image": "./assets/images/Unpeeky_splash.png",
       "resizeMode": "contain",
       "backgroundColor": "#FAF8FF"
     },
@@ -20,7 +20,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/images/adaptive-icon.png",
+        "foregroundImage": "./assets/images/Unpeeky_adaptive-icon.png",
         "backgroundColor": "#EDE8FF"
       },
       "permissions": [
@@ -36,11 +36,13 @@
           "cameraPermission": "Pozwól Unpeeky zrobić zdjęcie nagrody."
         }
       ],
-      "react-native-google-mobile-ads"
+      [
+        "react-native-google-mobile-ads",
+        {
+          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
+          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
+        }
+      ]
     ]
-  },
-  "react-native-google-mobile-ads": {
-    "android_app_id": "ca-app-pub-3940256099942544~3347511713",
-    "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
   }
 }

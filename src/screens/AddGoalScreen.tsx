@@ -14,7 +14,7 @@ import {
 
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
-import { AVATARS, DEFAULT_AVATAR_ID } from "../domain/avatar";
+import { DEFAULT_AVATAR_ID, getAvailableAvatars, getAvatar } from "../domain/avatar";
 import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { Goal, GoalDraft, TileCount } from "../domain/goal";
@@ -41,6 +41,7 @@ export function AddGoalScreen({
   theme = defaultAppTheme
 }: AddGoalScreenProps) {
   const isEditing = initialGoal !== null;
+  const availableAvatars = getAvailableAvatars(isPremium);
   const [childName, setChildName] = useState(initialGoal?.childName ?? "");
   const [rewardName, setRewardName] = useState(initialGoal?.rewardName ?? "");
   const [imageUri, setImageUri] = useState<string | null>(initialGoal?.imageUri ?? null);
@@ -50,13 +51,16 @@ export function AddGoalScreen({
   const canSave = childName.trim().length > 0 && rewardName.trim().length > 0 && imageUri !== null;
 
   useEffect(() => {
+    const nextAvatarId = initialGoal?.avatarId ?? DEFAULT_AVATAR_ID;
+    const safeAvatar = getAvatar(nextAvatarId, isPremium);  
+
     setChildName(initialGoal?.childName ?? "");
     setRewardName(initialGoal?.rewardName ?? "");
     setImageUri(initialGoal?.imageUri ?? null);
     setTotalTasks(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
-    setAvatarId(initialGoal?.avatarId ?? DEFAULT_AVATAR_ID);
+    setAvatarId(safeAvatar.id);
     setImageError(null);
-  }, [initialGoal]);
+  }, [initialGoal, isPremium]);
 
   async function pickImage(source: ImageSource) {
     try {
@@ -222,7 +226,7 @@ export function AddGoalScreen({
           <View style={styles.sectionCard}>
             <Text style={styles.label}>{strings.addGoal.avatarStepLabel}</Text>
             <View style={styles.avatarOptions}>
-              {AVATARS.map((avatar) => {
+              {availableAvatars.map((avatar) => {
                 const isSelected = avatar.id === avatarId;
 
                 return (
