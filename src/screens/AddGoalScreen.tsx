@@ -14,7 +14,7 @@ import {
 
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
-import { DEFAULT_AVATAR_ID, getAvailableAvatars, getAvatar } from "../domain/avatar";
+import { DEFAULT_AVATAR_ID, getAvailableAvatars } from "../domain/avatar";
 import type { AvatarId } from "../domain/avatar";
 import { DEFAULT_TILE_COUNT, TILE_OPTIONS } from "../domain/goal";
 import type { Goal, GoalDraft, TileCount } from "../domain/goal";
@@ -52,13 +52,15 @@ export function AddGoalScreen({
 
   useEffect(() => {
     const nextAvatarId = initialGoal?.avatarId ?? DEFAULT_AVATAR_ID;
-    const safeAvatar = getAvatar(nextAvatarId, isPremium);  
+    const nextAvailableAvatars = getAvailableAvatars(isPremium);
+    const isAvatarAvailable = nextAvailableAvatars.some((avatar) => avatar.id === nextAvatarId);
+    const safeAvatarId = isAvatarAvailable ? nextAvatarId : DEFAULT_AVATAR_ID;
 
     setChildName(initialGoal?.childName ?? "");
     setRewardName(initialGoal?.rewardName ?? "");
     setImageUri(initialGoal?.imageUri ?? null);
     setTotalTasks(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
-    setAvatarId(safeAvatar.id);
+    setAvatarId(safeAvatarId);
     setImageError(null);
   }, [initialGoal, isPremium]);
 

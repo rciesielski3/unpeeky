@@ -236,7 +236,6 @@ export default function App() {
         <ChildScreen
           canRevealTile={pendingRevealGoalId === activeGoal.id}
           goal={activeGoal}
-          isPremium={settings.isPremium}
           onBack={() => setRoute("approveTask")}
           onCompleteTask={() => setRoute("approveTask")}
           onRevealTile={(tileId) => handleRevealTile(activeGoal.id, tileId)}

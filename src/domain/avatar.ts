@@ -29,8 +29,6 @@ export function getAvailableAvatars(isPremium: boolean): readonly Avatar[] {
   return isPremium ? AVATARS : AVATARS.slice(0, FREE_AVATAR_LIMIT);
 }
 
-export function getAvatar(avatarId: string, isPremium = true): Avatar {
-  const availableAvatars = getAvailableAvatars(isPremium);
-
-  return (availableAvatars.find((avatar) => avatar.id === avatarId) ?? availableAvatars[0]) as Avatar;
+export function getAvatar(avatarId: string): Avatar {
+  return (AVATARS.find((avatar) => avatar.id === avatarId) ?? AVATARS[0]) as Avatar;
 }

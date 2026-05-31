@@ -74,7 +74,7 @@ export function ApproveTaskScreen({
           <View style={styles.cardCopy}>
             <Text style={styles.rewardName}>{goal.rewardName}</Text>
             <View style={styles.childRow}>
-              <AvatarBadge avatarId={goal.avatarId} isPremium={isPremium} size="sm" />
+              <AvatarBadge avatarId={goal.avatarId} size="sm" />
               <Text style={styles.meta}>{goal.childName}</Text>
             </View>
           </View>
