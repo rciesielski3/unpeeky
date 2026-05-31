@@ -48,21 +48,36 @@ export function AddGoalScreen({
   const [imageError, setImageError] = useState<string | null>(null);
   const [totalTasks, setTotalTasks] = useState<TileCount>(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
   const [avatarId, setAvatarId] = useState<AvatarId>(initialGoal?.avatarId ?? DEFAULT_AVATAR_ID);
-  const canSave = childName.trim().length > 0 && rewardName.trim().length > 0 && imageUri !== null;
+  const [didAttemptSave, setDidAttemptSave] = useState(false);
+  const hasPhoto = imageUri !== null;
+  const hasRewardName = rewardName.trim().length > 0;
+  const hasChildName = childName.trim().length > 0;
+  const canSave = hasChildName && hasRewardName && hasPhoto;
+  const stepCompletion = [hasPhoto, hasRewardName, true, true, hasChildName];
+  const completedStepCount = stepCompletion.filter(Boolean).length;
+  const showPhotoRequired = didAttemptSave && !hasPhoto;
+  const showRewardNameRequired = didAttemptSave && !hasRewardName;
+  const showChildNameRequired = didAttemptSave && !hasChildName;
 
   useEffect(() => {
     const nextAvatarId = initialGoal?.avatarId ?? DEFAULT_AVATAR_ID;
-    const nextAvailableAvatars = getAvailableAvatars(isPremium);
-    const isAvatarAvailable = nextAvailableAvatars.some((avatar) => avatar.id === nextAvatarId);
-    const safeAvatarId = isAvatarAvailable ? nextAvatarId : DEFAULT_AVATAR_ID;
 
     setChildName(initialGoal?.childName ?? "");
     setRewardName(initialGoal?.rewardName ?? "");
     setImageUri(initialGoal?.imageUri ?? null);
     setTotalTasks(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
-    setAvatarId(safeAvatarId);
+    setAvatarId(nextAvatarId);
     setImageError(null);
-  }, [initialGoal, isPremium]);
+    setDidAttemptSave(false);
+  }, [initialGoal]);
+
+  useEffect(() => {
+    const nextAvailableAvatars = getAvailableAvatars(isPremium);
+
+    if (!nextAvailableAvatars.some((avatar) => avatar.id === avatarId)) {
+      setAvatarId(DEFAULT_AVATAR_ID);
+    }
+  }, [avatarId, isPremium]);
 
   async function pickImage(source: ImageSource) {
     try {
@@ -111,6 +126,8 @@ export function AddGoalScreen({
   }
 
   function handleSave() {
+    setDidAttemptSave(true);
+
     if (!canSave || !imageUri) {
       return;
     }
@@ -151,14 +168,18 @@ export function AddGoalScreen({
           </View>
           <View style={styles.headerSpacer} />
         </View>
-        <View accessibilityRole="progressbar" style={styles.stepIndicator}>
-          {[0, 1, 2, 3, 4].map((stepIndex) => (
+        <View
+          accessibilityRole="progressbar"
+          accessibilityValue={{ max: stepCompletion.length, min: 0, now: completedStepCount }}
+          style={styles.stepIndicator}
+        >
+          {stepCompletion.map((isStepCompleted, stepIndex) => (
             <View
               key={stepIndex}
               style={[
                 styles.stepSegment,
                 { backgroundColor: theme.accentSoft },
-                stepIndex < 3 && { backgroundColor: theme.accent }
+                isStepCompleted && { backgroundColor: theme.accent }
               ]}
             />
           ))}
@@ -189,6 +210,9 @@ export function AddGoalScreen({
               <Text style={styles.galleryLinkText}>{strings.addGoal.galleryButton}</Text>
             </Pressable>
             {imageError ? <Text style={styles.errorText}>{imageError}</Text> : null}
+            {showPhotoRequired && !imageError ? (
+              <Text style={styles.errorText}>{strings.addGoal.photoRequired}</Text>
+            ) : null}
           </View>
 
           <View style={styles.sectionCard}>
@@ -197,9 +221,10 @@ export function AddGoalScreen({
               onChangeText={setRewardName}
               placeholder={strings.addGoal.rewardNamePlaceholder}
               placeholderTextColor={colors.textMuted}
-              style={styles.input}
+              style={[styles.input, showRewardNameRequired && styles.inputError]}
               value={rewardName}
             />
+            {showRewardNameRequired ? <Text style={styles.errorText}>{strings.addGoal.rewardNameRequired}</Text> : null}
           </View>
 
           <View style={styles.sectionCard}>
@@ -256,16 +281,16 @@ export function AddGoalScreen({
               onChangeText={setChildName}
               placeholder={strings.addGoal.childNamePlaceholder}
               placeholderTextColor={colors.textMuted}
-              style={styles.input}
+              style={[styles.input, showChildNameRequired && styles.inputError]}
               value={childName}
             />
+            {showChildNameRequired ? <Text style={styles.errorText}>{strings.addGoal.childNameRequired}</Text> : null}
           </View>
 
           <Pressable
             accessibilityRole="button"
-            disabled={!canSave}
             onPress={handleSave}
-            style={[styles.saveButton, { backgroundColor: theme.accent }, !canSave && styles.disabledButton]}
+            style={[styles.saveButton, { backgroundColor: theme.accent }]}
           >
             <Text style={styles.saveButtonText}>
               {isEditing ? strings.addGoal.updateButton : strings.addGoal.saveButton}
@@ -372,6 +397,9 @@ const styles = StyleSheet.create({
     minHeight: 60,
     paddingHorizontal: spacing.lg
   },
+  inputError: {
+    borderColor: colors.warning
+  },
   label: {
     color: colors.text,
     fontSize: 15,
@@ -476,9 +504,6 @@ const styles = StyleSheet.create({
     shadowOffset: { height: 8, width: 0 },
     shadowOpacity: 0.2,
     shadowRadius: 14
-  },
-  disabledButton: {
-    backgroundColor: colors.ctaWarningDisabled
   },
   saveButtonText: {
     color: colors.text,
