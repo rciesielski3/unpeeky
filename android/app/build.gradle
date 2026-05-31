@@ -4,6 +4,7 @@ apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
 def DEFAULT_ADMOB_ANDROID_APP_ID = "ca-app-pub-4185040274135926~7754563632"
+def DEFAULT_RELEASE_STORE_FILE = "${projectRoot}/unpeeky-release-key.keystore"
 
 def getReleaseProperty(String propertyName) {
     return findProperty(propertyName) ?: System.getenv(propertyName)
@@ -109,6 +110,7 @@ def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInRelea
 def enableShrinkResourcesInReleaseBuilds = enableProguardInReleaseBuilds &&
     (findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: true).toBoolean()
 def releaseStoreFile = getReleaseProperty("UNPEEKY_RELEASE_STORE_FILE")
+    ?: DEFAULT_RELEASE_STORE_FILE
 def releaseStorePassword = getReleaseProperty("UNPEEKY_RELEASE_STORE_PASSWORD")
 def releaseKeyAlias = getReleaseProperty("UNPEEKY_RELEASE_KEY_ALIAS")
 def releaseKeyPassword = getReleaseProperty("UNPEEKY_RELEASE_KEY_PASSWORD")
