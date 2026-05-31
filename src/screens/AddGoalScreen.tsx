@@ -24,7 +24,6 @@ import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ImageSource = "camera" | "gallery";
-const FORM_STEP_COUNT = 5;
 
 type AddGoalScreenProps = {
   initialGoal?: Goal | null;
@@ -54,25 +53,31 @@ export function AddGoalScreen({
   const hasRewardName = rewardName.trim().length > 0;
   const hasChildName = childName.trim().length > 0;
   const canSave = hasChildName && hasRewardName && hasPhoto;
-  const completedStepCount = [hasPhoto, hasRewardName, true, true, hasChildName].filter(Boolean).length;
+  const stepCompletion = [hasPhoto, hasRewardName, true, true, hasChildName];
+  const completedStepCount = stepCompletion.filter(Boolean).length;
   const showPhotoRequired = didAttemptSave && !hasPhoto;
   const showRewardNameRequired = didAttemptSave && !hasRewardName;
   const showChildNameRequired = didAttemptSave && !hasChildName;
 
   useEffect(() => {
     const nextAvatarId = initialGoal?.avatarId ?? DEFAULT_AVATAR_ID;
-    const nextAvailableAvatars = getAvailableAvatars(isPremium);
-    const isAvatarAvailable = nextAvailableAvatars.some((avatar) => avatar.id === nextAvatarId);
-    const safeAvatarId = isAvatarAvailable ? nextAvatarId : DEFAULT_AVATAR_ID;
 
     setChildName(initialGoal?.childName ?? "");
     setRewardName(initialGoal?.rewardName ?? "");
     setImageUri(initialGoal?.imageUri ?? null);
     setTotalTasks(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
-    setAvatarId(safeAvatarId);
+    setAvatarId(nextAvatarId);
     setImageError(null);
     setDidAttemptSave(false);
-  }, [initialGoal, isPremium]);
+  }, [initialGoal]);
+
+  useEffect(() => {
+    const nextAvailableAvatars = getAvailableAvatars(isPremium);
+
+    if (!nextAvailableAvatars.some((avatar) => avatar.id === avatarId)) {
+      setAvatarId(DEFAULT_AVATAR_ID);
+    }
+  }, [avatarId, isPremium]);
 
   async function pickImage(source: ImageSource) {
     try {
@@ -165,16 +170,16 @@ export function AddGoalScreen({
         </View>
         <View
           accessibilityRole="progressbar"
-          accessibilityValue={{ max: FORM_STEP_COUNT, min: 0, now: completedStepCount }}
+          accessibilityValue={{ max: stepCompletion.length, min: 0, now: completedStepCount }}
           style={styles.stepIndicator}
         >
-          {Array.from({ length: FORM_STEP_COUNT }, (_, stepIndex) => (
+          {stepCompletion.map((isStepCompleted, stepIndex) => (
             <View
               key={stepIndex}
               style={[
                 styles.stepSegment,
                 { backgroundColor: theme.accentSoft },
-                stepIndex < completedStepCount && { backgroundColor: theme.accent }
+                isStepCompleted && { backgroundColor: theme.accent }
               ]}
             />
           ))}
