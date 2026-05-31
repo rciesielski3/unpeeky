@@ -12,8 +12,9 @@ def getReleaseProperty(String propertyName) {
 
 def getReleaseIntegerProperty(String propertyName, Integer fallback) {
     def propertyValue = getReleaseProperty(propertyName)
+    def stringValue = propertyValue?.toString()
 
-    return propertyValue ? propertyValue.toInteger() : fallback
+    return (stringValue && stringValue.isInteger()) ? stringValue.toInteger() : fallback
 }
 
 def getReleaseStringProperty(String propertyName, String fallback) {
@@ -106,9 +107,9 @@ react {
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
-def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInReleaseBuilds') ?: true).toBoolean()
+def enableProguardInReleaseBuilds = findProperty('android.enableProguardInReleaseBuilds')?.toBoolean() ?: true
 def enableShrinkResourcesInReleaseBuilds = enableProguardInReleaseBuilds &&
-    (findProperty('android.enableShrinkResourcesInReleaseBuilds') ?: true).toBoolean()
+    (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: true)
 def releaseStoreFile = getReleaseProperty("UNPEEKY_RELEASE_STORE_FILE")
     ?: DEFAULT_RELEASE_STORE_FILE
 def releaseStorePassword = getReleaseProperty("UNPEEKY_RELEASE_STORE_PASSWORD")
@@ -120,6 +121,11 @@ def hasReleaseSigningConfig = [
     releaseKeyAlias,
     releaseKeyPassword
 ].every { it }
+
+if (!hasReleaseSigningConfig) {
+    logger.warn("WARNING: Release signing properties are missing or incomplete. The release build will be UNSIGNED.")
+}
+
 def admobAndroidAppId = getReleaseStringProperty("UNPEEKY_ADMOB_ANDROID_APP_ID", DEFAULT_ADMOB_ANDROID_APP_ID)
 
 /**
