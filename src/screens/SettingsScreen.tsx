@@ -7,7 +7,8 @@ import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OP
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
-import { PREMIUM_PRODUCT_ID, purchasePremium } from "../premium/premiumPurchase";
+import { PREMIUM_PRODUCT_ID, purchasePremium, restorePremiumPurchase } from "../premium/premiumPurchase";
+import type { PremiumPurchaseResult } from "../premium/premiumPurchase";
 import type { AppTheme } from "../ui/appTheme";
 import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
@@ -141,6 +142,27 @@ export function SettingsScreen({
 
   function handleChangeTileColor(tileColorId: TileColorId) {
     updateSettings({ tileColorId });
+  }
+
+  async function handlePremiumAction(
+    premiumAction: () => Promise<PremiumPurchaseResult>,
+    fallbackErrorMessage: string
+  ) {
+    setPremiumMessage(null);
+
+    try {
+      const purchaseResult = await premiumAction();
+
+      if (purchaseResult.status === "activated") {
+        updateSettings({ isPremium: true });
+        setIsPremiumOpen(false);
+        return;
+      }
+
+      setPremiumMessage(purchaseResult.message);
+    } catch {
+      setPremiumMessage(fallbackErrorMessage);
+    }
   }
 
   return (
@@ -311,27 +333,12 @@ export function SettingsScreen({
       <PremiumModal
         isPremium={settings.isPremium}
         message={premiumMessage}
-        onActivate={async () => {
-          setPremiumMessage(null);
-
-          try {
-            const purchaseResult = await purchasePremium();
-
-            if (purchaseResult.status === "activated") {
-              updateSettings({ isPremium: true });
-              setIsPremiumOpen(false);
-              return;
-            }
-
-            setPremiumMessage(purchaseResult.message);
-          } catch {
-            setPremiumMessage(strings.settings.premiumPurchaseError);
-          }
-        }}
+        onActivate={() => handlePremiumAction(purchasePremium, strings.settings.premiumPurchaseError)}
         onClose={() => {
           setPremiumMessage(null);
           setIsPremiumOpen(false);
         }}
+        onRestore={() => handlePremiumAction(restorePremiumPurchase, strings.settings.premiumRestoreError)}
         theme={theme}
         visible={isPremiumOpen}
       />
@@ -811,6 +818,21 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.6
   },
+  premiumSecondaryButton: {
+    alignItems: "center",
+    borderColor: colors.border,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 48,
+    paddingHorizontal: spacing.lg,
+    width: "100%"
+  },
+  premiumSecondaryButtonText: {
+    fontSize: 16,
+    fontWeight: "800",
+    textAlign: "center"
+  },
   aboutTitle: {
     color: colors.text,
     fontFamily: fonts.heading,
@@ -978,6 +1000,7 @@ function PremiumModal({
   message,
   onActivate,
   onClose,
+  onRestore,
   theme,
   visible
 }: {
@@ -985,18 +1008,20 @@ function PremiumModal({
   message: string | null;
   onActivate: () => Promise<void>;
   onClose: () => void;
+  onRestore: () => Promise<void>;
   theme: AppTheme;
   visible: boolean;
 }) {
-  const [isActivating, setIsActivating] = useState(false);
+  const [activePremiumAction, setActivePremiumAction] = useState<"purchase" | "restore" | null>(null);
+  const isProcessingPremiumAction = activePremiumAction !== null;
 
-  async function handleActivate() {
-    setIsActivating(true);
+  async function handlePremiumAction(actionName: "purchase" | "restore", action: () => Promise<void>) {
+    setActivePremiumAction(actionName);
 
     try {
-      await onActivate();
+      await action();
     } finally {
-      setIsActivating(false);
+      setActivePremiumAction(null);
     }
   }
 
@@ -1037,16 +1062,36 @@ function PremiumModal({
           {!isPremium ? (
             <Pressable
               accessibilityRole="button"
-              disabled={isActivating}
-              onPress={() => void handleActivate()}
+              disabled={isProcessingPremiumAction}
+              onPress={() => void handlePremiumAction("purchase", onActivate)}
               style={[
                 styles.timePickerDoneButton,
                 { backgroundColor: theme.accent },
-                isActivating && styles.disabledButton
+                isProcessingPremiumAction && styles.disabledButton
               ]}
             >
               <Text style={styles.timePickerDoneText}>
-                {isActivating ? strings.settings.premiumActivatingButton : strings.settings.premiumActivateButton}
+                {activePremiumAction === "purchase"
+                  ? strings.settings.premiumActivatingButton
+                  : strings.settings.premiumActivateButton}
+              </Text>
+            </Pressable>
+          ) : null}
+          {!isPremium ? (
+            <Pressable
+              accessibilityRole="button"
+              disabled={isProcessingPremiumAction}
+              onPress={() => void handlePremiumAction("restore", onRestore)}
+              style={[
+                styles.premiumSecondaryButton,
+                { borderColor: theme.accentSoft },
+                isProcessingPremiumAction && styles.disabledButton
+              ]}
+            >
+              <Text style={[styles.premiumSecondaryButtonText, { color: theme.accentDark }]}>
+                {activePremiumAction === "restore"
+                  ? strings.settings.premiumRestoringButton
+                  : strings.settings.premiumRestoreButton}
               </Text>
             </Pressable>
           ) : null}
