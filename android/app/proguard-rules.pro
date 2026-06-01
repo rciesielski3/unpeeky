@@ -11,4 +11,9 @@
 -keep class com.swmansion.reanimated.** { *; }
 -keep class com.facebook.react.turbomodule.** { *; }
 
+# Google Mobile Ads may reference newer Android media APIs that are absent on
+# older compile/runtime targets; they are guarded by the SDK at runtime.
+-dontwarn android.media.LoudnessCodecController
+-dontwarn android.media.LoudnessCodecController$OnLoudnessCodecUpdateListener
+
 # Add any project specific keep options here:

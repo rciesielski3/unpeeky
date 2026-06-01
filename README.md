@@ -78,6 +78,33 @@ npm run eas:submit:android:internal
 
 Use the internal track only until RevenueCat purchase and restore flows are verified end to end.
 
+Android release builds read these Gradle properties or environment variables:
+
+- `UNPEEKY_VERSION_CODE`
+- `UNPEEKY_VERSION_NAME`
+- `UNPEEKY_ADMOB_ANDROID_APP_ID`
+- `UNPEEKY_RELEASE_STORE_FILE`
+- `UNPEEKY_RELEASE_STORE_PASSWORD`
+- `UNPEEKY_RELEASE_KEY_ALIAS`
+- `UNPEEKY_RELEASE_KEY_PASSWORD`
+
+The default local release keystore path is `unpeeky-release-key.keystore` in the project root. Keep it outside git.
+For local release builds, export the signing secrets before running Gradle:
+
+```bash
+export UNPEEKY_RELEASE_STORE_PASSWORD="..."
+export UNPEEKY_RELEASE_KEY_ALIAS="..."
+export UNPEEKY_RELEASE_KEY_PASSWORD="..."
+
+# Optional overrides
+export UNPEEKY_RELEASE_STORE_FILE="$PWD/unpeeky-release-key.keystore"
+export UNPEEKY_VERSION_CODE="1"
+export UNPEEKY_VERSION_NAME="0.1.0"
+export UNPEEKY_ADMOB_ANDROID_APP_ID="ca-app-pub-4185040274135926~7754563632"
+```
+
+If release signing values are missing, Gradle does not fall back to the debug keystore.
+
 ## Run
 
 ```bash

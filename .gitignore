@@ -14,6 +14,13 @@ coverage/
 google-play-service-account*.json
 play-service-account*.json
 
+# Local secrets and release signing keys
+.env
+.env.*
+*.keystore
+*.jks
+!android/app/debug.keystore
+
 puzzle-reward-plan.md
 puzzle-reward-codex-prompt.md
 unpeeky_mockup_v3.html

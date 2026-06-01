@@ -31,13 +31,6 @@
           "photosPermission": "Pozwól Unpeeky wybrać zdjęcie nagrody z galerii.",
           "cameraPermission": "Pozwól Unpeeky zrobić zdjęcie nagrody."
         }
-      ],
-      [
-        "react-native-google-mobile-ads",
-        {
-          "androidAppId": "ca-app-pub-3940256099942544~3347511713",
-          "iosAppId": "ca-app-pub-3940256099942544~1458002511"
-        }
       ]
     ],
     "extra": {
@@ -46,5 +39,9 @@
       }
     },
     "owner": "adateo"
+  },
+  "react-native-google-mobile-ads": {
+    "android_app_id": "ca-app-pub-4185040274135926~7754563632",
+    "ios_app_id": "ca-app-pub-3940256099942544~1458002511"
   }
 }
