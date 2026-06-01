@@ -62,13 +62,15 @@ export default function App() {
         setSettings(normalizedSettings);
 
         void syncPremiumEntitlement().then((premiumResult) => {
-          if (premiumResult.status !== "activated") {
-            return;
+          if (premiumResult.status === "activated") {
+            setSettings((currentSettings) =>
+              currentSettings && !currentSettings.isPremium ? { ...currentSettings, isPremium: true } : currentSettings
+            );
+          } else if (premiumResult.status === "not_active") {
+            setSettings((currentSettings) =>
+              currentSettings && currentSettings.isPremium ? { ...currentSettings, isPremium: false } : currentSettings
+            );
           }
-
-          setSettings((currentSettings) =>
-            currentSettings && !currentSettings.isPremium ? { ...currentSettings, isPremium: true } : currentSettings
-          );
         });
       } catch {
         setGoals([]);

@@ -39,6 +39,12 @@
           "iosAppId": "ca-app-pub-3940256099942544~1458002511"
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "19f067bf-0e6c-4e38-b653-9f147ab7e2b7"
+      }
+    },
+    "owner": "adateo"
   }
 }

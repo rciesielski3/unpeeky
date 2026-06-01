@@ -25,6 +25,10 @@ export type PremiumPurchaseResult =
     }
   | {
       message: string;
+      status: "not_active";
+    }
+  | {
+      message: string;
       status: "unavailable";
     };
 
@@ -108,7 +112,7 @@ function getRevenueCatApiKey(): string | undefined {
 function getActivationResult(customerInfo: CustomerInfo, source: PremiumActivationSource): PremiumPurchaseResult {
   return customerInfo.entitlements.active[PREMIUM_ENTITLEMENT_ID]
     ? { source, status: "activated" }
-    : { message: PREMIUM_NOT_ACTIVE_MESSAGE, status: "unavailable" };
+    : { message: PREMIUM_NOT_ACTIVE_MESSAGE, status: "not_active" };
 }
 
 function isPurchaseCancelled(error: unknown): boolean {
