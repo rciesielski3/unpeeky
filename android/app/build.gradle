@@ -3,6 +3,25 @@ apply plugin: "org.jetbrains.kotlin.android"
 apply plugin: "com.facebook.react"
 
 def projectRoot = rootDir.getAbsoluteFile().getParentFile().getAbsolutePath()
+def DEFAULT_ADMOB_ANDROID_APP_ID = "ca-app-pub-4185040274135926~7754563632"
+def DEFAULT_RELEASE_STORE_FILE = "${projectRoot}/unpeeky-release-key.keystore"
+
+def getReleaseProperty(String propertyName) {
+    return findProperty(propertyName) ?: System.getenv(propertyName)
+}
+
+def getReleaseIntegerProperty(String propertyName, Integer fallback) {
+    def propertyValue = getReleaseProperty(propertyName)
+    def stringValue = propertyValue?.toString()
+
+    return (stringValue && stringValue.isInteger()) ? stringValue.toInteger() : fallback
+}
+
+def getReleaseStringProperty(String propertyName, String fallback) {
+    def propertyValue = getReleaseProperty(propertyName)
+
+    return propertyValue ?: fallback
+}
 
 static def versionToNumber(major, minor, patch) {
   return patch * 100 + minor * 10000 + major * 1000000
@@ -88,7 +107,26 @@ react {
 /**
  * Set this to true to Run Proguard on Release builds to minify the Java bytecode.
  */
-def enableProguardInReleaseBuilds = (findProperty('android.enableProguardInReleaseBuilds') ?: false).toBoolean()
+def enableProguardInReleaseBuilds = findProperty('android.enableProguardInReleaseBuilds')?.toBoolean() ?: true
+def enableShrinkResourcesInReleaseBuilds = enableProguardInReleaseBuilds &&
+    (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: true)
+def releaseStoreFile = getReleaseProperty("UNPEEKY_RELEASE_STORE_FILE")
+    ?: DEFAULT_RELEASE_STORE_FILE
+def releaseStorePassword = getReleaseProperty("UNPEEKY_RELEASE_STORE_PASSWORD")
+def releaseKeyAlias = getReleaseProperty("UNPEEKY_RELEASE_KEY_ALIAS")
+def releaseKeyPassword = getReleaseProperty("UNPEEKY_RELEASE_KEY_PASSWORD")
+def hasReleaseSigningConfig = [
+    releaseStoreFile,
+    releaseStorePassword,
+    releaseKeyAlias,
+    releaseKeyPassword
+].every { it }
+
+if (!hasReleaseSigningConfig) {
+    logger.warn("WARNING: Release signing properties are missing or incomplete. The release build will be UNSIGNED.")
+}
+
+def admobAndroidAppId = getReleaseStringProperty("UNPEEKY_ADMOB_ANDROID_APP_ID", DEFAULT_ADMOB_ANDROID_APP_ID)
 
 /**
  * The preferred build flavor of JavaScriptCore (JSC)
@@ -114,8 +152,11 @@ android {
         applicationId 'com.adateo.unpeeky'
         minSdkVersion rootProject.ext.minSdkVersion
         targetSdkVersion rootProject.ext.targetSdkVersion
-        versionCode 1
-        versionName "0.1.0"
+        versionCode getReleaseIntegerProperty("UNPEEKY_VERSION_CODE", 1)
+        versionName getReleaseStringProperty("UNPEEKY_VERSION_NAME", "0.1.0")
+        manifestPlaceholders = [
+            admobAndroidAppId: admobAndroidAppId
+        ]
     }
     signingConfigs {
         debug {
@@ -124,16 +165,24 @@ android {
             keyAlias 'androiddebugkey'
             keyPassword 'android'
         }
+        release {
+            if (hasReleaseSigningConfig) {
+                storeFile file(releaseStoreFile)
+                storePassword releaseStorePassword
+                keyAlias releaseKeyAlias
+                keyPassword releaseKeyPassword
+            }
+        }
     }
     buildTypes {
         debug {
             signingConfig signingConfigs.debug
         }
         release {
-            // Caution! In production, you need to generate your own keystore file.
-            // see https://reactnative.dev/docs/signed-apk-android.
-            signingConfig signingConfigs.debug
-            shrinkResources (findProperty('android.enableShrinkResourcesInReleaseBuilds')?.toBoolean() ?: false)
+            if (hasReleaseSigningConfig) {
+                signingConfig signingConfigs.release
+            }
+            shrinkResources enableShrinkResourcesInReleaseBuilds
             minifyEnabled enableProguardInReleaseBuilds
             proguardFiles getDefaultProguardFile("proguard-android.txt"), "proguard-rules.pro"
             crunchPngs (findProperty('android.enablePngCrunchInReleaseBuilds')?.toBoolean() ?: true)
