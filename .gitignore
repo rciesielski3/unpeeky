@@ -4,7 +4,15 @@ dist/
 build/
 coverage/
 .DS_Store
+.vscode/
 *.log
+.env
+.env.*
+*.keystore
+*.jks
+!android/app/debug.keystore
+google-play-service-account*.json
+play-service-account*.json
 
 # Local secrets and release signing keys
 .env

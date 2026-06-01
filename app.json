@@ -32,7 +32,13 @@
           "cameraPermission": "Pozwól Unpeeky zrobić zdjęcie nagrody."
         }
       ]
-    ]
+    ],
+    "extra": {
+      "eas": {
+        "projectId": "19f067bf-0e6c-4e38-b653-9f147ab7e2b7"
+      }
+    },
+    "owner": "adateo"
   },
   "react-native-google-mobile-ads": {
     "android_app_id": "ca-app-pub-4185040274135926~7754563632",
