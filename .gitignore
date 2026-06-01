@@ -5,6 +5,11 @@ build/
 coverage/
 .DS_Store
 *.log
+.env
+.env.*
+*.keystore
+*.jks
+!android/app/debug.keystore
 
 puzzle-reward-plan.md
 puzzle-reward-codex-prompt.md

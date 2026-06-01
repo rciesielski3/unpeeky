@@ -23,6 +23,7 @@ import { completeTask, createGoal, normalizeSettings, updateGoal } from "./src/d
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
+import { syncPremiumEntitlement } from "./src/premium/premiumPurchase";
 import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
 import { getAppTheme } from "./src/ui/appTheme";
 import { colors, fonts, radii, spacing } from "./src/ui/theme";
@@ -55,8 +56,20 @@ export default function App() {
       try {
         const [storedGoals, storedSettings] = await Promise.all([loadGoals(), loadSettings()]);
 
+        const normalizedSettings = normalizeSettings(storedSettings);
+
         setGoals(storedGoals);
-        setSettings(normalizeSettings(storedSettings));
+        setSettings(normalizedSettings);
+
+        void syncPremiumEntitlement().then((premiumResult) => {
+          if (premiumResult.status !== "activated") {
+            return;
+          }
+
+          setSettings((currentSettings) =>
+            currentSettings && !currentSettings.isPremium ? { ...currentSettings, isPremium: true } : currentSettings
+          );
+        });
       } catch {
         setGoals([]);
         setSettings(normalizeSettings(null));

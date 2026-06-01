@@ -14,6 +14,7 @@ Adateo Rafal Ciesielski
 - expo-image-picker for reward photos
 - expo-notifications for reminders
 - react-native-google-mobile-ads for parent-only ads
+- react-native-purchases for RevenueCat-backed Premium
 - react-native-reanimated for tile reveal animation
 - ESLint + Prettier
 
@@ -32,7 +33,18 @@ npm install
 ## Release Notes
 
 Before release, replace the Google Mobile Ads test app IDs and banner unit ID with production AdMob keys.
-Premium currently uses a local MVP purchase and restore flow. Before release, connect `PREMIUM_PRODUCT_ID` to the store product `unpeeky_premium_lifetime`.
+
+Premium uses RevenueCat. Configure RevenueCat with:
+
+- Product: `unpeeky_premium_lifetime`
+- Entitlement: `premium`
+- Android public SDK key: `EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY`
+
+For local Android purchase testing, add the RevenueCat key to an ignored local env file:
+
+```bash
+EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY="goog_..."
+```
 
 ## Run
 
