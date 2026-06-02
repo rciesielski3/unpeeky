@@ -6,6 +6,7 @@ coverage/
 .DS_Store
 .vscode/
 *.log
+*.textClipping
 .env
 .env.*
 *.keystore
