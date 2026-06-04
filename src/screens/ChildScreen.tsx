@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, Vibration, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
 
 import { AvatarBadge } from "../components/AvatarBadge";
@@ -33,6 +33,7 @@ export function ChildScreen({
   theme = defaultAppTheme,
   tileColor
 }: ChildScreenProps) {
+  const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
   const isComplete = isGoalComplete(goal);
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
   const progress = getGoalProgress(goal);
@@ -49,6 +50,7 @@ export function ChildScreen({
       Vibration.vibrate([0, 120, 80, 160]);
       void playCompletionSound();
       hasPlayedCompletionFeedback.current = true;
+      setIsCelebrationOpen(true);
     }
   }, [isComplete]);
 
@@ -132,6 +134,13 @@ export function ChildScreen({
           </Text>
         </Pressable>
       </View>
+      <CompletionCelebrationModal
+        goal={goal}
+        onBackToParent={onBack}
+        onClose={() => setIsCelebrationOpen(false)}
+        theme={theme}
+        visible={isCelebrationOpen}
+      />
     </ScrollView>
   );
 }
@@ -342,8 +351,145 @@ const styles = StyleSheet.create({
   },
   staticConfetti: {
     position: "absolute"
+  },
+  celebrationBackdrop: {
+    alignItems: "center",
+    backgroundColor: "rgba(33, 27, 54, 0.42)",
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg
+  },
+  celebrationCard: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    maxWidth: 420,
+    overflow: "hidden",
+    padding: spacing.xl,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 16, width: 0 },
+    shadowOpacity: 0.24,
+    shadowRadius: 30,
+    width: "100%"
+  },
+  celebrationBurst: {
+    fontSize: 44,
+    letterSpacing: 2
+  },
+  celebrationImage: {
+    aspectRatio: 1,
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radii.lg,
+    width: "72%"
+  },
+  celebrationTitle: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 28,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  celebrationBody: {
+    color: colors.textMuted,
+    fontSize: 16,
+    lineHeight: 22,
+    textAlign: "center"
+  },
+  celebrationReward: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  celebrationActions: {
+    gap: spacing.sm,
+    paddingTop: spacing.sm,
+    width: "100%"
+  },
+  celebrationPrimaryButton: {
+    alignItems: "center",
+    borderRadius: radii.pill,
+    justifyContent: "center",
+    minHeight: 52,
+    paddingHorizontal: spacing.lg
+  },
+  celebrationSecondaryButton: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 52,
+    paddingHorizontal: spacing.lg
+  },
+  celebrationPrimaryText: {
+    color: colors.surface,
+    fontSize: 17,
+    fontWeight: "800"
+  },
+  celebrationSecondaryText: {
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: "800"
   }
 });
+
+function CompletionCelebrationModal({
+  goal,
+  onBackToParent,
+  onClose,
+  theme,
+  visible
+}: {
+  goal: Goal;
+  onBackToParent: () => void;
+  onClose: () => void;
+  theme: AppTheme;
+  visible: boolean;
+}) {
+  function handleBackToParent() {
+    onClose();
+    onBackToParent();
+  }
+
+  return (
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      <View style={styles.celebrationBackdrop}>
+        <View style={styles.celebrationCard}>
+          <Text accessibilityRole="image" style={styles.celebrationBurst}>
+            🎉 ⭐ 🎉
+          </Text>
+          <Image
+            accessibilityLabel={strings.goals.thumbnailLabel(goal.rewardName)}
+            source={{ uri: goal.imageUri }}
+            style={styles.celebrationImage}
+          />
+          <Text style={styles.celebrationTitle}>{strings.child.celebrationTitle(goal.childName)}</Text>
+          <Text style={styles.celebrationReward}>{goal.rewardName}</Text>
+          <Text style={styles.celebrationBody}>{strings.child.celebrationBody}</Text>
+          <View style={styles.celebrationActions}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onClose}
+              style={[styles.celebrationPrimaryButton, { backgroundColor: theme.accent }]}
+            >
+              <Text style={styles.celebrationPrimaryText}>{strings.child.celebrationViewRewardButton}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleBackToParent}
+              style={styles.celebrationSecondaryButton}
+            >
+              <Text style={styles.celebrationSecondaryText}>{strings.child.celebrationParentButton}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
 
 function ConfettiDot({ color, delay, from }: { color: string; delay: number; from: "left" | "right" }) {
   const translateY = useSharedValue(0);
