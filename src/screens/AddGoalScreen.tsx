@@ -224,6 +224,32 @@ export function AddGoalScreen({
               style={[styles.input, showRewardNameRequired && styles.inputError]}
               value={rewardName}
             />
+            {!isEditing ? (
+              <View style={styles.templateBlock}>
+                <Text style={styles.templateTitle}>{strings.addGoal.rewardTemplatesTitle}</Text>
+                <View style={styles.templateOptions}>
+                  {strings.addGoal.rewardTemplates.map((template) => {
+                    const isSelected = rewardName.trim() === template;
+
+                    return (
+                      <Pressable
+                        accessibilityLabel={strings.addGoal.rewardTemplateLabel(template)}
+                        accessibilityRole="button"
+                        accessibilityState={{ selected: isSelected }}
+                        key={template}
+                        onPress={() => setRewardName(template)}
+                        style={[
+                          styles.templateChip,
+                          isSelected && { backgroundColor: theme.accentSoft, borderColor: theme.accent }
+                        ]}
+                      >
+                        <Text style={styles.templateChipText}>{template}</Text>
+                      </Pressable>
+                    );
+                  })}
+                </View>
+              </View>
+            ) : null}
             {showRewardNameRequired ? <Text style={styles.errorText}>{strings.addGoal.rewardNameRequired}</Text> : null}
           </View>
 
@@ -399,6 +425,34 @@ const styles = StyleSheet.create({
   },
   inputError: {
     borderColor: colors.warning
+  },
+  templateBlock: {
+    gap: spacing.sm,
+    paddingTop: spacing.xs
+  },
+  templateTitle: {
+    color: colors.textMuted,
+    fontSize: 12,
+    fontWeight: "800",
+    textTransform: "uppercase"
+  },
+  templateOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
+  templateChip: {
+    backgroundColor: colors.surface,
+    borderColor: "#EFE3D2",
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
+  },
+  templateChipText: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "800"
   },
   label: {
     color: colors.text,
