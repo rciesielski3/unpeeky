@@ -1,5 +1,5 @@
-import { useEffect, useRef } from "react";
-import { Pressable, ScrollView, StyleSheet, Text, Vibration, View } from "react-native";
+import { useEffect, useRef, useState } from "react";
+import { Image, Modal, Pressable, ScrollView, StyleSheet, Text, Vibration, View } from "react-native";
 import Animated, { Easing, useAnimatedStyle, useSharedValue, withDelay, withTiming } from "react-native-reanimated";
 
 import { AvatarBadge } from "../components/AvatarBadge";
@@ -33,6 +33,7 @@ export function ChildScreen({
   theme = defaultAppTheme,
   tileColor
 }: ChildScreenProps) {
+  const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
   const isComplete = isGoalComplete(goal);
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
   const progress = getGoalProgress(goal);
@@ -45,94 +46,114 @@ export function ChildScreen({
   }
 
   useEffect(() => {
-    if (isComplete && !hasPlayedCompletionFeedback.current) {
-      Vibration.vibrate([0, 120, 80, 160]);
-      void playCompletionSound();
-      hasPlayedCompletionFeedback.current = true;
+    setIsCelebrationOpen(false);
+  }, [goal.id]);
+
+  useEffect(() => {
+    if (isComplete) {
+      if (!hasPlayedCompletionFeedback.current) {
+        Vibration.vibrate([0, 120, 80, 160]);
+        void playCompletionSound();
+        hasPlayedCompletionFeedback.current = true;
+        setIsCelebrationOpen(true);
+      }
+    } else {
+      hasPlayedCompletionFeedback.current = false;
     }
   }, [isComplete]);
 
   return (
-    <ScrollView
-      contentContainerStyle={[styles.screen, { backgroundColor: theme.childBackground }]}
-      style={[styles.scroll, { backgroundColor: theme.childBackground }]}
-    >
-      <ScreenDecorations variant="clouds" />
-      <View style={styles.cloudLeft} />
-      <View style={styles.cloudRight} />
-      <Text style={styles.sparkleLeft}>✦</Text>
-      <Text style={styles.sparkleRight}>⭐</Text>
+    <>
+      <ScrollView
+        contentContainerStyle={[styles.screen, { backgroundColor: theme.childBackground }]}
+        style={[styles.scroll, { backgroundColor: theme.childBackground }]}
+      >
+        <ScreenDecorations variant="clouds" />
+        <View style={styles.cloudLeft} />
+        <View style={styles.cloudRight} />
+        <Text style={styles.sparkleLeft}>✦</Text>
+        <Text style={styles.sparkleRight}>⭐</Text>
 
-      <View style={styles.childHeader}>
-        <View style={styles.avatarHalo}>
-          <AvatarBadge avatarId={goal.avatarId} size="md" />
+        <View style={styles.childHeader}>
+          <View style={styles.avatarHalo}>
+            <AvatarBadge avatarId={goal.avatarId} size="md" />
+          </View>
+          <View style={styles.childCopy}>
+            <Text style={styles.childSubtitle}>{strings.child.subtitle}</Text>
+            <Text style={styles.greeting}>{goal.childName}</Text>
+          </View>
+          <Pressable
+            accessibilityLabel={strings.child.backToParentButton}
+            accessibilityRole="button"
+            onPress={onBack}
+            style={[styles.circleButton, { backgroundColor: theme.accentSoft }]}
+          >
+            <Text style={[styles.closeIcon, { color: theme.accent }]}>×</Text>
+          </Pressable>
         </View>
-        <View style={styles.childCopy}>
-          <Text style={styles.childSubtitle}>{strings.child.subtitle}</Text>
-          <Text style={styles.greeting}>{goal.childName}</Text>
+
+        <View style={styles.gridWrap}>
+          <TileGrid
+            imageUri={goal.imageUri}
+            onTilePress={canRevealTile ? onRevealTile : undefined}
+            revealOrder={goal.revealOrder}
+            revealedCount={goal.completedTasks}
+            tileColor={tileColor}
+            totalTiles={goal.totalTasks}
+          />
         </View>
-        <Pressable
-          accessibilityLabel={strings.child.backToParentButton}
-          accessibilityRole="button"
-          onPress={onBack}
-          style={[styles.circleButton, { backgroundColor: theme.accentSoft }]}
-        >
-          <Text style={[styles.closeIcon, { color: theme.accent }]}>×</Text>
-        </Pressable>
-      </View>
 
-      <View style={styles.gridWrap}>
-        <TileGrid
-          imageUri={goal.imageUri}
-          onTilePress={canRevealTile ? onRevealTile : undefined}
-          revealOrder={goal.revealOrder}
-          revealedCount={goal.completedTasks}
-          tileColor={tileColor}
-          totalTiles={goal.totalTasks}
-        />
-      </View>
-
-      <View style={styles.progressBlock}>
-        <View style={styles.progressCopy}>
-          <Text style={styles.progressText}>{strings.approveTask.progress(goal.completedTasks, goal.totalTasks)}</Text>
-          <ProgressBar color={theme.accent} progress={progress} />
+        <View style={styles.progressBlock}>
+          <View style={styles.progressCopy}>
+            <Text style={styles.progressText}>
+              {strings.approveTask.progress(goal.completedTasks, goal.totalTasks)}
+            </Text>
+            <ProgressBar color={theme.accent} progress={progress} />
+          </View>
+          <Text style={styles.progressStar}>⭐</Text>
         </View>
-        <Text style={styles.progressStar}>⭐</Text>
-      </View>
 
-      <View style={[styles.messageCard, isComplete && styles.completedCard]}>
-        {isComplete ? <AnimatedConfetti /> : <StaticConfetti />}
-        <View>
-          <Text style={styles.messageTitle}>
-            {isComplete ? strings.child.completedTitle : strings.child.encouragementTitle}
-          </Text>
-          <Text style={styles.messageBody}>
-            {isComplete
-              ? strings.child.completedBody
-              : canRevealTile
-                ? strings.child.pickTileHint
-                : strings.child.remaining(remainingTasks)}
-          </Text>
+        <View style={[styles.messageCard, isComplete && styles.completedCard]}>
+          {isComplete ? <AnimatedConfetti /> : <StaticConfetti />}
+          <View>
+            <Text style={styles.messageTitle}>
+              {isComplete ? strings.child.completedTitle : strings.child.encouragementTitle}
+            </Text>
+            <Text style={styles.messageBody}>
+              {isComplete
+                ? strings.child.completedBody
+                : canRevealTile
+                  ? strings.child.pickTileHint
+                  : strings.child.remaining(remainingTasks)}
+            </Text>
+          </View>
+          <Text style={styles.cloudEmoji}>☁️</Text>
         </View>
-        <Text style={styles.cloudEmoji}>☁️</Text>
-      </View>
 
-      <View style={styles.actionsRow}>
-        <Pressable accessibilityRole="button" onPress={onBack} style={styles.rejectButton}>
-          <Text style={styles.rejectButtonText}>× {strings.child.rejectButton}</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          disabled={isComplete}
-          onPress={onCompleteTask}
-          style={[styles.approveButton, { backgroundColor: theme.accent }, isComplete && styles.disabledButton]}
-        >
-          <Text style={styles.approveButtonText}>
-            {isComplete ? strings.child.completeButton : `✓ ${strings.child.approveTaskButton} ✨`}
-          </Text>
-        </Pressable>
-      </View>
-    </ScrollView>
+        <View style={styles.actionsRow}>
+          <Pressable accessibilityRole="button" onPress={onBack} style={styles.rejectButton}>
+            <Text style={styles.rejectButtonText}>× {strings.child.rejectButton}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            disabled={isComplete}
+            onPress={onCompleteTask}
+            style={[styles.approveButton, { backgroundColor: theme.accent }, isComplete && styles.disabledButton]}
+          >
+            <Text style={styles.approveButtonText}>
+              {isComplete ? strings.child.completeButton : `✓ ${strings.child.approveTaskButton} ✨`}
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
+      <CompletionCelebrationModal
+        goal={goal}
+        onBackToParent={onBack}
+        onClose={() => setIsCelebrationOpen(false)}
+        theme={theme}
+        visible={isCelebrationOpen}
+      />
+    </>
   );
 }
 
@@ -342,8 +363,149 @@ const styles = StyleSheet.create({
   },
   staticConfetti: {
     position: "absolute"
+  },
+  celebrationBackdrop: {
+    alignItems: "center",
+    backgroundColor: "rgba(33, 27, 54, 0.42)",
+    flex: 1,
+    justifyContent: "center",
+    padding: spacing.lg
+  },
+  celebrationCard: {
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    maxWidth: 420,
+    overflow: "hidden",
+    padding: spacing.xl,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 16, width: 0 },
+    shadowOpacity: 0.24,
+    shadowRadius: 30,
+    width: "100%"
+  },
+  celebrationBurst: {
+    fontSize: 44,
+    letterSpacing: 2
+  },
+  celebrationImage: {
+    aspectRatio: 1,
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radii.lg,
+    width: "72%"
+  },
+  celebrationTitle: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 28,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  celebrationBody: {
+    color: colors.textMuted,
+    fontSize: 16,
+    lineHeight: 22,
+    textAlign: "center"
+  },
+  celebrationReward: {
+    color: colors.text,
+    fontSize: 20,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  celebrationActions: {
+    gap: spacing.sm,
+    paddingTop: spacing.sm,
+    width: "100%"
+  },
+  celebrationPrimaryButton: {
+    alignItems: "center",
+    borderRadius: radii.pill,
+    justifyContent: "center",
+    minHeight: 52,
+    paddingHorizontal: spacing.lg
+  },
+  celebrationSecondaryButton: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    justifyContent: "center",
+    minHeight: 52,
+    paddingHorizontal: spacing.lg
+  },
+  celebrationPrimaryText: {
+    color: colors.surface,
+    fontSize: 17,
+    fontWeight: "800"
+  },
+  celebrationSecondaryText: {
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: "800"
   }
 });
+
+function CompletionCelebrationModal({
+  goal,
+  onBackToParent,
+  onClose,
+  theme,
+  visible
+}: {
+  goal: Goal;
+  onBackToParent: () => void;
+  onClose: () => void;
+  theme: AppTheme;
+  visible: boolean;
+}) {
+  function handleBackToParent() {
+    onClose();
+    onBackToParent();
+  }
+
+  return (
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      <View style={styles.celebrationBackdrop}>
+        <View style={styles.celebrationCard}>
+          <Text
+            accessibilityLabel={strings.child.completedTitle}
+            accessibilityRole="image"
+            style={styles.celebrationBurst}
+          >
+            🎉 ⭐ 🎉
+          </Text>
+          <Image
+            accessibilityLabel={strings.goals.thumbnailLabel(goal.rewardName)}
+            source={{ uri: goal.imageUri }}
+            style={styles.celebrationImage}
+          />
+          <Text style={styles.celebrationTitle}>{strings.child.celebrationTitle(goal.childName)}</Text>
+          <Text style={styles.celebrationReward}>{goal.rewardName}</Text>
+          <Text style={styles.celebrationBody}>{strings.child.celebrationBody}</Text>
+          <View style={styles.celebrationActions}>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onClose}
+              style={[styles.celebrationPrimaryButton, { backgroundColor: theme.accent }]}
+            >
+              <Text style={styles.celebrationPrimaryText}>{strings.child.celebrationViewRewardButton}</Text>
+            </Pressable>
+            <Pressable
+              accessibilityRole="button"
+              onPress={handleBackToParent}
+              style={styles.celebrationSecondaryButton}
+            >
+              <Text style={styles.celebrationSecondaryText}>{strings.child.celebrationParentButton}</Text>
+            </Pressable>
+          </View>
+        </View>
+      </View>
+    </Modal>
+  );
+}
 
 function ConfettiDot({ color, delay, from }: { color: string; delay: number; from: "left" | "right" }) {
   const translateY = useSharedValue(0);
