@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useRef, useState } from "react";
 import {
   Image,
   KeyboardAvoidingView,
@@ -42,19 +42,25 @@ export function ApproveTaskScreen({
   theme = defaultAppTheme
 }: ApproveTaskScreenProps) {
   const [pinDraft, setPinDraft] = useState("");
+  const scrollViewRef = useRef<ScrollView>(null);
   const isComplete = goal.completed;
   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
   const canApprove = !isComplete && pinDraft === parentPin;
 
+  function scrollToActions() {
+    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
+  }
+
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={spacing.lg}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? spacing.lg : 0}
       style={styles.container}
     >
       <ScrollView
         contentContainerStyle={[styles.screen, { backgroundColor: theme.parentBackground }]}
         keyboardShouldPersistTaps="handled"
+        ref={scrollViewRef}
         style={[styles.scroll, { backgroundColor: theme.parentBackground }]}
       >
         <View style={[styles.glowTop, { backgroundColor: theme.accentSoft }]} />
@@ -96,6 +102,7 @@ export function ApproveTaskScreen({
               keyboardType="number-pad"
               maxLength={4}
               onChangeText={(text) => setPinDraft(text.replace(/\D/g, "").slice(0, 4))}
+              onFocus={scrollToActions}
               placeholder={strings.approveTask.pinPlaceholder}
               secureTextEntry
               style={[styles.pinInput, pinDraft.length === 4 && !canApprove && styles.invalidPinInput]}
@@ -148,7 +155,7 @@ const styles = StyleSheet.create({
     flexGrow: 1,
     gap: spacing.md,
     overflow: "hidden",
-    paddingBottom: spacing.xl,
+    paddingBottom: 112,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl
   },

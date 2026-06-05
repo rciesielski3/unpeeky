@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import * as ImagePicker from "expo-image-picker";
 import {
   Image,
@@ -49,6 +49,7 @@ export function AddGoalScreen({
   const [totalTasks, setTotalTasks] = useState<TileCount>(initialGoal?.totalTasks ?? DEFAULT_TILE_COUNT);
   const [avatarId, setAvatarId] = useState<AvatarId>(initialGoal?.avatarId ?? DEFAULT_AVATAR_ID);
   const [didAttemptSave, setDidAttemptSave] = useState(false);
+  const scrollViewRef = useRef<ScrollView>(null);
   const hasPhoto = imageUri !== null;
   const hasRewardName = rewardName.trim().length > 0;
   const hasChildName = childName.trim().length > 0;
@@ -141,15 +142,20 @@ export function AddGoalScreen({
     });
   }
 
+  function scrollToFormEnd() {
+    setTimeout(() => scrollViewRef.current?.scrollToEnd({ animated: true }), 120);
+  }
+
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : undefined}
-      keyboardVerticalOffset={spacing.lg}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? spacing.lg : 0}
       style={styles.container}
     >
       <ScrollView
         contentContainerStyle={[styles.screen, { backgroundColor: theme.addBackground }]}
         keyboardShouldPersistTaps="handled"
+        ref={scrollViewRef}
         style={[styles.scroll, { backgroundColor: theme.addBackground }]}
       >
         <ScreenDecorations variant="sunny" />
@@ -305,6 +311,7 @@ export function AddGoalScreen({
             <Text style={styles.label}>{strings.addGoal.childStepLabel}</Text>
             <TextInput
               onChangeText={setChildName}
+              onFocus={scrollToFormEnd}
               placeholder={strings.addGoal.childNamePlaceholder}
               placeholderTextColor={colors.textMuted}
               style={[styles.input, showChildNameRequired && styles.inputError]}
@@ -341,7 +348,7 @@ const styles = StyleSheet.create({
     backgroundColor: colors.addBackground,
     flexGrow: 1,
     gap: spacing.sm,
-    paddingBottom: spacing.xl,
+    paddingBottom: 112,
     paddingHorizontal: spacing.lg,
     paddingTop: spacing.xl
   },

@@ -269,7 +269,7 @@ export default function App() {
       ) : null}
     </>
   );
-  const shouldShowBottomNav = Boolean(settings.appMode) && route !== "approveTask";
+  const shouldShowBottomNav = Boolean(settings.appMode) && route !== "addGoal" && route !== "approveTask";
   const routeBackground = getRouteBackground(route, appTheme);
 
   return (
