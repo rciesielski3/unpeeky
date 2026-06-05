@@ -9,8 +9,7 @@ const REVENUECAT_API_KEYS = {
   ios: process.env.EXPO_PUBLIC_REVENUECAT_IOS_API_KEY
 } as const;
 
-const REVENUECAT_UNAVAILABLE_MESSAGE =
-  "RevenueCat nie jest skonfigurowany. Dodaj EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY.";
+const REVENUECAT_UNAVAILABLE_MESSAGE = "Zakupy Premium nie są jeszcze dostępne. Spróbuj ponownie później.";
 const PREMIUM_NOT_ACTIVE_MESSAGE = "Nie znaleziono aktywnego Premium dla tego konta.";
 const PURCHASE_CANCELLED_MESSAGE = "Zakup został anulowany.";
 

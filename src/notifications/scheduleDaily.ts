@@ -45,6 +45,14 @@ export async function scheduleDaily(notificationTime: string): Promise<ScheduleD
   }
 }
 
+export async function cancelDailyReminder(): Promise<void> {
+  try {
+    await Notifications.cancelScheduledNotificationAsync(DAILY_REMINDER_IDENTIFIER);
+  } catch {
+    // Notification cancellation is best-effort; settings should still reflect the user's choice.
+  }
+}
+
 export function parseNotificationTime(notificationTime: string): ParsedTime | null {
   const match = /^([01]\d|2[0-3]):([0-5]\d)$/.exec(notificationTime);
 

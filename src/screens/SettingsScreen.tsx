@@ -6,8 +6,8 @@ import { ScreenDecorations } from "../components/ScreenDecorations";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
 import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
-import { parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
-import { PREMIUM_PRODUCT_ID, purchasePremium, restorePremiumPurchase } from "../premium/premiumPurchase";
+import { cancelDailyReminder, parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
+import { PREMIUM_PRODUCT_ID, purchasePremium } from "../premium/premiumPurchase";
 import type { PremiumPurchaseResult } from "../premium/premiumPurchase";
 import type { AppTheme } from "../ui/appTheme";
 import { defaultAppTheme } from "../ui/appTheme";
@@ -49,7 +49,7 @@ export function SettingsScreen({
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const [premiumMessage, setPremiumMessage] = useState<string | null>(null);
-  const isReminderEnabled = notificationTimeDraft.trim().length > 0;
+  const isReminderEnabled = settings.isReminderEnabled;
   const isNotificationTimeValid = !isReminderEnabled || parseNotificationTime(notificationTimeDraft) !== null;
   const isParentPinValid = validateParentPin(parentPinDraft);
 
@@ -70,17 +70,16 @@ export function SettingsScreen({
 
   async function handleReminderToggle(isEnabled: boolean) {
     if (!isEnabled) {
-      setNotificationTimeDraft("");
-      updateSettings({ notificationTime: "" });
+      updateSettings({ isReminderEnabled: false });
       setNotificationMessage(null);
+      await cancelDailyReminder();
       return;
     }
 
-    const notificationTime = settings.notificationTime || "18:30";
+    const notificationTime = notificationTimeDraft || settings.notificationTime || "18:00";
 
     setNotificationTimeDraft(notificationTime);
-    setIsTimePickerOpen(true);
-    void saveNotificationTime(notificationTime);
+    await saveNotificationTime(notificationTime);
   }
 
   async function saveNotificationTime(notificationTime: string) {
@@ -88,7 +87,7 @@ export function SettingsScreen({
       return;
     }
 
-    updateSettings({ notificationTime });
+    updateSettings({ isReminderEnabled: true, notificationTime });
     const scheduleResult = await scheduleDaily(notificationTime);
 
     setNotificationMessage(getNotificationMessage(scheduleResult));
@@ -102,11 +101,6 @@ export function SettingsScreen({
   }
 
   function handleOpenTimePicker() {
-    if (!isReminderEnabled) {
-      setNotificationTimeDraft(settings.notificationTime || "18:30");
-      void saveNotificationTime(settings.notificationTime || "18:30");
-    }
-
     setIsTimePickerOpen(true);
   }
 
@@ -248,12 +242,24 @@ export function SettingsScreen({
           />
         </View>
         <View style={styles.divider} />
-        <Pressable accessibilityRole="button" onPress={handleOpenTimePicker} style={styles.settingLine}>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: !isReminderEnabled }}
+          disabled={!isReminderEnabled}
+          onPress={handleOpenTimePicker}
+          style={styles.settingLine}
+        >
           <SettingsIconBubble backgroundColor={theme.accentSoft} name="bolt" tintColor={theme.accentDark} />
-          <Text style={[styles.timeValue, !isNotificationTimeValid && styles.invalidTimeText]}>
-            {notificationTimeDraft || strings.settings.notificationTimePlaceholder}
+          <Text
+            style={[
+              styles.timeValue,
+              !isReminderEnabled && styles.disabledTimeText,
+              !isNotificationTimeValid && styles.invalidTimeText
+            ]}
+          >
+            {notificationTimeDraft}
           </Text>
-          <Text style={styles.chevron}>›</Text>
+          <Text style={[styles.chevron, !isReminderEnabled && styles.disabledChevron]}>›</Text>
         </Pressable>
         {!isNotificationTimeValid ? (
           <Text style={styles.errorText}>{strings.settings.notificationTimeError}</Text>
@@ -263,7 +269,7 @@ export function SettingsScreen({
 
       <View style={styles.card}>
         <View style={styles.settingLine}>
-          <View>
+          <View style={styles.parentPinCopy}>
             <Text style={styles.rowTitle}>{strings.settings.parentPinTitle}</Text>
             <Text style={styles.rowMeta}>{strings.settings.parentPinMeta}</Text>
           </View>
@@ -338,12 +344,11 @@ export function SettingsScreen({
           setPremiumMessage(null);
           setIsPremiumOpen(false);
         }}
-        onRestore={() => handlePremiumAction(restorePremiumPurchase, strings.settings.premiumRestoreError)}
         theme={theme}
         visible={isPremiumOpen}
       />
       <TimePickerModal
-        notificationTime={notificationTimeDraft || "18:30"}
+        notificationTime={notificationTimeDraft || "18:00"}
         onClose={() => setIsTimePickerOpen(false)}
         onSelect={handleChangeNotificationTime}
         visible={isTimePickerOpen}
@@ -468,6 +473,17 @@ const styles = StyleSheet.create({
   invalidTimeText: {
     color: colors.warningDark
   },
+  disabledTimeText: {
+    color: colors.textMuted,
+    opacity: 0.45
+  },
+  disabledChevron: {
+    opacity: 0.35
+  },
+  parentPinCopy: {
+    flex: 1,
+    minWidth: 0
+  },
   pinInput: {
     backgroundColor: colors.surfaceMuted,
     borderColor: colors.border,
@@ -476,7 +492,7 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 22,
     fontWeight: "800",
-    minWidth: 122,
+    width: 104,
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.md,
     textAlign: "center"
@@ -818,21 +834,6 @@ const styles = StyleSheet.create({
   disabledButton: {
     opacity: 0.6
   },
-  premiumSecondaryButton: {
-    alignItems: "center",
-    borderColor: colors.border,
-    borderRadius: radii.pill,
-    borderWidth: 1,
-    justifyContent: "center",
-    minHeight: 48,
-    paddingHorizontal: spacing.lg,
-    width: "100%"
-  },
-  premiumSecondaryButtonText: {
-    fontSize: 16,
-    fontWeight: "800",
-    textAlign: "center"
-  },
   aboutTitle: {
     color: colors.text,
     fontFamily: fonts.heading,
@@ -1063,7 +1064,6 @@ function PremiumModal({
   message,
   onActivate,
   onClose,
-  onRestore,
   theme,
   visible
 }: {
@@ -1071,14 +1071,13 @@ function PremiumModal({
   message: string | null;
   onActivate: () => Promise<void>;
   onClose: () => void;
-  onRestore: () => Promise<void>;
   theme: AppTheme;
   visible: boolean;
 }) {
-  const [activePremiumAction, setActivePremiumAction] = useState<"purchase" | "restore" | null>(null);
+  const [activePremiumAction, setActivePremiumAction] = useState<"purchase" | null>(null);
   const isProcessingPremiumAction = activePremiumAction !== null;
 
-  async function handlePremiumAction(actionName: "purchase" | "restore", action: () => Promise<void>) {
+  async function handlePremiumAction(actionName: "purchase", action: () => Promise<void>) {
     setActivePremiumAction(actionName);
 
     try {
@@ -1137,24 +1136,6 @@ function PremiumModal({
                 {activePremiumAction === "purchase"
                   ? strings.settings.premiumActivatingButton
                   : strings.settings.premiumActivateButton}
-              </Text>
-            </Pressable>
-          ) : null}
-          {!isPremium ? (
-            <Pressable
-              accessibilityRole="button"
-              disabled={isProcessingPremiumAction}
-              onPress={() => void handlePremiumAction("restore", onRestore)}
-              style={[
-                styles.premiumSecondaryButton,
-                { borderColor: theme.accentSoft },
-                isProcessingPremiumAction && styles.disabledButton
-              ]}
-            >
-              <Text style={[styles.premiumSecondaryButtonText, { color: theme.accentDark }]}>
-                {activePremiumAction === "restore"
-                  ? strings.settings.premiumRestoringButton
-                  : strings.settings.premiumRestoreButton}
               </Text>
             </Pressable>
           ) : null}

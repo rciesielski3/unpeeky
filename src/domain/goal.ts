@@ -35,6 +35,7 @@ export type Goal = {
 
 export type AppSettings = {
   isPremium: boolean;
+  isReminderEnabled: boolean;
   notificationTime: string;
   childName: string;
   parentPin: string;
@@ -44,6 +45,7 @@ export type AppSettings = {
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   isPremium: false,
+  isReminderEnabled: true,
   notificationTime: "18:00",
   childName: "",
   parentPin: "",
@@ -94,10 +96,20 @@ export function normalizeSettings(settings: Partial<AppSettings> | null | undefi
     ...DEFAULT_APP_SETTINGS,
     ...settings
   };
+  const isStoredReminderEnabled = typeof settings?.isReminderEnabled === "boolean";
+  const notificationTime = isNotificationTime(nextSettings.notificationTime)
+    ? nextSettings.notificationTime
+    : DEFAULT_APP_SETTINGS.notificationTime;
 
   return {
     ...nextSettings,
     appMode: isAppMode(nextSettings.appMode) ? nextSettings.appMode : null,
+    isReminderEnabled: isStoredReminderEnabled
+      ? Boolean(settings?.isReminderEnabled)
+      : typeof settings?.notificationTime === "string"
+        ? isNotificationTime(settings.notificationTime)
+        : DEFAULT_APP_SETTINGS.isReminderEnabled,
+    notificationTime,
     parentPin: isParentPinValid(nextSettings.parentPin) ? nextSettings.parentPin : generateParentPin(),
     tileColorId: isTileColorId(nextSettings.tileColorId) ? nextSettings.tileColorId : DEFAULT_APP_SETTINGS.tileColorId
   };
@@ -121,6 +133,10 @@ export function getTileColor(tileColorId: TileColorId): string {
 
 export function isTileColorId(tileColorId: unknown): tileColorId is TileColorId {
   return TILE_COLOR_OPTIONS.some((tileColor) => tileColor.id === tileColorId);
+}
+
+function isNotificationTime(notificationTime: unknown): notificationTime is string {
+  return typeof notificationTime === "string" && /^([01]\d|2[0-3]):([0-5]\d)$/.test(notificationTime);
 }
 
 export function getGoalProgress(goal: Pick<Goal, "completedTasks" | "totalTasks">): number {
