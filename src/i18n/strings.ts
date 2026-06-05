@@ -130,7 +130,12 @@ export const strings = {
     aboutTitle: "O Unpeeky",
     aboutBody:
       "Unpeeky pomaga rodzicom motywować dzieci małymi krokami. Zdjęcie nagrody odkrywa się kafelek po kafelku po zatwierdzonych zadaniach.",
-    aboutOwner: "Właściciel: Adateo, Rafał Ciesielski",
+    creatorEyebrow: "Created by",
+    creatorName: "Rafał Ciesielski",
+    creatorMeta: "Product design, engineering and mobile development.",
+    creatorContactButton: "Contact",
+    creatorContactUrl: "https://rciesielski.dev/contact",
+    creatorContactError: "Nie udało się otworzyć strony kontaktowej.",
     aboutClose: "Zamknij",
     notificationTitle: "Powiadomienie",
     notificationMeta: "Codzienna godzina przypomnienia",

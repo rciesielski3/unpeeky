@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { Image, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import { Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
 
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
@@ -846,10 +846,54 @@ const styles = StyleSheet.create({
     lineHeight: 24,
     textAlign: "center"
   },
-  aboutOwner: {
-    color: colors.text,
-    fontSize: 14,
+  creatorBlock: {
+    alignItems: "center",
+    alignSelf: "stretch",
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    gap: spacing.xs,
+    padding: spacing.lg
+  },
+  creatorEyebrow: {
+    color: colors.textMuted,
+    fontSize: 12,
     fontWeight: "800",
+    letterSpacing: 0.8,
+    textTransform: "uppercase"
+  },
+  creatorName: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 19,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  creatorMeta: {
+    color: colors.textMuted,
+    fontSize: 14,
+    lineHeight: 20,
+    textAlign: "center"
+  },
+  creatorLinkButton: {
+    backgroundColor: colors.surface,
+    borderColor: colors.border,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    marginTop: spacing.sm,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
+  },
+  creatorLinkText: {
+    color: colors.primaryDark,
+    fontSize: 15,
+    fontWeight: "800"
+  },
+  creatorError: {
+    color: colors.warning,
+    fontSize: 12,
+    fontWeight: "700",
     textAlign: "center"
   },
   devPremiumButton: {
@@ -979,13 +1023,32 @@ function TimePickerModal({
 }
 
 function AboutModal({ onClose, visible }: { onClose: () => void; visible: boolean }) {
+  const [contactError, setContactError] = useState<string | null>(null);
+
+  async function openContact() {
+    try {
+      setContactError(null);
+      await Linking.openURL(strings.settings.creatorContactUrl);
+    } catch {
+      setContactError(strings.settings.creatorContactError);
+    }
+  }
+
   return (
     <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.modalOverlay}>
         <View style={styles.aboutCard}>
           <Text style={styles.aboutTitle}>{strings.settings.aboutTitle}</Text>
           <Text style={styles.aboutBody}>{strings.settings.aboutBody}</Text>
-          <Text style={styles.aboutOwner}>{strings.settings.aboutOwner}</Text>
+          <View style={styles.creatorBlock}>
+            <Text style={styles.creatorEyebrow}>{strings.settings.creatorEyebrow}</Text>
+            <Text style={styles.creatorName}>{strings.settings.creatorName}</Text>
+            <Text style={styles.creatorMeta}>{strings.settings.creatorMeta}</Text>
+            <Pressable accessibilityRole="link" onPress={openContact} style={styles.creatorLinkButton}>
+              <Text style={styles.creatorLinkText}>{strings.settings.creatorContactButton}</Text>
+            </Pressable>
+            {contactError ? <Text style={styles.creatorError}>{contactError}</Text> : null}
+          </View>
           <Pressable accessibilityRole="button" onPress={onClose} style={styles.timePickerDoneButton}>
             <Text style={styles.timePickerDoneText}>{strings.settings.aboutClose}</Text>
           </Pressable>
