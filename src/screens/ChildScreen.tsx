@@ -46,94 +46,106 @@ export function ChildScreen({
   }
 
   useEffect(() => {
-    if (isComplete && !hasPlayedCompletionFeedback.current) {
-      Vibration.vibrate([0, 120, 80, 160]);
-      void playCompletionSound();
-      hasPlayedCompletionFeedback.current = true;
-      setIsCelebrationOpen(true);
+    setIsCelebrationOpen(false);
+  }, [goal.id]);
+
+  useEffect(() => {
+    if (isComplete) {
+      if (!hasPlayedCompletionFeedback.current) {
+        Vibration.vibrate([0, 120, 80, 160]);
+        void playCompletionSound();
+        hasPlayedCompletionFeedback.current = true;
+        setIsCelebrationOpen(true);
+      }
+    } else {
+      hasPlayedCompletionFeedback.current = false;
     }
   }, [isComplete]);
 
   return (
-    <ScrollView
-      contentContainerStyle={[styles.screen, { backgroundColor: theme.childBackground }]}
-      style={[styles.scroll, { backgroundColor: theme.childBackground }]}
-    >
-      <ScreenDecorations variant="clouds" />
-      <View style={styles.cloudLeft} />
-      <View style={styles.cloudRight} />
-      <Text style={styles.sparkleLeft}>✦</Text>
-      <Text style={styles.sparkleRight}>⭐</Text>
+    <>
+      <ScrollView
+        contentContainerStyle={[styles.screen, { backgroundColor: theme.childBackground }]}
+        style={[styles.scroll, { backgroundColor: theme.childBackground }]}
+      >
+        <ScreenDecorations variant="clouds" />
+        <View style={styles.cloudLeft} />
+        <View style={styles.cloudRight} />
+        <Text style={styles.sparkleLeft}>✦</Text>
+        <Text style={styles.sparkleRight}>⭐</Text>
 
-      <View style={styles.childHeader}>
-        <View style={styles.avatarHalo}>
-          <AvatarBadge avatarId={goal.avatarId} size="md" />
+        <View style={styles.childHeader}>
+          <View style={styles.avatarHalo}>
+            <AvatarBadge avatarId={goal.avatarId} size="md" />
+          </View>
+          <View style={styles.childCopy}>
+            <Text style={styles.childSubtitle}>{strings.child.subtitle}</Text>
+            <Text style={styles.greeting}>{goal.childName}</Text>
+          </View>
+          <Pressable
+            accessibilityLabel={strings.child.backToParentButton}
+            accessibilityRole="button"
+            onPress={onBack}
+            style={[styles.circleButton, { backgroundColor: theme.accentSoft }]}
+          >
+            <Text style={[styles.closeIcon, { color: theme.accent }]}>×</Text>
+          </Pressable>
         </View>
-        <View style={styles.childCopy}>
-          <Text style={styles.childSubtitle}>{strings.child.subtitle}</Text>
-          <Text style={styles.greeting}>{goal.childName}</Text>
+
+        <View style={styles.gridWrap}>
+          <TileGrid
+            imageUri={goal.imageUri}
+            onTilePress={canRevealTile ? onRevealTile : undefined}
+            revealOrder={goal.revealOrder}
+            revealedCount={goal.completedTasks}
+            tileColor={tileColor}
+            totalTiles={goal.totalTasks}
+          />
         </View>
-        <Pressable
-          accessibilityLabel={strings.child.backToParentButton}
-          accessibilityRole="button"
-          onPress={onBack}
-          style={[styles.circleButton, { backgroundColor: theme.accentSoft }]}
-        >
-          <Text style={[styles.closeIcon, { color: theme.accent }]}>×</Text>
-        </Pressable>
-      </View>
 
-      <View style={styles.gridWrap}>
-        <TileGrid
-          imageUri={goal.imageUri}
-          onTilePress={canRevealTile ? onRevealTile : undefined}
-          revealOrder={goal.revealOrder}
-          revealedCount={goal.completedTasks}
-          tileColor={tileColor}
-          totalTiles={goal.totalTasks}
-        />
-      </View>
-
-      <View style={styles.progressBlock}>
-        <View style={styles.progressCopy}>
-          <Text style={styles.progressText}>{strings.approveTask.progress(goal.completedTasks, goal.totalTasks)}</Text>
-          <ProgressBar color={theme.accent} progress={progress} />
+        <View style={styles.progressBlock}>
+          <View style={styles.progressCopy}>
+            <Text style={styles.progressText}>
+              {strings.approveTask.progress(goal.completedTasks, goal.totalTasks)}
+            </Text>
+            <ProgressBar color={theme.accent} progress={progress} />
+          </View>
+          <Text style={styles.progressStar}>⭐</Text>
         </View>
-        <Text style={styles.progressStar}>⭐</Text>
-      </View>
 
-      <View style={[styles.messageCard, isComplete && styles.completedCard]}>
-        {isComplete ? <AnimatedConfetti /> : <StaticConfetti />}
-        <View>
-          <Text style={styles.messageTitle}>
-            {isComplete ? strings.child.completedTitle : strings.child.encouragementTitle}
-          </Text>
-          <Text style={styles.messageBody}>
-            {isComplete
-              ? strings.child.completedBody
-              : canRevealTile
-                ? strings.child.pickTileHint
-                : strings.child.remaining(remainingTasks)}
-          </Text>
+        <View style={[styles.messageCard, isComplete && styles.completedCard]}>
+          {isComplete ? <AnimatedConfetti /> : <StaticConfetti />}
+          <View>
+            <Text style={styles.messageTitle}>
+              {isComplete ? strings.child.completedTitle : strings.child.encouragementTitle}
+            </Text>
+            <Text style={styles.messageBody}>
+              {isComplete
+                ? strings.child.completedBody
+                : canRevealTile
+                  ? strings.child.pickTileHint
+                  : strings.child.remaining(remainingTasks)}
+            </Text>
+          </View>
+          <Text style={styles.cloudEmoji}>☁️</Text>
         </View>
-        <Text style={styles.cloudEmoji}>☁️</Text>
-      </View>
 
-      <View style={styles.actionsRow}>
-        <Pressable accessibilityRole="button" onPress={onBack} style={styles.rejectButton}>
-          <Text style={styles.rejectButtonText}>× {strings.child.rejectButton}</Text>
-        </Pressable>
-        <Pressable
-          accessibilityRole="button"
-          disabled={isComplete}
-          onPress={onCompleteTask}
-          style={[styles.approveButton, { backgroundColor: theme.accent }, isComplete && styles.disabledButton]}
-        >
-          <Text style={styles.approveButtonText}>
-            {isComplete ? strings.child.completeButton : `✓ ${strings.child.approveTaskButton} ✨`}
-          </Text>
-        </Pressable>
-      </View>
+        <View style={styles.actionsRow}>
+          <Pressable accessibilityRole="button" onPress={onBack} style={styles.rejectButton}>
+            <Text style={styles.rejectButtonText}>× {strings.child.rejectButton}</Text>
+          </Pressable>
+          <Pressable
+            accessibilityRole="button"
+            disabled={isComplete}
+            onPress={onCompleteTask}
+            style={[styles.approveButton, { backgroundColor: theme.accent }, isComplete && styles.disabledButton]}
+          >
+            <Text style={styles.approveButtonText}>
+              {isComplete ? strings.child.completeButton : `✓ ${strings.child.approveTaskButton} ✨`}
+            </Text>
+          </Pressable>
+        </View>
+      </ScrollView>
       <CompletionCelebrationModal
         goal={goal}
         onBackToParent={onBack}
@@ -141,7 +153,7 @@ export function ChildScreen({
         theme={theme}
         visible={isCelebrationOpen}
       />
-    </ScrollView>
+    </>
   );
 }
 
@@ -458,7 +470,11 @@ function CompletionCelebrationModal({
     <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
       <View style={styles.celebrationBackdrop}>
         <View style={styles.celebrationCard}>
-          <Text accessibilityRole="image" style={styles.celebrationBurst}>
+          <Text
+            accessibilityLabel={strings.child.completedTitle}
+            accessibilityRole="image"
+            style={styles.celebrationBurst}
+          >
             🎉 ⭐ 🎉
           </Text>
           <Image
