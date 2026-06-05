@@ -98,8 +98,8 @@ export UNPEEKY_RELEASE_KEY_PASSWORD="..."
 
 # Optional overrides
 export UNPEEKY_RELEASE_STORE_FILE="$PWD/unpeeky-release-key.keystore"
-export UNPEEKY_VERSION_CODE="1"
-export UNPEEKY_VERSION_NAME="0.1.0"
+export UNPEEKY_VERSION_CODE="3"
+export UNPEEKY_VERSION_NAME="0.1.2"
 export UNPEEKY_ADMOB_ANDROID_APP_ID="ca-app-pub-4185040274135926~7754563632"
 ```
 
