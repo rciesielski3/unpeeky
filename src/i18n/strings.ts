@@ -123,9 +123,9 @@ export const strings = {
     premiumUpgradeButton: "Przejdź na Premium",
     premiumActiveButton: "Premium aktywny",
     premiumModalTitle: "Odblokuj Premium",
-    premiumModalMeta: "Jednorazowy zakup odblokuje nielimitowane cele i usunie reklamy z widoków rodzica.",
+    premiumModalMeta: "Jednorazowy zakup dla spokojniejszego widoku rodzica.",
     premiumModalDisclosure:
-      "Zakup jest obsługiwany przez sklep Google Play i zostanie przypisany do bieżącego konta sklepu.",
+      "Premium odblokowuje nielimitowane cele i usuwa reklamy z widoków rodzica. Zakup jest obsługiwany przez Google Play.",
     premiumProductLabel: "Produkt",
     premiumPurchaseError: "Nie udało się włączyć Premium. Spróbuj ponownie.",
     premiumActivateButton: "Włącz Premium",
