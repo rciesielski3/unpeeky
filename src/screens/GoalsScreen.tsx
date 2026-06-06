@@ -71,6 +71,13 @@ export function GoalsScreen({
           <View style={styles.empty}>
             <Text style={styles.emptyTitle}>{strings.goals.emptyTitle}</Text>
             <Text style={styles.emptyText}>{strings.goals.emptyText}</Text>
+            <Pressable
+              accessibilityRole="button"
+              onPress={onAddGoal}
+              style={[styles.emptyButton, { borderColor: theme.accent }]}
+            >
+              <Text style={[styles.emptyButtonText, { color: theme.accentDark }]}>{strings.goals.emptyButton}</Text>
+            </Pressable>
           </View>
         }
         contentContainerStyle={styles.list}
@@ -305,7 +312,21 @@ const styles = StyleSheet.create({
   emptyText: {
     color: colors.textMuted,
     fontSize: 14,
+    lineHeight: 20,
     textAlign: "center"
+  },
+  emptyButton: {
+    alignItems: "center",
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    justifyContent: "center",
+    marginTop: spacing.sm,
+    minHeight: 46,
+    paddingHorizontal: spacing.lg
+  },
+  emptyButtonText: {
+    fontSize: 15,
+    fontWeight: "800"
   },
   card: {
     backgroundColor: colors.surface,

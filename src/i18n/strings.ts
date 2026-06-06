@@ -88,8 +88,9 @@ export const strings = {
     infoBody:
       "Unpeeky pomaga zamienić codzienne zadania w spokojną zabawę. Dziecko odkrywa nagrodę kawałek po kawałku, a rodzic widzi postęp bez presji.",
     infoClose: "Rozumiem",
-    emptyTitle: "Brak celów",
-    emptyText: "Dodaj pierwszy cel i sprawdź pełną pętlę lokalnie.",
+    emptyTitle: "Dodaj pierwszy cel",
+    emptyText: "Wybierz nagrodę, ustaw liczbę zadań i zacznij odkrywać postęp razem z dzieckiem.",
+    emptyButton: "Utwórz cel",
     newGoalButton: "Nowy cel",
     freeLimitTitle: "Limit darmowych celów",
     freeLimitText: (goalLimit: number) =>
