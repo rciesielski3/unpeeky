@@ -1114,7 +1114,7 @@ function PremiumModal({
               <Text style={styles.premiumPriceMeta}>{strings.premium.priceMeta}</Text>
             </View>
           ) : null}
-          {!isPremium ? (
+          {!isPremium && __DEV__ ? (
             <Text style={styles.premiumProductId}>
               {strings.settings.premiumProductLabel}: {PREMIUM_PRODUCT_ID}
             </Text>
