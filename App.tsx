@@ -1,15 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
-import {
-  Modal,
-  Platform,
-  Pressable,
-  SafeAreaView,
-  StatusBar as NativeStatusBar,
-  StyleSheet,
-  Text,
-  View
-} from "react-native";
+import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
 import { StatusBar } from "expo-status-bar";
+import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
 import { AppLoader } from "./src/components/AppLoader";
 import { BottomNav } from "./src/components/BottomNav";
@@ -30,6 +22,14 @@ import { colors, fonts, radii, spacing } from "./src/ui/theme";
 import MobileAds from "react-native-google-mobile-ads";
 
 export default function App() {
+  return (
+    <SafeAreaProvider>
+      <AppContent />
+    </SafeAreaProvider>
+  );
+}
+
+function AppContent() {
   const [route, setRoute] = useState<AppRoute>("goals");
   const [goals, setGoals] = useState<Goal[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
@@ -201,7 +201,7 @@ export default function App() {
 
   if (!isHydrated || !settings) {
     return (
-      <SafeAreaView style={[styles.safeArea, { backgroundColor: colors.parentBackground }]}>
+      <SafeAreaView edges={["top", "bottom"]} style={[styles.safeArea, { backgroundColor: colors.parentBackground }]}>
         <StatusBar style="dark" />
         <AppLoader />
       </SafeAreaView>
@@ -273,7 +273,7 @@ export default function App() {
   const routeBackground = getRouteBackground(route, appTheme);
 
   return (
-    <SafeAreaView style={[styles.safeArea, { backgroundColor: routeBackground }]}>
+    <SafeAreaView edges={["top", "bottom"]} style={[styles.safeArea, { backgroundColor: routeBackground }]}>
       <StatusBar style="dark" />
       <View style={[styles.app, { backgroundColor: routeBackground }]}>
         <View style={styles.screenSlot}>{screen}</View>
@@ -311,8 +311,7 @@ export default function App() {
 const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
-    backgroundColor: colors.background,
-    paddingTop: Platform.OS === "android" ? NativeStatusBar.currentHeight : 0
+    backgroundColor: colors.background
   },
   app: {
     flex: 1
