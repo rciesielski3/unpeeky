@@ -14,6 +14,7 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "postinstall": "patch-package",
+    "test:unit": "node --import tsx --test src/domain/*.test.ts",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
@@ -40,6 +41,7 @@
     "eslint-plugin-react-native": "^4.1.0",
     "patch-package": "^8.0.1",
     "prettier": "^3.8.3",
+    "tsx": "^4.22.4",
     "typescript": "~5.3.3"
   }
 }

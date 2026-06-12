@@ -25,6 +25,7 @@ type GoalsScreenProps = {
   onEditGoal: (goalId: string) => void;
   onOpenGoal: (goalId: string) => void;
   onOpenSettings: () => void;
+  parentLabel: string;
   theme?: AppTheme;
 };
 
@@ -36,6 +37,7 @@ export function GoalsScreen({
   onEditGoal,
   onOpenGoal,
   onOpenSettings,
+  parentLabel,
   theme = defaultAppTheme
 }: GoalsScreenProps) {
   const [openMenuGoalId, setOpenMenuGoalId] = useState<string | null>(null);
@@ -51,7 +53,7 @@ export function GoalsScreen({
       <ScreenDecorations variant="stars" />
       <View style={styles.header}>
         <View style={styles.headerCopy}>
-          <Text style={styles.hello}>{strings.goals.greeting}</Text>
+          <Text style={styles.hello}>{strings.goals.greeting(parentLabel)}</Text>
           <Text style={styles.title}>{strings.goals.title}</Text>
         </View>
         <Pressable

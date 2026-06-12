@@ -79,7 +79,7 @@ export const strings = {
     backButton: "Wróć"
   },
   goals: {
-    greeting: "Cześć, Mama! 👋",
+    greeting: (parentLabel: string) => `Cześć, ${parentLabel}! 👋`,
     title: "Twoje cele",
     subtitle: "Twoje nagrody",
     settingsButton: "Ustawienia",
@@ -142,6 +142,9 @@ export const strings = {
     creatorContactUrl: "https://rciesielski.dev/contact",
     creatorContactError: "Nie udało się otworzyć strony kontaktowej.",
     aboutClose: "Zamknij",
+    parentLabelTitle: "Jak mam się zwracać?",
+    parentLabelMeta: "Ta nazwa pojawi się w powitaniu na ekranie celów.",
+    parentLabelCustomPlaceholder: "Wpisz własną nazwę",
     notificationTitle: "Powiadomienie",
     notificationMeta: "Codzienna godzina przypomnienia",
     notificationsSectionTitle: "POWIADOMIENIA",

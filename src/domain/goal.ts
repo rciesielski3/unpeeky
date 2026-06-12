@@ -38,6 +38,7 @@ export type AppSettings = {
   isReminderEnabled: boolean;
   notificationTime: string;
   childName: string;
+  parentLabel: string;
   parentPin: string;
   appMode: AppMode | null;
   tileColorId: TileColorId;
@@ -45,9 +46,10 @@ export type AppSettings = {
 
 export const DEFAULT_APP_SETTINGS: AppSettings = {
   isPremium: false,
-  isReminderEnabled: true,
+  isReminderEnabled: false,
   notificationTime: "18:00",
   childName: "",
+  parentLabel: "Rodzicu",
   parentPin: "",
   appMode: null,
   tileColorId: "lavender"
@@ -106,10 +108,9 @@ export function normalizeSettings(settings: Partial<AppSettings> | null | undefi
     appMode: isAppMode(nextSettings.appMode) ? nextSettings.appMode : null,
     isReminderEnabled: isStoredReminderEnabled
       ? Boolean(settings?.isReminderEnabled)
-      : typeof settings?.notificationTime === "string"
-        ? isNotificationTime(settings.notificationTime)
-        : DEFAULT_APP_SETTINGS.isReminderEnabled,
+      : DEFAULT_APP_SETTINGS.isReminderEnabled,
     notificationTime,
+    parentLabel: normalizeParentLabel(nextSettings.parentLabel),
     parentPin: isParentPinValid(nextSettings.parentPin) ? nextSettings.parentPin : generateParentPin(),
     tileColorId: isTileColorId(nextSettings.tileColorId) ? nextSettings.tileColorId : DEFAULT_APP_SETTINGS.tileColorId
   };
@@ -137,6 +138,16 @@ export function isTileColorId(tileColorId: unknown): tileColorId is TileColorId 
 
 function isNotificationTime(notificationTime: unknown): notificationTime is string {
   return typeof notificationTime === "string" && /^([01]\d|2[0-3]):([0-5]\d)$/.test(notificationTime);
+}
+
+function normalizeParentLabel(parentLabel: unknown): string {
+  if (typeof parentLabel !== "string") {
+    return DEFAULT_APP_SETTINGS.parentLabel;
+  }
+
+  const normalizedParentLabel = parentLabel.trim().slice(0, 24);
+
+  return normalizedParentLabel || DEFAULT_APP_SETTINGS.parentLabel;
 }
 
 export function getGoalProgress(goal: Pick<Goal, "completedTasks" | "totalTasks">): number {
