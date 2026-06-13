@@ -22,6 +22,7 @@ type SettingsScreenProps = {
 };
 
 const MODE_OPTIONS: AppMode[] = ["singleDevice", "twoDevices"];
+const PARENT_LABEL_OPTIONS = ["Rodzicu", "Mama", "Tata", "Babcia", "Dziadek"] as const;
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => hour);
 const MINUTE_OPTIONS = [0, 15, 30, 45];
 
@@ -43,6 +44,7 @@ export function SettingsScreen({
   theme = defaultAppTheme
 }: SettingsScreenProps) {
   const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);
+  const [parentLabelDraft, setParentLabelDraft] = useState(settings.parentLabel);
   const [parentPinDraft, setParentPinDraft] = useState(settings.parentPin);
   const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
@@ -56,6 +58,10 @@ export function SettingsScreen({
   useEffect(() => {
     setNotificationTimeDraft(settings.notificationTime);
   }, [settings.notificationTime]);
+
+  useEffect(() => {
+    setParentLabelDraft(settings.parentLabel);
+  }, [settings.parentLabel]);
 
   useEffect(() => {
     setParentPinDraft(settings.parentPin);
@@ -136,6 +142,22 @@ export function SettingsScreen({
 
   function handleChangeTileColor(tileColorId: TileColorId) {
     updateSettings({ tileColorId });
+  }
+
+  function handleSelectParentLabel(parentLabel: string) {
+    setParentLabelDraft(parentLabel);
+    updateSettings({ parentLabel });
+  }
+
+  function handleParentLabelChange(text: string) {
+    setParentLabelDraft(text.slice(0, 24));
+  }
+
+  function handleParentLabelBlur() {
+    const parentLabel = parentLabelDraft.trim() || "Rodzicu";
+
+    setParentLabelDraft(parentLabel);
+    updateSettings({ parentLabel });
   }
 
   async function handlePremiumAction(
@@ -226,6 +248,44 @@ export function SettingsScreen({
             );
           })}
         </View>
+      </View>
+
+      <View style={styles.card}>
+        <View>
+          <Text style={styles.rowTitle}>{strings.settings.parentLabelTitle}</Text>
+          <Text style={styles.rowMeta}>{strings.settings.parentLabelMeta}</Text>
+        </View>
+        <View style={styles.parentLabelOptions}>
+          {PARENT_LABEL_OPTIONS.map((parentLabel) => {
+            const isSelected = settings.parentLabel === parentLabel;
+
+            return (
+              <Pressable
+                accessibilityRole="button"
+                accessibilityState={{ selected: isSelected }}
+                key={parentLabel}
+                onPress={() => handleSelectParentLabel(parentLabel)}
+                style={[
+                  styles.parentLabelOption,
+                  isSelected && { backgroundColor: theme.accentSoft, borderColor: theme.accent }
+                ]}
+              >
+                <Text style={[styles.parentLabelOptionText, isSelected && { color: theme.accentDark }]}>
+                  {parentLabel}
+                </Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <TextInput
+          maxLength={24}
+          onBlur={handleParentLabelBlur}
+          onChangeText={handleParentLabelChange}
+          placeholder={strings.settings.parentLabelCustomPlaceholder}
+          placeholderTextColor={colors.textMuted}
+          style={styles.parentLabelInput}
+          value={parentLabelDraft}
+        />
       </View>
 
       <View style={styles.card}>
@@ -610,6 +670,35 @@ const styles = StyleSheet.create({
     color: colors.text,
     fontSize: 10,
     fontWeight: "700"
+  },
+  parentLabelOptions: {
+    flexDirection: "row",
+    flexWrap: "wrap",
+    gap: spacing.sm
+  },
+  parentLabelOption: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.pill,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.sm
+  },
+  parentLabelOptionText: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "800"
+  },
+  parentLabelInput: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "700",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md
   },
   modeOption: {
     backgroundColor: colors.surfaceMuted,

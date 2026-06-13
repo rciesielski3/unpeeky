@@ -15,6 +15,7 @@ import { completeTask, createGoal, normalizeSettings, updateGoal } from "./src/d
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
+import { cancelDailyReminder } from "./src/notifications/scheduleDaily";
 import { syncPremiumEntitlement } from "./src/premium/premiumPurchase";
 import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
 import { getAppTheme } from "./src/ui/appTheme";
@@ -60,6 +61,10 @@ function AppContent() {
 
         setGoals(storedGoals);
         setSettings(normalizedSettings);
+
+        if (!normalizedSettings.isReminderEnabled) {
+          void cancelDailyReminder();
+        }
 
         void syncPremiumEntitlement().then((premiumResult) => {
           if (premiumResult.status === "activated") {
@@ -222,6 +227,7 @@ function AppContent() {
           onEditGoal={handleStartEditGoal}
           onOpenGoal={handleOpenGoal}
           onOpenSettings={() => setRoute("settings")}
+          parentLabel={settings.parentLabel}
           theme={appTheme}
         />
       ) : null}
