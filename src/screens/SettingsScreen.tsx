@@ -150,13 +150,7 @@ export function SettingsScreen({
   }
 
   function handleParentLabelChange(text: string) {
-    const parentLabel = text.slice(0, 24);
-
-    setParentLabelDraft(parentLabel);
-
-    if (parentLabel.trim()) {
-      updateSettings({ parentLabel: parentLabel.trim() });
-    }
+    setParentLabelDraft(text.slice(0, 24));
   }
 
   function handleParentLabelBlur() {
