@@ -31,4 +31,9 @@ describe("app settings defaults", () => {
     assert.equal(normalizeSettings({ parentLabel: "  Tata  " }).parentLabel, "Tata");
     assert.equal(normalizeSettings({ parentLabel: "" }).parentLabel, "Rodzicu");
   });
+
+  it("explains where to find the parent PIN without exposing it", () => {
+    assert.equal(strings.approveTask.pinSettingsHint, "PIN znajdziesz w Opcjach.");
+    assert.equal(strings.approveTask.pinSettingsHint.includes("1234"), false);
+  });
 });

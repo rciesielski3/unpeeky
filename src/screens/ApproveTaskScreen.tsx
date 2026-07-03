@@ -97,6 +97,7 @@ export function ApproveTaskScreen({
             <View>
               <Text style={styles.pinTitle}>{strings.approveTask.pinTitle}</Text>
               <Text style={styles.pinMeta}>{strings.approveTask.pinMeta}</Text>
+              <Text style={styles.pinHint}>{strings.approveTask.pinSettingsHint}</Text>
             </View>
             <TextInput
               keyboardType="number-pad"
@@ -258,6 +259,13 @@ const styles = StyleSheet.create({
   pinMeta: {
     color: colors.textMuted,
     fontSize: 16,
+    marginTop: spacing.xs
+  },
+  pinHint: {
+    color: colors.primaryDark,
+    fontSize: 14,
+    fontWeight: "700",
+    lineHeight: 20,
     marginTop: spacing.xs
   },
   pinInput: {
