@@ -69,6 +69,7 @@ export const strings = {
     subtitle: "Rodzic potwierdza postęp",
     pinTitle: "PIN rodzica",
     pinMeta: "Wpisz PIN, żeby zatwierdzić zadanie",
+    pinSettingsHint: "PIN znajdziesz w Opcjach.",
     pinPlaceholder: "0000",
     pinError: "PIN jest niepoprawny.",
     progress: (completedTasks: number, totalTasks: number) => `${completedTasks} z ${totalTasks} zadań`,
