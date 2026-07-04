@@ -17,9 +17,11 @@ import { colors, fonts, radii, spacing } from "../ui/theme";
 type ChildScreenProps = {
   canRevealTile: boolean;
   goal: Goal;
+  onAddGoal?: () => void;
   onBack: () => void;
   onCompleteTask: () => void;
   onRevealTile: (tileId: number) => void;
+  onViewGoals?: () => void;
   theme?: AppTheme;
   tileColor: string;
 };
@@ -27,9 +29,11 @@ type ChildScreenProps = {
 export function ChildScreen({
   canRevealTile,
   goal,
+  onAddGoal,
   onBack,
   onCompleteTask,
   onRevealTile,
+  onViewGoals,
   theme = defaultAppTheme,
   tileColor
 }: ChildScreenProps) {
@@ -148,8 +152,9 @@ export function ChildScreen({
       </ScrollView>
       <CompletionCelebrationModal
         goal={goal}
-        onBackToParent={onBack}
+        onAddGoal={onAddGoal}
         onClose={() => setIsCelebrationOpen(false)}
+        onViewGoals={onViewGoals}
         theme={theme}
         visible={isCelebrationOpen}
       />
@@ -450,20 +455,27 @@ const styles = StyleSheet.create({
 
 function CompletionCelebrationModal({
   goal,
-  onBackToParent,
+  onAddGoal,
   onClose,
+  onViewGoals,
   theme,
   visible
 }: {
   goal: Goal;
-  onBackToParent: () => void;
+  onAddGoal?: () => void;
   onClose: () => void;
+  onViewGoals?: () => void;
   theme: AppTheme;
   visible: boolean;
 }) {
-  function handleBackToParent() {
+  function handleViewGoals() {
     onClose();
-    onBackToParent();
+    onViewGoals?.();
+  }
+
+  function handleAddGoal() {
+    onClose();
+    onAddGoal?.();
   }
 
   return (
@@ -488,17 +500,17 @@ function CompletionCelebrationModal({
           <View style={styles.celebrationActions}>
             <Pressable
               accessibilityRole="button"
-              onPress={onClose}
+              onPress={handleViewGoals}
               style={[styles.celebrationPrimaryButton, { backgroundColor: theme.accent }]}
             >
-              <Text style={styles.celebrationPrimaryText}>{strings.child.celebrationViewRewardButton}</Text>
+              <Text style={styles.celebrationPrimaryText}>{strings.child.celebrationViewGoalsButton}</Text>
             </Pressable>
             <Pressable
               accessibilityRole="button"
-              onPress={handleBackToParent}
+              onPress={handleAddGoal}
               style={styles.celebrationSecondaryButton}
             >
-              <Text style={styles.celebrationSecondaryText}>{strings.child.celebrationParentButton}</Text>
+              <Text style={styles.celebrationSecondaryText}>{strings.child.celebrationAddGoalButton}</Text>
             </Pressable>
           </View>
         </View>
