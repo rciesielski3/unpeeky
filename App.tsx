@@ -257,9 +257,11 @@ function AppContent() {
         <ChildScreen
           canRevealTile={pendingRevealGoalId === activeGoal.id}
           goal={activeGoal}
+          onAddGoal={handleStartAddGoal}
           onBack={() => setRoute("approveTask")}
           onCompleteTask={() => setRoute("approveTask")}
           onRevealTile={(tileId) => handleRevealTile(activeGoal.id, tileId)}
+          onViewGoals={() => setRoute("goals")}
           theme={appTheme}
           tileColor={appTheme.tile}
         />
