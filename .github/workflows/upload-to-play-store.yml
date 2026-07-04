@@ -1,0 +1,224 @@
+name: Upload to Play Store
+
+# ---------------------------------------------------------------------------
+# Manual (workflow_dispatch) workflow that uploads an Android App Bundle to the
+# Google Play Console for Unpeeky (com.adateo.unpeeky).
+#
+# Flow:
+#   1. Try to reuse a pre-built AAB artifact produced by eas-build.yml
+#      (within its 30-day retention window) -> no rebuild, fastest path.
+#   2. If no artifact exists, fall back to building from source with EAS.
+#   3. Upload the AAB to the chosen Play Store track.
+#   4. Optionally create a GitHub Release (always for the production track).
+#
+# Release notes: if a file named docs/RELEASE_NOTES_<version_tag>.md exists at
+# the checked-out tag (e.g. docs/RELEASE_NOTES_v0.1.6.md), it is used as the
+# GitHub Release body; otherwise a placeholder body is used.
+# ---------------------------------------------------------------------------
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Version tag to upload (e.g. v0.1.6). Must be an existing git tag.'
+        required: true
+      track:
+        description: 'Play Store release track'
+        required: true
+        default: 'internal'
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+      status:
+        description: 'Release status on Play Store'
+        required: true
+        default: 'draft'
+        type: choice
+        options:
+          - draft
+          - completed
+      create_github_release:
+        description: 'Create a GitHub Release (always happens on the production track)'
+        required: false
+        default: 'false'
+        type: boolean
+
+# The GitHub Release step needs write access to create the release.
+permissions:
+  contents: write
+
+jobs:
+  upload:
+    runs-on: ubuntu-latest
+    steps:
+      # Check out the exact tag so both the source (for a fallback build) and the
+      # release-notes file match the version being uploaded.
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version_tag }}
+
+      # ---- 1. Try to reuse a pre-built artifact from eas-build.yml ----
+      - name: Try to download pre-built artifact
+        id: download
+        uses: dawidd6/action-download-artifact@v6
+        continue-on-error: true
+        with:
+          workflow: eas-build.yml
+          name: unpeeky-aab-${{ github.event.inputs.version_tag }}
+          path: downloaded-artifact/
+          if_no_artifact_found: warn
+
+      - name: Locate downloaded AAB
+        id: locate-aab
+        run: |
+          set -euo pipefail
+          AAB_FILE=$(find downloaded-artifact/ -name "*.aab" -type f 2>/dev/null | head -1 || true)
+          if [ -n "${AAB_FILE}" ]; then
+            echo "found=true" >> "$GITHUB_OUTPUT"
+            echo "path=${AAB_FILE}" >> "$GITHUB_OUTPUT"
+            echo "Reusing pre-built artifact: ${AAB_FILE}"
+          else
+            echo "found=false" >> "$GITHUB_OUTPUT"
+            echo "No pre-built artifact found - will build from source as a fallback."
+          fi
+
+      # ---- 2. Fallback: build from source with EAS (only if no artifact) ----
+      - name: Set up Node.js (fallback build)
+        if: steps.locate-aab.outputs.found == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      - name: Install dependencies (fallback build)
+        if: steps.locate-aab.outputs.found == 'false'
+        run: |
+          npm install
+          npm install -g eas-cli
+
+      # See eas-build.yml for the note on EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY
+      # and cloud vs local builds. The internal profile is used for fallback
+      # rebuilds; the resulting AAB is uploaded to whichever track you selected.
+      - name: Build AAB with EAS (fallback, --wait)
+        if: steps.locate-aab.outputs.found == 'false'
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY: ${{ secrets.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY }}
+        run: |
+          set -euo pipefail
+          echo "No artifact available - building from source (profile: internal)..."
+          npx eas build \
+            --platform android \
+            --profile internal \
+            --non-interactive \
+            --wait \
+            --json > eas-build-result.json
+          cat eas-build-result.json
+
+      - name: Download AAB from EAS (fallback)
+        if: steps.locate-aab.outputs.found == 'false'
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          ARTIFACT_URL=$(jq -r '.[0].artifacts.applicationArchiveUrl // .[0].artifacts.buildUrl // empty' eas-build-result.json)
+          if [ -z "${ARTIFACT_URL}" ]; then
+            BUILD_ID=$(npx eas build:list --platform android --status finished --limit 1 --non-interactive --json | jq -r '.[0].id')
+            ARTIFACT_URL=$(npx eas build:view "${BUILD_ID}" --json | jq -r '.artifacts.applicationArchiveUrl // .artifacts.buildUrl // empty')
+          fi
+          if [ -z "${ARTIFACT_URL}" ]; then
+            echo "ERROR: Could not resolve the AAB artifact URL from EAS."
+            exit 1
+          fi
+          echo "Downloading AAB from: ${ARTIFACT_URL}"
+          curl -fL "${ARTIFACT_URL}" -o app-release.aab
+          ls -lh app-release.aab
+
+      # ---- 3. Resolve the final AAB path (either reused or freshly built) ----
+      - name: Resolve AAB path
+        id: aab
+        run: |
+          set -euo pipefail
+          if [ "${{ steps.locate-aab.outputs.found }}" = "true" ]; then
+            AAB_PATH="${{ steps.locate-aab.outputs.path }}"
+          else
+            AAB_PATH="app-release.aab"
+          fi
+          if [ ! -f "${AAB_PATH}" ]; then
+            echo "ERROR: AAB file does not exist at: ${AAB_PATH}"
+            exit 1
+          fi
+          echo "AAB_PATH=${AAB_PATH}" >> "$GITHUB_ENV"
+          echo "Final AAB to upload: ${AAB_PATH}"
+          ls -lh "${AAB_PATH}"
+
+      # ---- 4. Upload to the Play Store ----
+      - name: Upload AAB to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+          packageName: 'com.adateo.unpeeky'
+          releaseFiles: ${{ env.AAB_PATH }}
+          tracks: ${{ github.event.inputs.track }}
+          status: ${{ github.event.inputs.status }}
+          # The AAB is built by EAS which manages signing; we do not sign here.
+          skipCommitHash: true
+
+      - name: Upload summary
+        run: |
+          echo "Uploaded to Play Store:"
+          echo "  Package: com.adateo.unpeeky"
+          echo "  Track:   ${{ github.event.inputs.track }}"
+          echo "  Status:  ${{ github.event.inputs.status }}"
+          echo "  AAB:     ${{ env.AAB_PATH }}"
+
+      # ---- 5. GitHub Release (production track, or explicit opt-in) ----
+      - name: Check for release notes file
+        id: release-notes
+        if: github.event.inputs.track == 'production' || github.event.inputs.create_github_release == 'true'
+        run: |
+          set -euo pipefail
+          NOTES_FILE="docs/RELEASE_NOTES_${{ github.event.inputs.version_tag }}.md"
+          if [ -f "${NOTES_FILE}" ]; then
+            echo "exists=true" >> "$GITHUB_OUTPUT"
+            echo "path=${NOTES_FILE}" >> "$GITHUB_OUTPUT"
+            echo "Release notes found: ${NOTES_FILE}"
+          else
+            echo "exists=false" >> "$GITHUB_OUTPUT"
+            echo "Release notes not found (${NOTES_FILE}); using placeholder body."
+          fi
+
+      - name: Create GitHub Release (with release notes)
+        if: >-
+          (github.event.inputs.track == 'production' || github.event.inputs.create_github_release == 'true')
+          && steps.release-notes.outputs.exists == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version_tag }}
+          name: Release ${{ github.event.inputs.version_tag }}
+          body_path: ${{ steps.release-notes.outputs.path }}
+          draft: false
+          prerelease: false
+          files: ${{ env.AAB_PATH }}
+
+      - name: Create GitHub Release (placeholder body)
+        if: >-
+          (github.event.inputs.track == 'production' || github.event.inputs.create_github_release == 'true')
+          && steps.release-notes.outputs.exists == 'false'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version_tag }}
+          name: Release ${{ github.event.inputs.version_tag }}
+          body: |
+            Release ${{ github.event.inputs.version_tag }}
+
+            Track: ${{ github.event.inputs.track }}
+
+            _No docs/RELEASE_NOTES_${{ github.event.inputs.version_tag }}.md file was found at this tag._
+          draft: false
+          prerelease: false
+          files: ${{ env.AAB_PATH }}

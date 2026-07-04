@@ -1,0 +1,159 @@
+name: EAS Build Android
+
+# ---------------------------------------------------------------------------
+# Builds an Android App Bundle (.aab) for Unpeeky using EAS Build (cloud) and
+# stores it as a GitHub Actions artifact for 30 days. The upload-to-play-store
+# workflow can then reuse that artifact instead of rebuilding.
+#
+# Version source of truth: android/gradle.properties
+#   UNPEEKY_VERSION_CODE / UNPEEKY_VERSION_NAME are read by android/app/build.gradle.
+#   eas.json uses appVersionSource: "local", so EAS builds whatever version is
+#   committed at the checked-out ref. Bump the version with the bump-version
+#   workflow (which commits gradle.properties and creates the vX.Y.Z tag) BEFORE
+#   building for release.
+#
+# Triggers:
+#   1. Automatic: pushing a tag matching v[0-9]+.[0-9]+.[0-9]+
+#        git tag -a v0.1.6 -m "Release v0.1.6" && git push origin v0.1.6
+#   2. Manual: Actions UI -> "EAS Build Android" -> Run workflow
+#        Pick the EAS profile (internal | production) and optional version tag.
+# ---------------------------------------------------------------------------
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Version tag for artifact naming (e.g. v0.1.6). Leave blank to auto-generate from gradle.properties + timestamp.'
+        required: false
+        default: ''
+      build_profile:
+        description: 'EAS build profile (see eas.json)'
+        required: true
+        default: 'internal'
+        type: choice
+        options:
+          - internal
+          - production
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Read the committed version so it appears in logs and so the artifact is
+      # named consistently. For tag pushes we also warn if the tag and the
+      # committed versionName disagree (a common release mistake).
+      - name: Read & verify version from gradle.properties
+        id: version
+        run: |
+          set -euo pipefail
+          VERSION_NAME=$(grep '^UNPEEKY_VERSION_NAME=' android/gradle.properties | cut -d'=' -f2)
+          VERSION_CODE=$(grep '^UNPEEKY_VERSION_CODE=' android/gradle.properties | cut -d'=' -f2)
+          echo "gradle.properties -> versionName=${VERSION_NAME} versionCode=${VERSION_CODE}"
+
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.ref_name }}"
+            if [ "${TAG#v}" != "${VERSION_NAME}" ]; then
+              echo "::warning::Tag (${TAG}) does not match UNPEEKY_VERSION_NAME (${VERSION_NAME}) in gradle.properties. Did you forget to run the bump-version workflow?"
+            fi
+          elif [ -n "${{ github.event.inputs.version_tag }}" ]; then
+            TAG="${{ github.event.inputs.version_tag }}"
+          else
+            TAG="v${VERSION_NAME}-$(date +%Y%m%d-%H%M%S)"
+          fi
+
+          echo "tag=${TAG}" >> "$GITHUB_OUTPUT"
+          echo "artifact-name=unpeeky-aab-${TAG}" >> "$GITHUB_OUTPUT"
+          echo "version-name=${VERSION_NAME}" >> "$GITHUB_OUTPUT"
+          echo "version-code=${VERSION_CODE}" >> "$GITHUB_OUTPUT"
+          echo "Artifact will be named: unpeeky-aab-${TAG}"
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+
+      # eas-cli is not a project dependency, so install it globally on the runner.
+      - name: Install dependencies
+        run: |
+          npm install
+          npm install -g eas-cli
+
+      # EAS Build runs in the cloud. eas-cli authenticates via the EXPO_TOKEN
+      # env var (no interactive login needed).
+      #
+      # Note on EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY: for CLOUD builds, EAS reads
+      # environment variables from the EAS project (mapped via the profile's
+      # "environment": preview/production in eas.json), NOT from this runner.
+      # We still pass it here so the workflow is correct if you ever switch to a
+      # local build (--local) and to document the build-time dependency. Make sure
+      # the same key is configured on the EAS side for the chosen environment.
+      - name: Build AAB with EAS (cloud, --wait)
+        id: eas-build
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+          EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY: ${{ secrets.EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY }}
+        run: |
+          set -euo pipefail
+          PROFILE="${{ github.event.inputs.build_profile || 'internal' }}"
+          echo "Starting EAS build (profile: ${PROFILE})..."
+          # --wait blocks until the cloud build finishes.
+          # --json prints a JSON array describing the finished build to stdout
+          # (human-readable progress goes to stderr), which we capture for the
+          # download step below.
+          npx eas build \
+            --platform android \
+            --profile "${PROFILE}" \
+            --non-interactive \
+            --wait \
+            --json > eas-build-result.json
+          echo "EAS build finished. Result JSON:"
+          cat eas-build-result.json
+
+      # Cloud builds are NOT auto-downloaded to the runner, so we resolve the
+      # artifact URL from the build JSON and download it ourselves. Different
+      # eas-cli versions expose the URL under different keys, so we try both and
+      # fall back to build:list/build:view if needed.
+      - name: Download AAB from EAS
+        id: download
+        env:
+          EXPO_TOKEN: ${{ secrets.EXPO_TOKEN }}
+        run: |
+          set -euo pipefail
+          ARTIFACT_URL=$(jq -r '.[0].artifacts.applicationArchiveUrl // .[0].artifacts.buildUrl // empty' eas-build-result.json)
+
+          if [ -z "${ARTIFACT_URL}" ]; then
+            echo "Artifact URL not found in build JSON; falling back to build:list/build:view..."
+            BUILD_ID=$(npx eas build:list --platform android --status finished --limit 1 --non-interactive --json | jq -r '.[0].id')
+            echo "Latest finished build id: ${BUILD_ID}"
+            ARTIFACT_URL=$(npx eas build:view "${BUILD_ID}" --json | jq -r '.artifacts.applicationArchiveUrl // .artifacts.buildUrl // empty')
+          fi
+
+          if [ -z "${ARTIFACT_URL}" ]; then
+            echo "ERROR: Could not resolve the AAB artifact URL from EAS."
+            exit 1
+          fi
+
+          echo "Downloading AAB from: ${ARTIFACT_URL}"
+          curl -fL "${ARTIFACT_URL}" -o app-release.aab
+
+          if [ ! -f app-release.aab ]; then
+            echo "ERROR: AAB download failed."
+            exit 1
+          fi
+          echo "AAB downloaded:"
+          ls -lh app-release.aab
+
+      - name: Upload AAB artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.artifact-name }}
+          path: app-release.aab
+          retention-days: 30
+          if-no-files-found: error

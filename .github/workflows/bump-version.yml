@@ -1,0 +1,69 @@
+name: Bump Version
+
+# ---------------------------------------------------------------------------
+# Increments the Android version in android/gradle.properties, commits the
+# change, and creates a matching git tag (vX.Y.Z). Pushing that tag triggers
+# eas-build.yml to build the release AAB.
+#
+#   UNPEEKY_VERSION_CODE  -> auto-incremented by 1 (must always increase for Play).
+#   UNPEEKY_VERSION_NAME  -> set to the value you provide (e.g. 0.2.0).
+#
+# Runs manually from the Actions UI. Run this BEFORE building a release.
+#
+# NOTE: This pushes a commit to `main` and pushes a tag. If `main` is protected
+# with required reviews/status checks, the direct push will be rejected - in that
+# case bump the version via a normal PR instead (see docs/RELEASE_RUNBOOK.md).
+# ---------------------------------------------------------------------------
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_name:
+        description: 'New version name (e.g. 0.2.0). Do NOT include the leading "v".'
+        required: true
+
+# Needed to push the commit and tag back to the repository.
+permissions:
+  contents: write
+
+jobs:
+  bump:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Calculate new versionCode
+        id: versions
+        run: |
+          set -euo pipefail
+          CURRENT_CODE=$(grep '^UNPEEKY_VERSION_CODE=' android/gradle.properties | cut -d'=' -f2)
+          NEW_CODE=$((CURRENT_CODE + 1))
+          echo "version_code=${NEW_CODE}" >> "$GITHUB_OUTPUT"
+          echo "versionCode: ${CURRENT_CODE} -> ${NEW_CODE}"
+          echo "versionName -> ${{ github.event.inputs.version_name }}"
+
+      # GNU sed (Ubuntu runners) uses `sed -i` with no suffix argument.
+      # (BSD/macOS `sed -i ''` syntax would fail here.)
+      - name: Update gradle.properties
+        run: |
+          set -euo pipefail
+          sed -i "s/^UNPEEKY_VERSION_CODE=.*/UNPEEKY_VERSION_CODE=${{ steps.versions.outputs.version_code }}/" android/gradle.properties
+          sed -i "s/^UNPEEKY_VERSION_NAME=.*/UNPEEKY_VERSION_NAME=${{ github.event.inputs.version_name }}/" android/gradle.properties
+          echo "Updated gradle.properties:"
+          grep '^UNPEEKY_VERSION' android/gradle.properties
+
+      - name: Configure git
+        run: |
+          git config --local user.email "github-actions[bot]@users.noreply.github.com"
+          git config --local user.name "github-actions[bot]"
+
+      - name: Commit, tag, and push
+        run: |
+          set -euo pipefail
+          git add android/gradle.properties
+          git commit -m "Bump version to ${{ github.event.inputs.version_name }}"
+          git tag "v${{ github.event.inputs.version_name }}"
+          git push origin HEAD:${{ github.ref_name }}
+          git push origin "v${{ github.event.inputs.version_name }}"
+          echo "Pushed commit and tag v${{ github.event.inputs.version_name }}."
