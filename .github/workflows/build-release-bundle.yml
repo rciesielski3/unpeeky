@@ -1,0 +1,98 @@
+name: Build Release Bundle
+
+on:
+  push:
+    tags:
+      - 'v[0-9]+.[0-9]+.[0-9]+'
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: 'Version tag for artifact naming (e.g. v2.0.8). Leave blank to use a timestamp.'
+        required: false
+        default: ''
+      build_type:
+        description: 'Build type'
+        required: true
+        default: 'bundle'
+        type: choice
+        options:
+          - bundle
+          - apk
+          - both
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Determine version tag and artifact name
+        id: version
+        run: |
+          if [ "${{ github.event_name }}" = "push" ]; then
+            TAG="${{ github.ref_name }}"
+          elif [ -n "${{ github.event.inputs.version_tag }}" ]; then
+            TAG="${{ github.event.inputs.version_tag }}"
+          else
+            TAG="manual-$(date +%Y%m%d-%H%M%S)"
+          fi
+          echo "tag=${TAG}" >> $GITHUB_OUTPUT
+          echo "artifact-name=release-bundle-${TAG}" >> $GITHUB_OUTPUT
+          echo "Version tag: ${TAG}"
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+
+      - name: Setup Android SDK
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install dependencies
+        run: npm install
+
+      - name: Decode keystore
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > /tmp/release.keystore
+          echo "KEYSTORE_PATH=/tmp/release.keystore" >> $GITHUB_ENV
+
+      - name: Build release bundle (AAB)
+        env:
+          CAREXPLORER_UPLOAD_STORE_FILE: ${{ env.KEYSTORE_PATH }}
+          CAREXPLORER_UPLOAD_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          CAREXPLORER_UPLOAD_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          CAREXPLORER_UPLOAD_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          EXPO_PUBLIC_ADMOB_ANDROID_APP_ID: ${{ secrets.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID }}
+        run: |
+          cd android
+          ./gradlew bundleRelease
+
+      - name: Build release APK (optional)
+        if: ${{ github.event.inputs.build_type == 'apk' || github.event.inputs.build_type == 'both' }}
+        env:
+          CAREXPLORER_UPLOAD_STORE_FILE: ${{ env.KEYSTORE_PATH }}
+          CAREXPLORER_UPLOAD_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          CAREXPLORER_UPLOAD_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          CAREXPLORER_UPLOAD_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          EXPO_PUBLIC_ADMOB_ANDROID_APP_ID: ${{ secrets.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID }}
+        run: |
+          cd android
+          ./gradlew assembleRelease
+
+      - name: Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.version.outputs.artifact-name }}
+          path: |
+            android/app/build/outputs/bundle/release/*.aab
+            android/app/build/outputs/apk/release/*.apk
+          retention-days: 30
+          if-no-files-found: error
