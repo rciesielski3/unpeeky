@@ -66,10 +66,10 @@ jobs:
 
       - name: Build release bundle (AAB)
         env:
-          CAREXPLORER_UPLOAD_STORE_FILE: ${{ env.KEYSTORE_PATH }}
-          CAREXPLORER_UPLOAD_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          CAREXPLORER_UPLOAD_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          CAREXPLORER_UPLOAD_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          UNPEEKY_RELEASE_STORE_FILE: ${{ env.KEYSTORE_PATH }}
+          UNPEEKY_RELEASE_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          UNPEEKY_RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          UNPEEKY_RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           EXPO_PUBLIC_ADMOB_ANDROID_APP_ID: ${{ secrets.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID }}
         run: |
           cd android
@@ -78,10 +78,10 @@ jobs:
       - name: Build release APK (optional)
         if: ${{ github.event.inputs.build_type == 'apk' || github.event.inputs.build_type == 'both' }}
         env:
-          CAREXPLORER_UPLOAD_STORE_FILE: ${{ env.KEYSTORE_PATH }}
-          CAREXPLORER_UPLOAD_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
-          CAREXPLORER_UPLOAD_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
-          CAREXPLORER_UPLOAD_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          UNPEEKY_RELEASE_STORE_FILE: ${{ env.KEYSTORE_PATH }}
+          UNPEEKY_RELEASE_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          UNPEEKY_RELEASE_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          UNPEEKY_RELEASE_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
           EXPO_PUBLIC_ADMOB_ANDROID_APP_ID: ${{ secrets.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID }}
         run: |
           cd android
