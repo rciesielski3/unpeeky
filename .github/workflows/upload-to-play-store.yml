@@ -145,12 +145,11 @@ jobs:
       - name: Upload AAB to Play Store
         uses: r0adkll/upload-google-play@v1
         with:
-          serviceAccountJson: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
-          packageName: 'com.adateo.carexplorer'
+          serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+          packageName: 'com.adateo.unpeeky'
           releaseFiles: '${{ env.AAB_PATH }}'
           tracks: '${{ github.event.inputs.track }}'
           status: ${{ github.event.inputs.status }}
-          skipCommitHash: true
 
       # --- GitHub Release (production track or explicit opt-in) ---
 
