@@ -120,7 +120,7 @@ def hasReleaseSigningConfig = [
     releaseStorePassword,
     releaseKeyAlias,
     releaseKeyPassword
-].every { it }
+].every { it != null }
 
 if (!hasReleaseSigningConfig) {
     logger.warn("WARNING: Release signing properties are missing or incomplete. The release build will be UNSIGNED.")
