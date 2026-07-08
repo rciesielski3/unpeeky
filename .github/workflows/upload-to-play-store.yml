@@ -8,12 +8,12 @@ on:
   workflow_dispatch:
     inputs:
       version_tag:
-        description: 'Version tag to upload (e.g. v2.0.8). Must match a tag in the repo.'
+        description: "Version tag to upload (e.g. v2.0.8). Must match a tag in the repo."
         required: true
       track:
-        description: 'Play Store release track'
+        description: "Play Store release track"
         required: true
-        default: 'internal'
+        default: "internal"
         type: choice
         options:
           - internal
@@ -21,17 +21,17 @@ on:
           - beta
           - production
       status:
-        description: 'Release status on Play Store'
+        description: "Release status on Play Store"
         required: true
-        default: 'draft'
+        default: "draft"
         type: choice
         options:
           - draft
           - completed
       create_github_release:
-        description: 'Create GitHub Release (always happens on production track)'
+        description: "Create GitHub Release (always happens on production track)"
         required: false
-        default: 'false'
+        default: "false"
         type: boolean
 
 jobs:
@@ -76,8 +76,8 @@ jobs:
         if: steps.locate-aab.outputs.found == 'false'
         uses: actions/setup-java@v4
         with:
-          distribution: 'temurin'
-          java-version: '17'
+          distribution: "temurin"
+          java-version: "17"
 
       - name: Setup Android SDK (fallback build)
         if: steps.locate-aab.outputs.found == 'false'
@@ -87,7 +87,7 @@ jobs:
         if: steps.locate-aab.outputs.found == 'false'
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: "20"
 
       - name: Install dependencies (fallback build)
         if: steps.locate-aab.outputs.found == 'false'
@@ -146,9 +146,9 @@ jobs:
         uses: r0adkll/upload-google-play@v1
         with:
           serviceAccountJsonPlainText: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
-          packageName: 'com.adateo.unpeeky'
-          releaseFiles: '${{ env.AAB_PATH }}'
-          tracks: '${{ github.event.inputs.track }}'
+          packageName: "com.adateo.unpeeky"
+          releaseFiles: "${{ env.AAB_PATH }}"
+          tracks: "${{ github.event.inputs.track }}"
           status: ${{ github.event.inputs.status }}
 
       # --- GitHub Release (production track or explicit opt-in) ---

@@ -1,5 +1,17 @@
 import { useEffect, useState } from "react";
-import { Image, Linking, Modal, Pressable, ScrollView, StyleSheet, Switch, Text, TextInput, View } from "react-native";
+import {
+  Alert,
+  Image,
+  Linking,
+  Modal,
+  Pressable,
+  ScrollView,
+  StyleSheet,
+  Switch,
+  Text,
+  TextInput,
+  View
+} from "react-native";
 
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
@@ -9,6 +21,7 @@ import { strings } from "../i18n/strings";
 import { cancelDailyReminder, parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
 import { PREMIUM_PRODUCT_ID, purchasePremium } from "../premium/premiumPurchase";
 import type { PremiumPurchaseResult } from "../premium/premiumPurchase";
+import { exportGoals } from "../services/exportService";
 import type { AppTheme } from "../ui/appTheme";
 import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
@@ -51,6 +64,7 @@ export function SettingsScreen({
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const [premiumMessage, setPremiumMessage] = useState<string | null>(null);
+  const [isExporting, setIsExporting] = useState(false);
   const isReminderEnabled = settings.isReminderEnabled;
   const isNotificationTimeValid = !isReminderEnabled || parseNotificationTime(notificationTimeDraft) !== null;
   const isParentPinValid = validateParentPin(parentPinDraft);
@@ -158,6 +172,23 @@ export function SettingsScreen({
 
     setParentLabelDraft(parentLabel);
     updateSettings({ parentLabel });
+  }
+
+  async function handleExportData() {
+    if (isExporting) {
+      return;
+    }
+
+    setIsExporting(true);
+
+    try {
+      await exportGoals();
+      Alert.alert(strings.settings.exportData, strings.settings.exportSuccess);
+    } catch {
+      Alert.alert(strings.settings.exportData, strings.settings.exportError);
+    } finally {
+      setIsExporting(false);
+    }
   }
 
   async function handlePremiumAction(
@@ -372,6 +403,23 @@ export function SettingsScreen({
             );
           })}
         </View>
+      </View>
+
+      <View style={styles.card}>
+        <Text style={styles.sectionEyebrow}>{strings.settings.dataBackupSectionTitle}</Text>
+        <View>
+          <Text style={styles.rowTitle}>{strings.settings.exportData}</Text>
+          <Text style={styles.rowMeta}>{strings.settings.exportDataDesc}</Text>
+        </View>
+        <Pressable
+          accessibilityRole="button"
+          accessibilityState={{ disabled: isExporting }}
+          disabled={isExporting}
+          onPress={() => void handleExportData()}
+          style={[styles.exportButton, isExporting && styles.disabledButton]}
+        >
+          <Text style={styles.exportButtonText}>{strings.settings.exportData}</Text>
+        </Pressable>
       </View>
 
       <View style={styles.card}>
@@ -726,6 +774,21 @@ const styles = StyleSheet.create({
   },
   selectedModeMeta: {
     color: colors.surfaceMuted
+  },
+  exportButton: {
+    alignItems: "center",
+    alignSelf: "stretch",
+    backgroundColor: colors.primary,
+    borderRadius: radii.pill,
+    justifyContent: "center",
+    minHeight: 52,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
+  },
+  exportButtonText: {
+    color: colors.surface,
+    fontSize: 16,
+    fontWeight: "800"
   },
   textButton: {
     alignSelf: "flex-end",
