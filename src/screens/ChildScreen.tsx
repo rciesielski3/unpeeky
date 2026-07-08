@@ -505,11 +505,7 @@ function CompletionCelebrationModal({
             >
               <Text style={styles.celebrationPrimaryText}>{strings.child.celebrationViewGoalsButton}</Text>
             </Pressable>
-            <Pressable
-              accessibilityRole="button"
-              onPress={handleAddGoal}
-              style={styles.celebrationSecondaryButton}
-            >
+            <Pressable accessibilityRole="button" onPress={handleAddGoal} style={styles.celebrationSecondaryButton}>
               <Text style={styles.celebrationSecondaryText}>{strings.child.celebrationAddGoalButton}</Text>
             </Pressable>
           </View>

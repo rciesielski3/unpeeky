@@ -28,12 +28,14 @@ Before starting a release, ensure:
 ### Step 1: Bump Version
 
 1. **Update app.json:**
+
    ```bash
    # Edit app.json and increment version
    # "version": "0.1.7" → "0.1.8"
    ```
 
 2. **Update android/gradle.properties:**
+
    ```bash
    # Edit android/gradle.properties
    # UNPEEKY_VERSION_CODE=7 → UNPEEKY_VERSION_CODE=8
@@ -49,11 +51,13 @@ Before starting a release, ensure:
 ### Step 2: Create Git Tag
 
 1. **Create an annotated tag:**
+
    ```bash
    git tag -a v0.1.8 -m "Release v0.1.8"
    ```
 
 2. **Push the tag to trigger the build:**
+
    ```bash
    git push origin v0.1.8
    ```
@@ -105,11 +109,13 @@ Before starting a release, ensure:
 ### Step 5: Promote & Finalize
 
 #### For Internal/Alpha/Beta Testing:
+
 1. In Play Store Console, review the draft release
 2. If satisfied, click "Review release" → "Promote" to "Completed"
 3. The build becomes available to testers immediately
 
 #### For Production Release:
+
 1. Ensure extensive testing on alpha/beta track first
 2. In Play Store Console, click "Review release" → "Promote to Production"
 3. Submit for app review (if major changes)
@@ -119,11 +125,13 @@ Before starting a release, ensure:
 ### Step 6: Create GitHub Release (Optional)
 
 For public releases, the upload workflow can automatically create a GitHub Release:
+
 - Re-run the "Upload to Play Store" workflow with `create_github_release: true`
 - The workflow will look for `docs/RELEASE_NOTES_v0.1.8.md` and attach it to the release
 - The AAB file is also attached to the GitHub release
 
 Alternatively, manually create a release:
+
 ```bash
 git push main  # Ensure version bump is on main
 gh release create v0.1.8 --title "Release v0.1.8" --notes-file docs/RELEASE_NOTES_v0.1.8.md android/app/build/outputs/bundle/release/app-release.aab
@@ -156,6 +164,7 @@ If a release has critical issues:
 **Symptom:** "Build Release Bundle" workflow fails at the Gradle step.
 
 **Resolution:**
+
 - Check GitHub Actions logs for the specific Gradle error
 - Common causes:
   - Outdated Node.js or Java version (workflow uses latest setup-node/setup-java)
@@ -168,6 +177,7 @@ If a release has critical issues:
 **Symptom:** Workflow logs show "No pre-built artifact found — will build from source as fallback."
 
 **Resolution:**
+
 - This is normal if the build workflow hasn't completed yet
 - Wait for the "Build Release Bundle" workflow to finish before triggering "Upload to Play Store"
 - The workflow automatically falls back to a fresh build; the upload will still succeed
@@ -177,6 +187,7 @@ If a release has critical issues:
 **Symptom:** Workflow fails at "Upload AAB to Play Store" step.
 
 **Resolution:**
+
 - Verify `PLAY_STORE_SERVICE_ACCOUNT_JSON` secret is correct (not expired)
 - Check that the service account has "Release Manager" permission in Play Store Console
 - Verify the AAB file is valid (not corrupted)
@@ -187,6 +198,7 @@ If a release has critical issues:
 **Symptom:** Play Store shows v0.1.7 instead of v0.1.8.
 
 **Resolution:**
+
 - Double-check that `app.json` and `android/gradle.properties` were updated correctly
 - Ensure the git tag matches the version in those files (e.g., `v0.1.8`)
 - If the wrong build was uploaded, create a new release with the correct version and delete the incorrect draft
@@ -196,6 +208,7 @@ If a release has critical issues:
 **Symptom:** "Review release" button is grayed out or shows errors.
 
 **Resolution:**
+
 - Ensure the app's privacy policy and other required content is filled in Google Play Console
 - Check that the AAB is valid (try re-uploading)
 - Wait a few minutes; Play Store's review process can take time
@@ -206,6 +219,7 @@ If a release has critical issues:
 **Symptom:** GitHub Release was created but has no description.
 
 **Resolution:**
+
 - Ensure `docs/RELEASE_NOTES_v0.1.8.md` file exists in the repository at the release tag
 - Re-run the upload workflow with `create_github_release: true` to retry
 - Or manually create the GitHub release with the correct release notes file

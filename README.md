@@ -35,6 +35,7 @@ npm install
 Unpeeky releases use GitHub Actions to build and upload. Manual steps are required to initiate the process:
 
 ### Prerequisites
+
 - GitHub Secrets configured: `ANDROID_KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`, `PLAY_STORE_SERVICE_ACCOUNT_JSON`, `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID`
 - Service account has "Release" permission in Google Play Console for `com.adateo.unpeeky`
 
@@ -62,7 +63,9 @@ Unpeeky releases use GitHub Actions to build and upload. Manual steps are requir
    - Submit for review (if production)
 
 ### Dry-Run Release
+
 To test the entire pipeline without affecting production:
+
 1. Bump version to a test version (e.g., v0.1.8-test)
 2. Create and push the tag
 3. Trigger "Upload to Play Store" → `internal` track, `draft` status
@@ -70,6 +73,7 @@ To test the entire pipeline without affecting production:
 5. Delete the draft when done with testing
 
 For detailed instructions, see:
+
 - `docs/RELEASE_RUNBOOK.md` - Step-by-step release procedure
 
 ## Release Notes
