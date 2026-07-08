@@ -8,6 +8,10 @@
 
 Unpeeky v0.1.8 to wydanie skoncentrowane na niezawodności i dokumentacji. Wzmacniamy fundamenty aplikacji, dzięki czemu możesz mieć pewność, że wszystko działa jak powinno. Mniej błędów, więcej spokoju.
 
+### Nowa możliwość: Eksportuj swoje dane
+
+W ustawieniach możesz teraz wyeksportować kopię zapasową wszystkich swoich celów i ustawień. Plik trafia do udostępniania — przechowuj go w bezpiecznym miejscu na wypadek, gdybyś kiedykolwiek chciał przywrócić swoje dane.
+
 ### Wzmocniona niezawodność
 
 Dodaliśmy testy dla logiki domenowej aplikacji. To oznacza, że nasze obliczenia, czasomierze i reguły nagradzania są dokładnie przetestowane. Każda aktualizacja statusu zadania, każdy przypomnienie — wszystko działa pewnie i niezawodnie.
@@ -31,6 +35,10 @@ Dziękujemy za Wasze opinie i wsparcie — to dzięki Wam Unpeeky staje się cor
 ## What's New
 
 Unpeeky v0.1.8 is a release focused on reliability and documentation. We're strengthening the foundation of the app so you can trust that everything works as it should. Fewer bugs, more peace of mind.
+
+### New: Export Your Data
+
+You can now export a backup of all your goals and settings from the Settings screen. The file is sent to your device's share sheet — keep it safe in case you ever want to restore your data.
 
 ### Stronger reliability
 
