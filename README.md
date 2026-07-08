@@ -32,26 +32,27 @@ npm install
 
 ## Release Process
 
-Unpeeky releases are automated via GitHub Actions. The process:
+Unpeeky releases use GitHub Actions to build and upload. Manual steps are required to initiate the process:
 
 ### Prerequisites
-- GitHub Secrets configured: `EXPO_TOKEN`, `PLAY_STORE_SERVICE_ACCOUNT_JSON`, `EXPO_PUBLIC_REVENUECAT_ANDROID_API_KEY`
-- EAS environment variables set for `preview` and `production` environments (RevenueCat key)
+- GitHub Secrets configured: `ANDROID_KEYSTORE_BASE64`, `KEYSTORE_PASSWORD`, `KEY_ALIAS`, `KEY_PASSWORD`, `PLAY_STORE_SERVICE_ACCOUNT_JSON`, `EXPO_PUBLIC_ADMOB_ANDROID_APP_ID`
 - Service account has "Release" permission in Google Play Console for `com.adateo.unpeeky`
 
 ### Steps
 
 1. **Bump version** (manual)
-   - Use GitHub Actions → "Bump Version" workflow with desired version number
-   - This increments versionCode, updates versionName, commits, and creates a git tag
+   - Edit `app.json`: increment `versionCode` and update `versionString`
+   - Edit `android/gradle.properties`: increment `UNPEEKY_VERSION_CODE` and update `UNPEEKY_VERSION_NAME`
+   - Commit: `git commit -m "chore: bump version vX.Y.Z"`
 
-2. **Build AAB** (automatic or manual)
-   - **Automatic:** Push the git tag (created in step 1) → triggers "EAS Build Android"
-   - **Manual:** GitHub Actions → "EAS Build Android" → Run workflow with tag
+2. **Create git tag** (manual)
+   - Create annotated tag: `git tag -a vX.Y.Z -m "Release vX.Y.Z"`
+   - Push tag: `git push origin vX.Y.Z`
+   - This automatically triggers the "Build Release Bundle" workflow
 
-3. **Upload to Play Store** (manual, gated)
-   - GitHub Actions → "Upload to Play Store"
-   - Select version tag, track (internal/alpha/beta/production), and status (draft/completed)
+3. **Upload to Play Store** (manual)
+   - GitHub Actions → "Upload to Play Store" → Run workflow
+   - Provide version tag (vX.Y.Z), select track (internal/alpha/beta/production), and status (draft/completed)
    - **Always start with internal/draft** for testing
 
 4. **Review & Promote** (manual in Play Store Console)
@@ -62,16 +63,14 @@ Unpeeky releases are automated via GitHub Actions. The process:
 
 ### Dry-Run Release
 To test the entire pipeline without affecting production:
-1. Use "Bump Version" workflow to create a test version (e.g., v0.1.6)
-2. Use "EAS Build Android" → `internal` profile
-3. Use "Upload to Play Store" → `internal` track, `draft` status
+1. Bump version to a test version (e.g., v0.1.8-test)
+2. Create and push the tag
+3. Trigger "Upload to Play Store" → `internal` track, `draft` status
 4. Review in Play Store Console (internal testing section)
 5. Delete the draft when done with testing
 
 For detailed instructions, see:
-- `.github/WORKFLOW_SETUP.md` - GitHub Secrets configuration
-- `docs/RELEASE_RUNBOOK.md` - Detailed release procedure
-- `docs/GITHUB_ACTIONS_TROUBLESHOOTING.md` - Troubleshooting guide
+- `docs/RELEASE_RUNBOOK.md` - Step-by-step release procedure
 
 ## Release Notes
 
