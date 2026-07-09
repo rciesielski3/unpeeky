@@ -8,6 +8,7 @@
 ## Decision Gates
 
 ### Gate 1: Play Store Review Outcome
+
 Determines if next build is mandatory fix (v0.1.9) or optional enhancement (v0.1.10).
 
 **If v0.1.8 approved:**
@@ -25,7 +26,9 @@ Determines if next build is mandatory fix (v0.1.9) or optional enhancement (v0.1
 → Timeline: +3-5 days for fix/resubmit cycle
 
 ### Gate 2: User Feedback
+
 Once v0.1.8 is live in beta/production, collect 1 week of user feedback:
+
 - Export feature usage rate
 - Error feedback from new PIN UI
 - Feature requests (import, multiple children, etc.)
@@ -33,6 +36,7 @@ Once v0.1.8 is live in beta/production, collect 1 week of user feedback:
 ## Next Feature Options (Priority Order)
 
 ### Option A: Data Import (Complement to Export)
+
 **Effort:** 6-8 hours
 **Risk:** Medium (file parsing, data validation)
 **Value:** Enables backup restore workflow; completes Export Lite feature
@@ -41,6 +45,7 @@ Once v0.1.8 is live in beta/production, collect 1 week of user feedback:
 **Recommended:** If Export usage is 10%+ of active users
 
 ### Option B: Multiple Children per Parent Account
+
 **Effort:** 8-10 hours
 **Risk:** High (storage schema, navigation restructure)
 **Value:** Addresses FAQ "can I manage both my kids?"
@@ -49,6 +54,7 @@ Once v0.1.8 is live in beta/production, collect 1 week of user feedback:
 **Recommended:** If user feedback requests 5+ times
 
 ### Option C: Tablet Mode
+
 **Effort:** 4-5 hours
 **Risk:** Low (layout-only changes)
 **Value:** Better UX on iPad/large screens
@@ -57,6 +63,7 @@ Once v0.1.8 is live in beta/production, collect 1 week of user feedback:
 **Recommended:** If Play Store review mentions "tablet compatibility"
 
 ### Option D: iOS Support
+
 **Effort:** 20+ hours (build, app store setup, testing)
 **Risk:** High (new platform, review process)
 **Value:** Double addressable market
