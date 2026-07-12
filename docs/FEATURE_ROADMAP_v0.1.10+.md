@@ -88,4 +88,4 @@ Once v0.1.8 is live in beta/production, collect 1 week of user feedback:
 ---
 
 **Last updated:** 2026-07-09
-**Decision owner:** [user to fill in]
+**Decision owner:** r.ciesielski3@gmail.com
