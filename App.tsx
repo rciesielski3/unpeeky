@@ -213,11 +213,11 @@ function AppContent() {
     );
   }
 
+  const appTheme = getAppTheme(settings.tileColorId);
   // Mode selection is shown when appMode is null.
   // Users can reset mode via Settings → "Change Mode" button,
   // which sets appMode to null and returns to goals screen.
   // This triggers ModeSelectionScreen on next render.
-  const appTheme = getAppTheme(settings.tileColorId);
   const screen = !settings.appMode ? (
     <ModeSelectionScreen initialMode={settings.appMode} onSelectMode={handleSelectMode} />
   ) : (
