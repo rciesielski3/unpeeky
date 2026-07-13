@@ -16,7 +16,7 @@ import {
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
-import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
+import type { AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { cancelDailyReminder, parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
 import { PREMIUM_PRODUCT_ID, purchasePremium } from "../premium/premiumPurchase";
