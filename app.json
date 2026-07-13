@@ -2,7 +2,7 @@
   "expo": {
     "name": "Unpeeky",
     "slug": "unpeeky",
-    "version": "0.1.9",
+    "version": "0.1.10-dev",
     "orientation": "portrait",
     "icon": "./assets/images/Unpeeky_icon.png",
     "userInterfaceStyle": "light",
