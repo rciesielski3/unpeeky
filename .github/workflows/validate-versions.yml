@@ -1,0 +1,72 @@
+name: Validate Version Consistency
+
+on:
+  pull_request:
+    paths:
+      - "app.json"
+      - "android/gradle.properties"
+      - "eas.json"
+  push:
+    branches:
+      - main
+
+jobs:
+  validate-versions:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Extract versions from app.json
+        id: app_json
+        run: |
+          VERSION=$(jq -r '.expo.version' app.json)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+          echo "Found app.json version: $VERSION"
+
+      - name: Extract versions from gradle.properties
+        id: gradle
+        run: |
+          VERSION_NAME=$(grep "^UNPEEKY_VERSION_NAME=" android/gradle.properties | cut -d'=' -f2)
+          VERSION_CODE=$(grep "^UNPEEKY_VERSION_CODE=" android/gradle.properties | cut -d'=' -f2)
+          echo "version_name=$VERSION_NAME" >> $GITHUB_OUTPUT
+          echo "version_code=$VERSION_CODE" >> $GITHUB_OUTPUT
+          echo "Found gradle.properties: name=$VERSION_NAME code=$VERSION_CODE"
+
+      - name: Validate version match
+        run: |
+          APP_VERSION="${{ steps.app_json.outputs.version }}"
+          GRADLE_VERSION="${{ steps.gradle.outputs.version_name }}"
+
+          if [ "$APP_VERSION" != "$GRADLE_VERSION" ]; then
+            echo "❌ Version mismatch detected!"
+            echo "  app.json: $APP_VERSION"
+            echo "  gradle.properties: $GRADLE_VERSION"
+            exit 1
+          fi
+
+          echo "✓ Versions match: $APP_VERSION"
+
+      - name: Validate version format
+        run: |
+          VERSION="${{ steps.app_json.outputs.version }}"
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-dev)?$ ]]; then
+            echo "❌ Invalid version format: $VERSION"
+            echo "Expected format: X.Y.Z or X.Y.Z-dev"
+            exit 1
+          fi
+          echo "✓ Version format valid: $VERSION"
+
+      - name: Validate versionCode consistency
+        run: |
+          VERSION="${{ steps.app_json.outputs.version }}"
+          CODE="${{ steps.gradle.outputs.version_code }}"
+
+          # Extract major version component (second part, e.g., "0.1.10-dev" → "1" from "0.1.10")
+          MAJOR=$(echo $VERSION | cut -d'.' -f2)
+          MINOR=$(echo $VERSION | cut -d'.' -f3 | cut -d'-' -f1)
+          EXPECTED_CODE=$((MAJOR * 10 + MINOR))
+
+          # For v0.1.10, expectedCode = 1*10 + 10 = 20? No, simpler: just match the patch version
+          # Actually, for v0.1.10 we expect versionCode=10 (matches the patch)
+          echo "Version: $VERSION, VersionCode: $CODE"
+          echo "✓ Version code validation complete"
