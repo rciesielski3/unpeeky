@@ -171,8 +171,21 @@ export function SettingsScreen({
   }
 
   function handleChangeMode() {
-    updateSettings({ appMode: null });
-    onBack();
+    Alert.alert(
+      strings.settings.changeModeConfirmTitle,
+      strings.settings.changeModeConfirmMeta,
+      [
+        { text: "Nie", style: "cancel" },
+        {
+          text: "Tak, zmień",
+          style: "destructive",
+          onPress: () => {
+            updateSettings({ appMode: null });
+            onBack();
+          }
+        }
+      ]
+    );
   }
 
   async function handleExportData() {
