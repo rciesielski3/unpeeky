@@ -171,21 +171,17 @@ export function SettingsScreen({
   }
 
   function handleChangeMode() {
-    Alert.alert(
-      strings.settings.changeModeConfirmTitle,
-      strings.settings.changeModeConfirmMeta,
-      [
-        { text: "Nie", style: "cancel" },
-        {
-          text: "Tak, zmień",
-          style: "destructive",
-          onPress: () => {
-            updateSettings({ appMode: null });
-            onBack();
-          }
+    Alert.alert(strings.settings.changeModeConfirmTitle, strings.settings.changeModeConfirmMeta, [
+      { text: "Nie", style: "cancel" },
+      {
+        text: "Tak, zmień",
+        style: "destructive",
+        onPress: () => {
+          updateSettings({ appMode: null });
+          onBack();
         }
-      ]
-    );
+      }
+    ]);
   }
 
   async function handleExportData() {
@@ -399,11 +395,7 @@ export function SettingsScreen({
           <Text style={styles.rowTitle}>{strings.settings.changeModeTitle}</Text>
           <Text style={styles.rowMeta}>{strings.settings.changeModeMeta}</Text>
         </View>
-        <Pressable
-          accessibilityRole="button"
-          onPress={handleChangeMode}
-          style={styles.changeModeButton}
-        >
+        <Pressable accessibilityRole="button" onPress={handleChangeMode} style={styles.changeModeButton}>
           <Text style={styles.changeModeButtonText}>{strings.settings.changeModeButton}</Text>
         </Pressable>
       </View>
