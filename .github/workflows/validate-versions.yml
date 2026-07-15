@@ -48,9 +48,9 @@ jobs:
       - name: Validate version format
         run: |
           VERSION="${{ steps.app_json.outputs.version }}"
-          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+(-dev)?$ ]]; then
+          if [[ ! $VERSION =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
             echo "❌ Invalid version format: $VERSION"
-            echo "Expected format: X.Y.Z or X.Y.Z-dev"
+            echo "Expected format: X.Y.Z"
             exit 1
           fi
           echo "✓ Version format valid: $VERSION"
