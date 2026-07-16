@@ -16,7 +16,7 @@ import {
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
-import type { AppMode, AppSettings, TileColorId } from "../domain/goal";
+import type { AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { cancelDailyReminder, parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
 import { PREMIUM_PRODUCT_ID, purchasePremium } from "../premium/premiumPurchase";
@@ -34,7 +34,6 @@ type SettingsScreenProps = {
   theme?: AppTheme;
 };
 
-const MODE_OPTIONS: AppMode[] = ["singleDevice", "twoDevices"];
 const PARENT_LABEL_OPTIONS = ["Rodzicu", "Mama", "Tata", "Babcia", "Dziadek"] as const;
 const HOUR_OPTIONS = Array.from({ length: 24 }, (_, hour) => hour);
 const MINUTE_OPTIONS = [0, 15, 30, 45];
@@ -51,6 +50,7 @@ const SETTINGS_ICON_SOURCES = {
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 export function SettingsScreen({
+  onBack,
   onResetGoals,
   onSettingsChange,
   settings,
@@ -150,10 +150,6 @@ export function SettingsScreen({
     updateSettings({ parentPin });
   }
 
-  function handleChangeMode(appMode: AppMode) {
-    updateSettings({ appMode });
-  }
-
   function handleChangeTileColor(tileColorId: TileColorId) {
     updateSettings({ tileColorId });
   }
@@ -172,6 +168,20 @@ export function SettingsScreen({
 
     setParentLabelDraft(parentLabel);
     updateSettings({ parentLabel });
+  }
+
+  function handleChangeMode() {
+    Alert.alert(strings.settings.changeModeConfirmTitle, strings.settings.changeModeConfirmMeta, [
+      { text: "Nie", style: "cancel" },
+      {
+        text: "Tak, zmień",
+        style: "destructive",
+        onPress: () => {
+          updateSettings({ appMode: null });
+          onBack();
+        }
+      }
+    ]);
   }
 
   async function handleExportData() {
@@ -382,27 +392,12 @@ export function SettingsScreen({
 
       <View style={styles.card}>
         <View>
-          <Text style={styles.rowTitle}>{strings.settings.appModeTitle}</Text>
-          <Text style={styles.rowMeta}>{strings.settings.appModeMeta}</Text>
+          <Text style={styles.rowTitle}>{strings.settings.changeModeTitle}</Text>
+          <Text style={styles.rowMeta}>{strings.settings.changeModeMeta}</Text>
         </View>
-        <View style={styles.modeOptions}>
-          {MODE_OPTIONS.map((appMode) => {
-            const isSelected = settings.appMode === appMode;
-
-            return (
-              <Pressable
-                accessibilityRole="button"
-                accessibilityState={{ selected: isSelected }}
-                key={appMode}
-                onPress={() => handleChangeMode(appMode)}
-                style={[styles.modeOption, isSelected && { backgroundColor: theme.accent, borderColor: theme.accent }]}
-              >
-                <Text style={[styles.modeTitle, isSelected && styles.selectedModeText]}>{getModeTitle(appMode)}</Text>
-                <Text style={[styles.modeMeta, isSelected && styles.selectedModeMeta]}>{getModeMeta(appMode)}</Text>
-              </Pressable>
-            );
-          })}
-        </View>
+        <Pressable accessibilityRole="button" onPress={handleChangeMode} style={styles.changeModeButton}>
+          <Text style={styles.changeModeButtonText}>{strings.settings.changeModeButton}</Text>
+        </Pressable>
       </View>
 
       <View style={styles.card}>
@@ -683,9 +678,6 @@ const styles = StyleSheet.create({
     fontSize: 17,
     fontWeight: "600"
   },
-  modeOptions: {
-    gap: spacing.sm
-  },
   tileColorOptions: {
     flexDirection: "row",
     flexWrap: "wrap",
@@ -748,32 +740,20 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.md,
     paddingVertical: spacing.md
   },
-  modeOption: {
-    backgroundColor: colors.surfaceMuted,
-    borderColor: colors.border,
-    borderRadius: radii.md,
-    borderWidth: 1,
-    gap: spacing.xs,
-    padding: spacing.md
-  },
-  selectedModeOption: {
+  changeModeButton: {
+    alignItems: "center",
+    alignSelf: "stretch",
     backgroundColor: colors.accent,
-    borderColor: colors.accent
+    borderRadius: radii.pill,
+    justifyContent: "center",
+    minHeight: 52,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.sm
   },
-  modeTitle: {
-    color: colors.text,
-    fontSize: 15,
+  changeModeButtonText: {
+    color: colors.surface,
+    fontSize: 16,
     fontWeight: "800"
-  },
-  modeMeta: {
-    color: colors.textMuted,
-    fontSize: 13
-  },
-  selectedModeText: {
-    color: colors.surface
-  },
-  selectedModeMeta: {
-    color: colors.surfaceMuted
   },
   exportButton: {
     alignItems: "center",
@@ -1300,14 +1280,6 @@ function PremiumModal({
       </View>
     </Modal>
   );
-}
-
-function getModeTitle(appMode: AppMode): string {
-  return appMode === "singleDevice" ? strings.settings.appModeSingleDevice : strings.settings.appModeTwoDevices;
-}
-
-function getModeMeta(appMode: AppMode): string {
-  return appMode === "singleDevice" ? strings.settings.appModeSingleDeviceMeta : strings.settings.appModeTwoDevicesMeta;
 }
 
 function getNotificationMessage(scheduleResult: Awaited<ReturnType<typeof scheduleDaily>>): string {

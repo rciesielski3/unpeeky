@@ -1,9 +1,10 @@
 # Unpeeky Feature Roadmap — v0.1.10+
 
-## Status as of 2026-07-09
+## Status as of 2026-07-13
 
-**v0.1.8:** Live in Play Store internal testing, awaiting review decision
-**v0.1.9:** PIN QoL enhancements merged, versionCode bumped to 9, ready to build if v0.1.8 review requires changes
+**v0.1.8:** Live in Play Store internal/alpha testing (completed, no changes required)
+**v0.1.9:** PIN QoL enhancements merged, prepared as fallback fix
+**v0.1.10:** Development cycle initiated (versionCode 10, in progress)
 
 ## Decision Gates
 
@@ -87,5 +88,5 @@ Once v0.1.8 is live in beta/production, collect 1 week of user feedback:
 
 ---
 
-**Last updated:** 2026-07-09
-**Decision owner:** [user to fill in]
+**Last updated:** 2026-07-13
+**Decision owner:** r.ciesielski3@gmail.com
