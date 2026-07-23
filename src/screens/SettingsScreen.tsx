@@ -81,6 +81,7 @@ export function SettingsScreen({
   const [editChildParentLabel, setEditChildParentLabel] = useState("");
   const [editChildNotificationTime, setEditChildNotificationTime] = useState("");
   const [editChildTileColorId, setEditChildTileColorId] = useState<TileColorId>("lavender");
+  const [isEditingChildTimePicker, setIsEditingChildTimePicker] = useState(false);
 
   const isReminderEnabled = settings.globalSettings.isReminderEnabled;
   const isNotificationTimeValid = !isReminderEnabled || parseNotificationTime(notificationTimeDraft) !== null;
@@ -131,6 +132,11 @@ export function SettingsScreen({
   function handleChangeNotificationTime(hour: number, minute: number) {
     const notificationTime = `${formatTimePart(hour)}:${formatTimePart(minute)}`;
     void saveNotificationTime(notificationTime);
+  }
+
+  function handleChangeEditingChildNotificationTime(hour: number, minute: number) {
+    const notificationTime = `${formatTimePart(hour)}:${formatTimePart(minute)}`;
+    setEditChildNotificationTime(notificationTime);
   }
 
   function handleOpenTimePicker() {
@@ -610,6 +616,14 @@ export function SettingsScreen({
         visible={isTimePickerOpen}
       />
 
+      {/* Time Picker for Editing Child */}
+      <TimePickerModal
+        notificationTime={editChildNotificationTime || "18:00"}
+        onClose={() => setIsEditingChildTimePicker(false)}
+        onSelect={handleChangeEditingChildNotificationTime}
+        visible={isEditingChildTimePicker}
+      />
+
       {/* Add Child Modal */}
       <Modal visible={addChildModalVisible} transparent onRequestClose={() => setAddChildModalVisible(false)}>
         <View style={styles.modalOverlay}>
@@ -679,7 +693,7 @@ export function SettingsScreen({
               <Text style={styles.modalLabel}>Notification Time</Text>
               <Pressable
                 style={styles.timePickerButton}
-                onPress={() => setIsTimePickerOpen(true)}
+                onPress={() => setIsEditingChildTimePicker(true)}
               >
                 <Text style={styles.timePickerButtonText}>{editChildNotificationTime}</Text>
               </Pressable>
