@@ -15,7 +15,8 @@
     "format:check": "prettier . --check",
     "postinstall": "patch-package",
     "test:unit": "node --import tsx --test App.test.tsx src/domain/*.test.ts src/services/*.test.ts src/screens/*.test.tsx src/storage/*.test.ts",
-    "test": "npm run test:unit",
+    "test:e2e": "node --import tsx --test e2e/multipleChildren.e2e.ts",
+    "test": "npm run test:unit && npm run test:e2e",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
