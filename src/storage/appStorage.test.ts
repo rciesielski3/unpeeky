@@ -35,7 +35,7 @@ describe("AppSettings migration", () => {
     };
 
     const migrated = migrateSettingsV1ToV2(oldSettings);
-    assert.equal(migrated.children[0]?.name, "Child"); // fallback
+    assert.equal(migrated.children[0]?.name, "Dziecko"); // Polish fallback
   });
 });
 

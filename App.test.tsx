@@ -1,6 +1,32 @@
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
+import { loadSettings, saveSettings } from "./src/storage/appStorage";
+
+// Provide an in-memory window.localStorage backend so the real
+// @react-native-async-storage/async-storage web implementation is usable
+// under node. AsyncStorage only touches window.localStorage when its methods
+// are called (not at import time), and this assignment runs at module-eval
+// time before any test executes, so the static appStorage import below is safe.
+const memoryStore = new Map<string, string>();
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
+(globalThis as any).window = {
+  localStorage: {
+    getItem: (key: string) => (memoryStore.has(key) ? memoryStore.get(key)! : null),
+    setItem: (key: string, value: string) => {
+      memoryStore.set(key, String(value));
+    },
+    removeItem: (key: string) => {
+      memoryStore.delete(key);
+    },
+    clear: () => memoryStore.clear(),
+    key: (index: number) => Array.from(memoryStore.keys())[index] ?? null,
+    get length() {
+      return memoryStore.size;
+    }
+  }
+};
+
 // Mock AsyncStorage
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockAsyncStorage = {
@@ -131,5 +157,66 @@ describe("App activeChildId state", () => {
 
     const loaded = await mockAsyncStorage.getItem("activeChildId");
     assert.equal(loaded, "child-2");
+  });
+});
+
+describe("loadSettings v0.1.12 migration integration", () => {
+  beforeEach(() => {
+    memoryStore.clear();
+  });
+
+  it("should migrate a real v0.1.12 blob (empty childName) and preserve global data", async () => {
+    // Real v0.1.12 users always have an empty childName because the name lived
+    // on the goal, not on settings. The migration must therefore trigger off
+    // the absence of the children array, not a truthy childName.
+    const v0112Blob = {
+      childName: "",
+      parentLabel: "",
+      notificationTime: "18:00",
+      tileColorId: "lavender",
+      parentPin: "9999",
+      isPremium: true,
+      appMode: "singleDevice" as const,
+      isReminderEnabled: true
+    };
+
+    // Persist the legacy blob directly through the storage layer.
+    await saveSettings(v0112Blob as never);
+
+    const migrated = await loadSettings();
+
+    // Migration ran: a children array now exists.
+    assert.equal(migrated.children.length, 1);
+    // Polish defaults are used for empty legacy values.
+    assert.equal(migrated.children[0]?.name, "Dziecko");
+    assert.equal(migrated.children[0]?.settings.parentLabel, "Rodzicu");
+    // Global data survives the migration.
+    assert.equal(migrated.globalSettings.pin, "9999");
+    assert.equal(migrated.globalSettings.isPremium, true);
+    assert.equal(migrated.globalSettings.appMode, "singleDevice");
+    assert.equal(migrated.globalSettings.isReminderEnabled, true);
+  });
+
+  it("should NOT re-migrate a v0.1.13 blob that already has a children array", async () => {
+    const v0113Blob = {
+      children: [
+        {
+          id: "child-1",
+          name: "Alex",
+          settings: { parentLabel: "Mom", notificationTime: "18:00", tileColorId: "mint" as const }
+        }
+      ],
+      globalSettings: { pin: "1234", isPremium: false, exportData: [], appMode: "singleDevice" as const }
+    };
+
+    await saveSettings(v0113Blob);
+
+    const loaded = await loadSettings();
+
+    // Children preserved as-is (not replaced by a migrated single default child).
+    assert.equal(loaded.children.length, 1);
+    assert.equal(loaded.children[0]?.name, "Alex");
+    assert.equal(loaded.children[0]?.settings.tileColorId, "mint");
+    assert.equal(loaded.globalSettings.pin, "1234");
   });
 });

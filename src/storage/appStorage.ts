@@ -29,9 +29,9 @@ export function migrateSettingsV1ToV2(oldSettings: LegacySettingsInput): AppSett
     children: [
       {
         id: childId,
-        name: oldSettings.childName || "Child",
+        name: oldSettings.childName || "Dziecko",
         settings: {
-          parentLabel: oldSettings.parentLabel || "Parent",
+          parentLabel: oldSettings.parentLabel || "Rodzicu",
           notificationTime: oldSettings.notificationTime || "18:00",
           tileColorId: (oldSettings.tileColorId as TileColorId) || "lavender"
         }
@@ -76,8 +76,10 @@ export async function loadSettings(): Promise<AppSettings> {
 
     const parsed = JSON.parse(settings);
 
-    // Detect v0.1.12 schema (has childName, not children array)
-    if (parsed.childName && !parsed.children) {
+    // Detect v0.1.12 schema (no children array). Real v0.1.12 blobs always
+    // have an empty childName, so we must key migration off the absence of the
+    // children array rather than a truthy childName.
+    if (!parsed.children) {
       return migrateSettingsV1ToV2(parsed);
     }
 
