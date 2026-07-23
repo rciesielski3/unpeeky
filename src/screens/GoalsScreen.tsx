@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FlatList, Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { Alert, FlatList, Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -33,6 +33,8 @@ type GoalsScreenProps = {
 };
 
 export function GoalsScreen({
+  activeChildId,
+  childrenList = [],
   goals,
   isPremium,
   onAddGoal,
@@ -40,14 +42,23 @@ export function GoalsScreen({
   onEditGoal,
   onOpenGoal,
   onOpenSettings,
+  onSelectChild,
   parentLabel,
   theme = defaultAppTheme
 }: GoalsScreenProps) {
   const [openMenuGoalId, setOpenMenuGoalId] = useState<string | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
+
+  // Filter goals by activeChildId
+  const filteredGoals = useMemo(
+    () => (activeChildId ? goals.filter((goal) => goal.childId === activeChildId) : goals),
+    [goals, activeChildId]
+  );
+
+  const activeChild = childrenList.find((c) => c.id === activeChildId);
+  const activeGoalsCount = filteredGoals.filter((goal) => !isGoalComplete(goal)).length;
   const hasReachedFreeLimit = !isPremium && activeGoalsCount >= FREE_GOAL_LIMIT;
-  const sortedGoals = useMemo(() => [...goals].sort(compareGoalsByStatus), [goals]);
+  const sortedGoals = useMemo(() => [...filteredGoals].sort(compareGoalsByStatus), [filteredGoals]);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.parentBackground }]}>
@@ -70,6 +81,29 @@ export function GoalsScreen({
           <Text style={styles.infoSparkle}>✦</Text>
         </Pressable>
       </View>
+
+      {childrenList.length > 1 && (
+        <View style={styles.childSelector}>
+          <Pressable
+            accessibilityLabel="Select child"
+            accessibilityRole="button"
+            onPress={() => {
+              const options = childrenList.map((child) => ({
+                text: child.name,
+                onPress: () => onSelectChild?.(child.id)
+              }));
+              options.push({ text: "Cancel", onPress: () => {} });
+              Alert.alert("Select Child", undefined, options);
+            }}
+            style={styles.childButton}
+          >
+            <Text style={styles.childButtonText}>{activeChild?.name || "Select Child"}</Text>
+            {childrenList.length > 1 && (
+              <Text style={styles.childButtonSubtitle}>Tap to switch</Text>
+            )}
+          </Pressable>
+        </View>
+      )}
 
       <FlatList
         ListEmptyComponent={
@@ -576,6 +610,31 @@ const styles = StyleSheet.create({
     color: colors.surface,
     fontSize: 17,
     fontWeight: "800"
+  },
+  childSelector: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginHorizontal: -spacing.xl,
+    marginBottom: spacing.md
+  },
+  childButton: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.surfaceMuted
+  },
+  childButtonText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.text
+  },
+  childButtonSubtitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: spacing.xs
   }
 });
 
