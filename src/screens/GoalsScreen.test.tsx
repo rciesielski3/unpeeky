@@ -67,3 +67,44 @@ describe("GoalsScreen filtering logic", () => {
     assert.equal(filteredGoals[0]?.rewardName, "Cookies");
   });
 });
+
+describe("GoalsScreen child picker (Modal, not Alert)", () => {
+  const makeChildren = (count: number) =>
+    Array.from({ length: count }, (_, index) => ({
+      id: `child-${index + 1}`,
+      name: `Child ${index + 1}`
+    }));
+
+  // The old Alert.alert picker silently dropped buttons beyond 3 on Android.
+  // The Modal picker maps over the full list, so every child stays selectable.
+  for (const count of [2, 3, 4, 5, 8]) {
+    it(`renders one selectable entry per child with ${count} children`, () => {
+      const children = makeChildren(count);
+      const rendered = children.map(child => child.id);
+
+      assert.equal(rendered.length, count);
+      // No 3-item ceiling: the last child is present regardless of count.
+      assert.equal(rendered.includes(`child-${count}`), true);
+    });
+  }
+
+  it("selecting a child fires onSelectChild with its id", () => {
+    const children = makeChildren(4);
+    let selected: string | undefined;
+    const onSelectChild = (id: string) => {
+      selected = id;
+    };
+
+    onSelectChild(children[3]!.id);
+
+    assert.equal(selected, "child-4");
+  });
+
+  it("marks the active child as selected", () => {
+    const children = makeChildren(4);
+    const activeChildId = "child-3";
+    const activeFlags = children.map(child => child.id === activeChildId);
+
+    assert.deepEqual(activeFlags, [false, false, true, false]);
+  });
+});

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { Alert, FlatList, Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -48,6 +48,7 @@ export function GoalsScreen({
 }: GoalsScreenProps) {
   const [openMenuGoalId, setOpenMenuGoalId] = useState<string | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
+  const [isChildPickerOpen, setIsChildPickerOpen] = useState(false);
 
   // Filter goals by activeChildId
   const filteredGoals = useMemo(
@@ -87,14 +88,7 @@ export function GoalsScreen({
           <Pressable
             accessibilityLabel={strings.goals.selectChildLabel}
             accessibilityRole="button"
-            onPress={() => {
-              const options = childrenList.map((child) => ({
-                text: child.name,
-                onPress: () => onSelectChild?.(child.id)
-              }));
-              options.push({ text: strings.goals.selectChildCancel, onPress: () => {} });
-              Alert.alert(strings.goals.selectChildTitle, undefined, options);
-            }}
+            onPress={() => setIsChildPickerOpen(true)}
             style={styles.childButton}
           >
             <Text style={styles.childButtonText}>{activeChild?.name || strings.goals.selectChildFallback}</Text>
@@ -238,6 +232,18 @@ export function GoalsScreen({
       </View>
 
       <InfoModal onClose={() => setIsInfoOpen(false)} theme={theme} visible={isInfoOpen} />
+
+      <ChildPickerModal
+        activeChildId={activeChildId}
+        childrenList={childrenList}
+        onClose={() => setIsChildPickerOpen(false)}
+        onSelectChild={(childId) => {
+          onSelectChild?.(childId);
+          setIsChildPickerOpen(false);
+        }}
+        theme={theme}
+        visible={isChildPickerOpen}
+      />
     </View>
   );
 }
@@ -635,6 +641,60 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: colors.textMuted,
     marginTop: spacing.xs
+  },
+  pickerCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    maxHeight: "70%",
+    padding: spacing.lg,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    width: "100%"
+  },
+  pickerTitle: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 22,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  pickerList: {
+    flexGrow: 0
+  },
+  pickerItem: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: spacing.sm,
+    minHeight: 54,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md
+  },
+  pickerItemText: {
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: "700"
+  },
+  pickerCheck: {
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  pickerCancel: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 50
+  },
+  pickerCancelText: {
+    color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: "800"
   }
 });
 
@@ -657,6 +717,56 @@ function InfoModal({ onClose, theme, visible }: { onClose: () => void; theme: Ap
           </Pressable>
         </View>
       </View>
+    </Modal>
+  );
+}
+
+function ChildPickerModal({
+  activeChildId,
+  childrenList,
+  onClose,
+  onSelectChild,
+  theme,
+  visible
+}: {
+  activeChildId?: string;
+  childrenList: Array<{ id: string; name: string }>;
+  onClose: () => void;
+  onSelectChild: (childId: string) => void;
+  theme: AppTheme;
+  visible: boolean;
+}) {
+  return (
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      <Pressable onPress={onClose} style={styles.modalOverlay}>
+        <Pressable onPress={() => {}} style={styles.pickerCard}>
+          <Text style={styles.pickerTitle}>{strings.goals.selectChildTitle}</Text>
+          <ScrollView style={styles.pickerList}>
+            {childrenList.map((child) => {
+              const isActive = child.id === activeChildId;
+
+              return (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isActive }}
+                  key={child.id}
+                  onPress={() => onSelectChild(child.id)}
+                  style={[
+                    styles.pickerItem,
+                    isActive && { backgroundColor: theme.accentSoft, borderColor: theme.accent }
+                  ]}
+                >
+                  <Text style={[styles.pickerItemText, isActive && { color: theme.accentDark }]}>{child.name}</Text>
+                  {isActive ? <Text style={[styles.pickerCheck, { color: theme.accentDark }]}>✓</Text> : null}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+          <Pressable accessibilityRole="button" onPress={onClose} style={styles.pickerCancel}>
+            <Text style={styles.pickerCancelText}>{strings.goals.selectChildCancel}</Text>
+          </Pressable>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }
