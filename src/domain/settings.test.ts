@@ -1,7 +1,8 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { DEFAULT_APP_SETTINGS, normalizeSettings } from "./goal";
+import { DEFAULT_APP_SETTINGS, normalizeSettings, resolveReminderTimeForActiveChild } from "./goal";
+import type { AppSettings } from "./goal";
 import { strings } from "../i18n/strings";
 
 describe("app settings defaults", () => {
@@ -35,5 +36,42 @@ describe("app settings defaults", () => {
   it("explains where to find the parent PIN without exposing it", () => {
     assert.equal(strings.approveTask.pinSettingsHint, "PIN znajdziesz w Opcjach.");
     assert.equal(strings.approveTask.pinSettingsHint.includes("1234"), false);
+  });
+});
+
+describe("per-child reminder scheduling", () => {
+  const settings: AppSettings = {
+    children: [
+      { id: "c1", name: "Alex", settings: { parentLabel: "Mama", notificationTime: "08:15", tileColorId: "lavender" } },
+      { id: "c2", name: "Jordan", settings: { parentLabel: "Tata", notificationTime: "19:45", tileColorId: "mint" } }
+    ],
+    globalSettings: { pin: "1234", isPremium: false, exportData: [], appMode: "singleDevice", isReminderEnabled: true }
+  };
+
+  it("uses the active child's notification time when scheduling", () => {
+    assert.equal(resolveReminderTimeForActiveChild(settings, "c1"), "08:15");
+    assert.equal(resolveReminderTimeForActiveChild(settings, "c2"), "19:45");
+  });
+
+  it("reschedules to the new active child's time when the active child switches", () => {
+    const before = resolveReminderTimeForActiveChild(settings, "c1");
+    const after = resolveReminderTimeForActiveChild(settings, "c2");
+
+    assert.equal(before, "08:15");
+    assert.equal(after, "19:45");
+    assert.notEqual(before, after);
+  });
+
+  it("falls back to the first child when the active id is unknown", () => {
+    assert.equal(resolveReminderTimeForActiveChild(settings, "does-not-exist"), "08:15");
+  });
+
+  it("returns null (cancel reminder) when reminders are disabled", () => {
+    const disabled: AppSettings = {
+      ...settings,
+      globalSettings: { ...settings.globalSettings, isReminderEnabled: false }
+    };
+
+    assert.equal(resolveReminderTimeForActiveChild(disabled, "c2"), null);
   });
 });

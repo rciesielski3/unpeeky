@@ -136,6 +136,8 @@ export function SettingsScreen({
   }
 
   function handleChangeEditingChildNotificationTime(hour: number, minute: number) {
+    // Only updates the edit-modal draft; the OS reminder is rescheduled on save
+    // (see saveEditChild) so cancelling the edit does not touch the reminder.
     const notificationTime = `${formatTimePart(hour)}:${formatTimePart(minute)}`;
     setEditChildNotificationTime(notificationTime);
   }
@@ -303,6 +305,17 @@ export function SettingsScreen({
     };
 
     updateSettings(updated);
+
+    // If we edited the currently active child, reschedule the OS reminder so the
+    // new per-child notification time takes effect immediately.
+    if (
+      editingChild.id === activeChild?.id &&
+      settings.globalSettings.isReminderEnabled &&
+      parseNotificationTime(editChildNotificationTime)
+    ) {
+      void scheduleDaily(editChildNotificationTime);
+    }
+
     setEditingChild(null);
   }
 
@@ -1515,7 +1528,7 @@ function TimePickerModal({
   onSelect: (hour: number, minute: number) => void;
   visible: boolean;
 }) {
-  const parsedTime = parseNotificationTime(notificationTime) ?? { hour: 18, minute: 30 };
+  const parsedTime = parseNotificationTime(notificationTime) ?? { hour: 18, minute: 0 };
 
   return (
     <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>

@@ -12,11 +12,11 @@ import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { ModeSelectionScreen } from "./src/screens/ModeSelectionScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
-import { completeTask, createGoal, normalizeSettings, updateGoal } from "./src/domain/goal";
+import { completeTask, createGoal, normalizeSettings, resolveReminderTimeForActiveChild, updateGoal } from "./src/domain/goal";
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
-import { cancelDailyReminder } from "./src/notifications/scheduleDaily";
+import { cancelDailyReminder, scheduleDaily } from "./src/notifications/scheduleDaily";
 import { syncPremiumEntitlement } from "./src/premium/premiumPurchase";
 import { loadGoals, loadSettings, saveGoals, saveSettings, migrateGoalsV1ToV2, removeOrphanedGoals } from "./src/storage/appStorage";
 import { getAppTheme } from "./src/ui/appTheme";
@@ -126,6 +126,23 @@ function AppContent() {
       );
     }
   }, [activeChildId]);
+
+  // The OS holds a single "daily-reminder", so keep it in sync with the active
+  // child's notification time. Recomputes whenever the active child changes,
+  // reminders are toggled, or the active child's notification time is edited.
+  const activeReminderTime = settings ? resolveReminderTimeForActiveChild(settings, activeChildId) : null;
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    if (activeReminderTime) {
+      void scheduleDaily(activeReminderTime);
+    } else {
+      void cancelDailyReminder();
+    }
+  }, [activeReminderTime, isHydrated]);
 
   useEffect(() => {
     if (isHydrated) {

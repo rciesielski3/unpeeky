@@ -164,6 +164,27 @@ export function normalizeSettings(settings: Partial<AppSettings> | null | undefi
   };
 }
 
+/**
+ * Resolves which notification time the single OS "daily-reminder" should use.
+ *
+ * The OS only holds one scheduled daily reminder, so it must track whichever
+ * child is currently active. Returns the active child's notification time when
+ * reminders are enabled, or `null` when the reminder should be cancelled.
+ */
+export function resolveReminderTimeForActiveChild(
+  settings: AppSettings,
+  activeChildId: string | undefined
+): string | null {
+  if (!settings.globalSettings.isReminderEnabled) {
+    return null;
+  }
+
+  const activeChild =
+    settings.children.find((child) => child.id === activeChildId) ?? settings.children[0];
+
+  return activeChild?.settings.notificationTime ?? null;
+}
+
 export function generateParentPin(): string {
   return `${Math.floor(1000 + Math.random() * 9000)}`;
 }
