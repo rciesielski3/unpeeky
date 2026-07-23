@@ -8,6 +8,30 @@ const STORAGE_KEYS = {
   settings: "settings"
 } as const;
 
+export function migrateSettingsV1ToV2(oldSettings: any): AppSettings {
+  const childId = `child-${Date.now()}`;
+  return {
+    children: [
+      {
+        id: childId,
+        name: oldSettings.childName || "Child",
+        settings: {
+          parentLabel: oldSettings.parentLabel || "Parent",
+          notificationTime: oldSettings.notificationTime || "18:00",
+          tileColorId: oldSettings.tileColorId || "lavender"
+        }
+      }
+    ],
+    globalSettings: {
+      pin: oldSettings.parentPin || oldSettings.pin || "",
+      isPremium: oldSettings.isPremium || false,
+      exportData: oldSettings.exportData || [],
+      appMode: oldSettings.appMode || null,
+      isReminderEnabled: oldSettings.isReminderEnabled !== undefined ? oldSettings.isReminderEnabled : false
+    }
+  };
+}
+
 export async function loadGoals(): Promise<Goal[]> {
   const goals = await readJson<PersistedGoal[]>(STORAGE_KEYS.goals, []);
 
@@ -29,14 +53,25 @@ export async function saveGoals(goals: Goal[]): Promise<void> {
 }
 
 export async function loadSettings(): Promise<AppSettings> {
-  const settings = await readJson<Partial<AppSettings> | null>(STORAGE_KEYS.settings, null);
-  const normalizedSettings = normalizeSettings(settings);
+  try {
+    const settings = await AsyncStorage.getItem(STORAGE_KEYS.settings);
+    if (!settings) {
+      return normalizeSettings(null);
+    }
 
-  if (JSON.stringify(settings) !== JSON.stringify(normalizedSettings)) {
-    await saveSettings(normalizedSettings);
+    const parsed = JSON.parse(settings);
+
+    // Detect v0.1.12 schema (has childName, not children array)
+    if (parsed.childName && !parsed.children) {
+      return migrateSettingsV1ToV2(parsed);
+    }
+
+    // v0.1.13+ schema (has children array)
+    return normalizeSettings(parsed);
+  } catch (error) {
+    console.error("Failed to load settings, creating default", error);
+    return normalizeSettings(null);
   }
-
-  return normalizedSettings;
 }
 
 export async function saveSettings(settings: AppSettings): Promise<void> {
