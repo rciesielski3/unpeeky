@@ -60,4 +60,4 @@ changed files.
 
 ## Commit
 `fix: wire per-child notification scheduling and use Polish defaults`
-Commit hash: `de88de1`
+Commit hash: `313943b`

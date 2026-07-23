@@ -38,10 +38,10 @@ class MockAsyncStorage {
   }
 }
 
-// Import domain functions
+// Import domain functions and real storage functions
 import { createGoal, normalizeSettings } from "../src/domain/goal";
 import type { Goal, AppSettings, GoalDraft } from "../src/domain/goal";
-import { removeOrphanedGoals } from "../src/storage/appStorage";
+import { removeOrphanedGoals, loadSettings, saveSettings, migrateGoalsV1ToV2, migrateSettingsV1ToV2 } from "../src/storage/appStorage";
 
 describe("Multiple Children E2E", () => {
   let asyncStorage: MockAsyncStorage;
@@ -691,6 +691,151 @@ describe("Multiple Children E2E", () => {
         settings.children.some(c => c.id === activeChildId),
         "ActiveChildId should be valid"
       );
+    });
+  });
+
+  describe("v0.1.12→v0.1.13 Migration E2E", () => {
+    it("should migrate v0.1.12 settings and goals using real migration functions", async () => {
+      // Simulate v0.1.12 data (no children array in settings, goals without childId)
+      const v0112Settings = {
+        childName: "",
+        parentLabel: "Parent",
+        notificationTime: "18:00",
+        tileColorId: "mint" as const,
+        parentPin: "1111",
+        isPremium: false,
+        appMode: "singleDevice" as const,
+        isReminderEnabled: true
+      };
+
+      // Save v0.1.12 blob to storage
+      await asyncStorage.setItem("settings", JSON.stringify(v0112Settings));
+
+      // Simulate v0.1.12 goals without childId
+      const v0112Goals = [
+        {
+          id: "goal-1",
+          childName: "Child1",
+          rewardName: "Reward1",
+          imageUri: "file://r1.png",
+          totalTasks: 8,
+          completedTasks: 1,
+          revealOrder: [0, 1, 2, 3, 4, 5, 6, 7],
+          avatarId: "dino" as const,
+          createdAt: new Date().toISOString(),
+          completed: false
+        }
+      ] as never;
+
+      await asyncStorage.setItem("goals", JSON.stringify(v0112Goals));
+
+      // Simulate app loading: call real migration functions
+      const migratedSettings = migrateSettingsV1ToV2(v0112Settings);
+      const storedGoals = JSON.parse((await asyncStorage.getItem("goals")) || "[]") as Array<Omit<Goal, "childId"> & { childId?: string }>;
+      const defaultChildId = migratedSettings.children[0]?.id || "child-default";
+      const migratedGoals = migrateGoalsV1ToV2(storedGoals, defaultChildId);
+      const cleanedGoals = removeOrphanedGoals(migratedGoals, migratedSettings.children);
+
+      // Verify migration completed correctly using real functions
+      assert.equal(migratedSettings.children.length, 1, "Should have 1 child");
+      assert.ok(migratedSettings.children[0]?.name, "Child should have a name");
+      assert.equal(migratedSettings.globalSettings.pin, "1111", "PIN should be preserved");
+      assert.equal(migratedSettings.globalSettings.isPremium, false, "isPremium should be preserved");
+      assert.equal(migratedSettings.globalSettings.appMode, "singleDevice", "appMode should be preserved");
+      assert.equal(migratedSettings.globalSettings.isReminderEnabled, true, "isReminderEnabled should be preserved");
+
+      assert.equal(cleanedGoals.length, 1, "Should have 1 goal after migration");
+      assert.equal(cleanedGoals[0]?.childId, defaultChildId, "Goal should have childId assigned");
+      assert.equal(cleanedGoals[0]?.completedTasks, 1, "Goal progress should be preserved");
+      assert.equal(cleanedGoals[0]?.rewardName, "Reward1", "Reward name should be preserved");
+    });
+
+    it("should not re-migrate a v0.1.13 blob that's already migrated", async () => {
+      const v0113Settings: AppSettings = {
+        children: [
+          {
+            id: "child-1",
+            name: "Alex",
+            settings: {
+              parentLabel: "Mom",
+              notificationTime: "18:00",
+              tileColorId: "lavender"
+            }
+          }
+        ],
+        globalSettings: {
+          pin: "2222",
+          isPremium: true,
+          exportData: [],
+          appMode: "singleDevice"
+        }
+      };
+
+      await asyncStorage.setItem("settings", JSON.stringify(v0113Settings));
+
+      // Load settings - should NOT be re-migrated since it has children array
+      const stored = JSON.parse((await asyncStorage.getItem("settings")) || "{}") as AppSettings;
+      const normalized = normalizeSettings(stored);
+
+      // Should preserve v0.1.13 structure
+      assert.equal(normalized.children.length, 1, "Should have 1 child (not re-migrated)");
+      assert.equal(normalized.children[0]?.name, "Alex", "Child name should be preserved");
+      assert.equal(normalized.children[0]?.id, "child-1", "Child ID should be preserved");
+      assert.equal(normalized.globalSettings.pin, "2222", "PIN should be preserved");
+    });
+
+    it("should handle multiple children migration scenario", async () => {
+      // Fresh v0.1.13 app with multiple children
+      const multiChildSettings: AppSettings = {
+        children: [
+          {
+            id: "child-1",
+            name: "Alex",
+            settings: { parentLabel: "Mom", notificationTime: "18:00", tileColorId: "lavender" }
+          },
+          {
+            id: "child-2",
+            name: "Jordan",
+            settings: { parentLabel: "Dad", notificationTime: "19:00", tileColorId: "mint" }
+          }
+        ],
+        globalSettings: {
+          pin: "3333",
+          isPremium: false,
+          exportData: [],
+          appMode: "singleDevice"
+        }
+      };
+
+      await asyncStorage.setItem("settings", JSON.stringify(multiChildSettings));
+
+      // Create goals for each child
+      const goal1 = createGoal(
+        { childName: "Alex", rewardName: "Ice Cream", imageUri: "file://r1.png", totalTasks: 8, avatarId: "dino" },
+        "child-1"
+      );
+      const goal2 = createGoal(
+        { childName: "Jordan", rewardName: "Candy", imageUri: "file://r2.png", totalTasks: 10, avatarId: "unicorn" },
+        "child-2"
+      );
+
+      const allGoals = [goal1, goal2];
+      await asyncStorage.setItem("goals", JSON.stringify(allGoals));
+      await asyncStorage.setItem("activeChildId", "child-2");
+
+      // Simulate app restart and load
+      const stored = JSON.parse((await asyncStorage.getItem("settings")) || "{}") as AppSettings;
+      const normalized = normalizeSettings(stored);
+      const storedGoals = JSON.parse((await asyncStorage.getItem("goals")) || "[]") as Goal[];
+      const cleanedGoals = removeOrphanedGoals(storedGoals, normalized.children);
+      const restoredActiveChildId = await asyncStorage.getItem("activeChildId");
+
+      // Verify multi-child flow
+      assert.equal(normalized.children.length, 2, "Should have 2 children");
+      assert.equal(cleanedGoals.length, 2, "Should have 2 goals");
+      assert.equal(cleanedGoals.filter(g => g.childId === "child-1").length, 1, "Should have 1 goal for child 1");
+      assert.equal(cleanedGoals.filter(g => g.childId === "child-2").length, 1, "Should have 1 goal for child 2");
+      assert.equal(restoredActiveChildId, "child-2", "Should restore active child");
     });
   });
 });

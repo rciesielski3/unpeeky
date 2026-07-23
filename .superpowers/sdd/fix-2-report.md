@@ -1,34 +1,38 @@
-# Fix 2: Confirmation Dialog for "Change Mode" Feature - DONE
+# Fix 2: Child Selector Modal (Critical) — Report
 
-## Status: COMPLETED
+## Status: COMPLETE
 
-### Commit SHA
-`a1e211eb217373e8de884e85302bee0d05b81e5b`
+## Problem
+`GoalsScreen` used `Alert.alert()` for the child selector. Android's native
+alert dialog only renders up to 3 buttons and silently drops any beyond that.
+Families with 3+ children could not select every child.
 
-### Changes Made
-- **File**: `src/screens/SettingsScreen.tsx` (lines 173-189)
-- **Function**: `handleChangeMode()`
-- **Change Type**: Feature implementation
+## Changes
+File: `src/screens/GoalsScreen.tsx`
+- Removed `Alert` import; added `ScrollView`.
+- Added `isChildPickerOpen` state.
+- The "Select Child" button now opens a Modal instead of calling `Alert.alert()`.
+- New `ChildPickerModal` component renders the full `childrenList` via `.map()`
+  as `Pressable` rows inside a `ScrollView` (no button-count ceiling). Each row
+  calls `onSelectChild(childId)` and closes the modal. The active child is
+  highlighted with a checkmark. Tapping the overlay or Cancel dismisses.
+- Styling reuses theme tokens (`colors`, `spacing`, `radii`, `fonts`) and the
+  existing `modalOverlay` pattern, matching `InfoModal`.
 
-### Implementation Details
-Replaced the immediate mode reset with an `Alert.alert()` confirmation dialog that:
-1. Shows the Polish confirmation title: "Zmienić tryb działania?"
-2. Shows the Polish confirmation message: "Spowoduje powrót do ekranu wyboru trybu. Twoje cele zostają zachowane."
-3. Presents two options:
-   - "Nie" (No) - Cancel action
-   - "Tak, zmień" (Yes, change) - Destructive style, executes the mode reset
+File: `src/screens/GoalsScreen.test.tsx`
+- Added a "child picker (Modal, not Alert)" suite: parametrized tests for
+  2, 3, 4, 5, and 8 children asserting every child stays selectable (the last
+  child is present regardless of count), plus onSelectChild wiring and
+  active-child marking.
 
-The confirmation ensures the mode reset is user-initiated and prevents accidental activation, fulfilling the constraint "mode reset must be user-initiated (not accidental)."
+## Verification
+- `npm run typecheck` — passed (no errors).
+- `npx eslint src/screens/GoalsScreen.tsx` — clean.
+- `npm test` — all green:
+  - test:unit: 83 tests, 83 pass, 0 fail (22 suites)
+  - test:e2e: 13 tests, 13 pass, 0 fail
+  - Total: 96 tests passing (exceeds the 89+ target)
 
-### Verification Results
-- **TypeCheck**: PASSED ✓
-- **ESLint**: PASSED ✓
-- **Unit Tests**: PASSED ✓ (47/47 tests passing)
-
-### Files Modified
-- `/Users/rafalciesielski/Developer/unpeeky/src/screens/SettingsScreen.tsx`
-
-### Notes
-- `Alert` import was already present (line 3)
-- Confirmation strings were already defined in i18n strings file
-- No breaking changes; fully backward compatible
+## Commit
+- `18ac0d422549ccf3fdcd9c58710d4cc9b29dde11`
+  fix: replace Alert picker with Modal for 3+ children Android support

@@ -1,7 +1,9 @@
 import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-import { loadSettings, saveSettings } from "./src/storage/appStorage";
+import { loadSettings, saveSettings, removeOrphanedGoals } from "./src/storage/appStorage";
+import type { Goal } from "./src/domain/goal";
 
 // Provide an in-memory window.localStorage backend so the real
 // @react-native-async-storage/async-storage web implementation is usable
@@ -218,5 +220,56 @@ describe("loadSettings v0.1.12 migration integration", () => {
     assert.equal(loaded.children[0]?.name, "Alex");
     assert.equal(loaded.children[0]?.settings.tileColorId, "mint");
     assert.equal(loaded.globalSettings.pin, "1234");
+  });
+
+  it("should complete v0.1.12→v0.1.13 migration E2E with goals migration", async () => {
+    // Simulate v0.1.12 app state with legacy goals (no childId)
+    const v0112Settings = {
+      childName: "",
+      parentLabel: "Dad",
+      notificationTime: "19:00",
+      tileColorId: "mint" as const,
+      parentPin: "5555",
+      isPremium: false,
+      appMode: "singleDevice" as const,
+      isReminderEnabled: true
+    };
+
+    // Legacy goals without childId
+    const legacyGoals = [
+      {
+        id: "goal-1",
+        childName: "Alex",
+        rewardName: "Ice Cream",
+        imageUri: "file://reward1.png",
+        totalTasks: 8,
+        completedTasks: 2,
+        revealOrder: [0, 1, 2, 3, 4, 5, 6, 7],
+        avatarId: "dino" as const,
+        createdAt: new Date().toISOString(),
+        completed: false
+      }
+    ] as never;
+
+    // Persist legacy data
+    await saveSettings(v0112Settings as never);
+    await AsyncStorage.setItem("goals", JSON.stringify(legacyGoals));
+
+    // Load and migrate using real functions
+    const migratedSettings = await loadSettings();
+    const storedGoals = JSON.parse((await AsyncStorage.getItem("goals")) || "[]") as Array<Omit<Goal, "childId"> & { childId?: string }>;
+    const defaultChildId = migratedSettings.children[0]?.id || "child-default";
+    const migratedGoals = storedGoals.map(goal => ({
+      ...goal,
+      childId: goal.childId || defaultChildId
+    }));
+    const cleanedGoals = removeOrphanedGoals(migratedGoals, migratedSettings.children);
+
+    // Verify complete migration
+    assert.equal(migratedSettings.children.length, 1, "Should have 1 child after migration");
+    assert.equal(migratedSettings.globalSettings.pin, "5555", "PIN should be preserved");
+    assert.equal(cleanedGoals.length, 1, "Should have 1 goal");
+    assert.equal(cleanedGoals[0]?.childId, defaultChildId, "Goal should have childId assigned");
+    assert.equal(cleanedGoals[0]?.completedTasks, 2, "Goal progress should be preserved");
   });
 });
