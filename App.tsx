@@ -111,7 +111,7 @@ function AppContent() {
   }, [isHydrated, settings]);
 
   function handleCreateGoal(draft: GoalDraft) {
-    const goal = createGoal(draft);
+    const goal = createGoal(draft, "default-child");
 
     setGoals((currentGoals) => [goal, ...currentGoals]);
     setSelectedGoalId(goal.id);

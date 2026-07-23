@@ -22,6 +22,7 @@ export type TileColorId = (typeof TILE_COLOR_OPTIONS)[number]["id"];
 
 export type Goal = {
   id: string;
+  childId: string;
   childName: string;
   rewardName: string;
   imageUri: string;
@@ -61,14 +62,22 @@ export type PersistedGoal = Omit<Goal, "avatarId" | "revealOrder"> &
     avatarId?: string;
   };
 
-export function createGoal(draft: GoalDraft, now = new Date()): Goal {
+export function createGoal(draft: GoalDraft, childId: string, now = new Date()): Goal {
   return {
     ...draft,
+    childId,
     id: `${now.getTime()}`,
     completedTasks: 0,
     revealOrder: shuffleTileIds(draft.totalTasks),
     createdAt: now.toISOString(),
     completed: false
+  };
+}
+
+export function migrateGoalV1ToV2(oldGoal: Omit<Goal, "childId">, childId: string): Goal {
+  return {
+    ...oldGoal,
+    childId
   };
 }
 
