@@ -18,7 +18,7 @@ import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
 import { cancelDailyReminder } from "./src/notifications/scheduleDaily";
 import { syncPremiumEntitlement } from "./src/premium/premiumPurchase";
-import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
+import { loadGoals, loadSettings, saveGoals, saveSettings, migrateGoalsV1ToV2, removeOrphanedGoals } from "./src/storage/appStorage";
 import { getAppTheme } from "./src/ui/appTheme";
 import { colors, fonts, radii, spacing } from "./src/ui/theme";
 import MobileAds from "react-native-google-mobile-ads";
@@ -68,7 +68,19 @@ function AppContent() {
 
         const normalizedSettings = normalizeSettings(storedSettings);
 
-        setGoals(storedGoals);
+        // Migrate goals (assign childId if missing)
+        const migratedGoals = migrateGoalsV1ToV2(
+          storedGoals,
+          normalizedSettings.children[0]?.id || "child-default"
+        );
+
+        // Remove orphaned goals
+        const cleanedGoals = removeOrphanedGoals(
+          migratedGoals,
+          normalizedSettings.children
+        );
+
+        setGoals(cleanedGoals);
         setSettings(normalizedSettings);
 
         // Restore activeChildId if valid

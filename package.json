@@ -14,7 +14,7 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "postinstall": "patch-package",
-    "test:unit": "node --import tsx --test App.test.tsx src/domain/*.test.ts src/services/*.test.ts src/screens/*.test.tsx",
+    "test:unit": "node --import tsx --test App.test.tsx src/domain/*.test.ts src/services/*.test.ts src/screens/*.test.tsx src/storage/*.test.ts",
     "test": "npm run test:unit",
     "typecheck": "tsc --noEmit"
   },

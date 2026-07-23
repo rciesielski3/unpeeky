@@ -78,6 +78,24 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
   await AsyncStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
 }
 
+export function migrateGoalsV1ToV2(
+  oldGoals: any[],
+  defaultChildId: string
+): Goal[] {
+  return oldGoals.map(goal => ({
+    ...goal,
+    childId: goal.childId || defaultChildId
+  }));
+}
+
+export function removeOrphanedGoals(
+  goals: Goal[],
+  children: Array<{ id: string }>
+): Goal[] {
+  const validChildIds = new Set(children.map(c => c.id));
+  return goals.filter(goal => validChildIds.has(goal.childId));
+}
+
 async function readJson<T>(key: string, fallback: T): Promise<T> {
   let rawValue: string | null;
 
