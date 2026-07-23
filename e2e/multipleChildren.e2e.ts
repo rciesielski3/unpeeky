@@ -39,7 +39,7 @@ class MockAsyncStorage {
 }
 
 // Import domain functions
-import { createGoal, normalizeSettings, DEFAULT_APP_SETTINGS } from "../src/domain/goal";
+import { createGoal, normalizeSettings } from "../src/domain/goal";
 import type { Goal, AppSettings, GoalDraft } from "../src/domain/goal";
 import { removeOrphanedGoals } from "../src/storage/appStorage";
 
@@ -108,7 +108,7 @@ describe("Multiple Children E2E", () => {
         rewardName: "Candy",
         imageUri: "file://reward2.png",
         totalTasks: 12,
-        avatarId: "bird"
+        avatarId: "unicorn"
       };
       const goalG2 = createGoal(goalG2Draft, child2Id);
 
@@ -346,7 +346,7 @@ describe("Multiple Children E2E", () => {
             settings: {
               // Missing notificationTime and tileColorId
               parentLabel: "Mom"
-            } as any
+            }
           }
         ],
         globalSettings: {
@@ -358,7 +358,7 @@ describe("Multiple Children E2E", () => {
       };
 
       // Normalize should repair
-      const normalized = normalizeSettings(corruptedSettings as any);
+      const normalized = normalizeSettings(corruptedSettings as unknown as Partial<AppSettings>);
 
       assert.equal(normalized.children.length, 1, "Should preserve child structure");
       assert.ok(normalized.children[0]?.settings.notificationTime, "Should have default notificationTime");
@@ -381,7 +381,7 @@ describe("Multiple Children E2E", () => {
           createdAt: new Date().toISOString(),
           completed: false
         }
-      ] as any[];
+      ] as Array<Omit<Goal, "childId">>;
 
       // Save old goals
       await asyncStorage.setItem("goals", JSON.stringify(oldGoals));
@@ -389,7 +389,7 @@ describe("Multiple Children E2E", () => {
       // Simulate migration - assign childId to goals missing it
       const storedGoals = JSON.parse(
         (await asyncStorage.getItem("goals")) || "[]"
-      ) as any[];
+      ) as Array<Omit<Goal, "childId"> & { childId?: string }>;
       const defaultChildId = "child-1";
       const migratedGoals = storedGoals.map(goal => ({
         ...goal,
@@ -488,7 +488,7 @@ describe("Multiple Children E2E", () => {
           rewardName: "Reward 2",
           imageUri: "file://r2.png",
           totalTasks: 8,
-          avatarId: "bird"
+          avatarId: "unicorn"
         },
         child2Id
       );
@@ -499,7 +499,7 @@ describe("Multiple Children E2E", () => {
           rewardName: "Reward 3",
           imageUri: "file://r3.png",
           totalTasks: 8,
-          avatarId: "dragon"
+          avatarId: "rocket"
         },
         child2Id
       );
@@ -551,7 +551,7 @@ describe("Multiple Children E2E", () => {
             rewardName: "Goal A2",
             imageUri: "file://a2.png",
             totalTasks: 12,
-            avatarId: "bird"
+            avatarId: "unicorn"
           },
           child1Id
         ),
@@ -561,7 +561,7 @@ describe("Multiple Children E2E", () => {
             rewardName: "Goal J1",
             imageUri: "file://j1.png",
             totalTasks: 16,
-            avatarId: "dragon"
+            avatarId: "rocket"
           },
           child2Id
         )
@@ -679,7 +679,7 @@ describe("Multiple Children E2E", () => {
       const activeChildIdJson = await asyncStorage.getItem("activeChildId");
 
       // Load with defaults
-      const settings = settingsJson ? JSON.parse(settingsJson) : normalizeSettings(null);
+      const settings: AppSettings = settingsJson ? JSON.parse(settingsJson) : normalizeSettings(null);
       const goals = goalsJson ? JSON.parse(goalsJson) : [];
       const activeChildId = activeChildIdJson || settings.children[0]?.id;
 

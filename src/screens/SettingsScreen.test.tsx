@@ -136,7 +136,6 @@ describe("SettingsScreen - Manage Children", () => {
       globalSettings: mockSettings.globalSettings
     };
 
-    const childIdToDelete = "c1";
     // Simulate delete logic that prevents deleting last child
     const canDelete = singleChildSettings.children.length > 1;
 

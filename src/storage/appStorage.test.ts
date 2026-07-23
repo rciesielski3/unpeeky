@@ -13,14 +13,14 @@ describe("AppSettings migration", () => {
       parentPin: "1234",
       isPremium: false,
       tileColorId: "lavender",
-      appMode: "singleDevice"
+      appMode: "singleDevice" as const
     };
 
-    const migrated = migrateSettingsV1ToV2(oldSettings as any);
+    const migrated = migrateSettingsV1ToV2(oldSettings);
 
     assert.equal(migrated.children.length, 1);
-    assert.equal(migrated.children[0].name, "Alex");
-    assert.equal(migrated.children[0].settings.parentLabel, "Mom");
+    assert.equal(migrated.children[0]?.name, "Alex");
+    assert.equal(migrated.children[0]?.settings.parentLabel, "Mom");
     assert.equal(migrated.globalSettings.pin, "1234");
   });
 
@@ -31,11 +31,11 @@ describe("AppSettings migration", () => {
       parentPin: "1234",
       isPremium: false,
       tileColorId: "lavender",
-      appMode: "singleDevice"
+      appMode: "singleDevice" as const
     };
 
-    const migrated = migrateSettingsV1ToV2(oldSettings as any);
-    assert.equal(migrated.children[0].name, "Child"); // fallback
+    const migrated = migrateSettingsV1ToV2(oldSettings);
+    assert.equal(migrated.children[0]?.name, "Child"); // fallback
   });
 });
 
@@ -50,18 +50,18 @@ describe("Goal migration", () => {
         totalTasks: 16,
         completedTasks: 0,
         revealOrder: [0, 1, 2],
-        avatarId: "default",
+        avatarId: "dino",
         createdAt: "2026-01-01T00:00:00Z",
         completed: false
         // No childId
       }
-    ] as any[];
+    ] as Omit<Goal, "childId">[];
     const migratedChildId = "child-12345";
 
     const migratedGoals = migrateGoalsV1ToV2(oldGoals, migratedChildId);
 
     assert.equal(migratedGoals.length, 1);
-    assert.equal(migratedGoals[0].childId, migratedChildId);
+    assert.equal(migratedGoals[0]?.childId, migratedChildId);
   });
 
   it("should preserve existing childId if already present", () => {
@@ -75,7 +75,7 @@ describe("Goal migration", () => {
         totalTasks: 16,
         completedTasks: 0,
         revealOrder: [0, 1, 2],
-        avatarId: "default",
+        avatarId: "dino",
         createdAt: "2026-01-01T00:00:00Z",
         completed: false
       }
@@ -84,7 +84,7 @@ describe("Goal migration", () => {
 
     const migratedGoals = migrateGoalsV1ToV2(oldGoals, migratedChildId);
 
-    assert.equal(migratedGoals[0].childId, "child-existing");
+    assert.equal(migratedGoals[0]?.childId, "child-existing");
   });
 
   it("should remove orphaned goals (childId doesn't exist in children)", () => {
@@ -98,7 +98,7 @@ describe("Goal migration", () => {
         totalTasks: 16,
         completedTasks: 0,
         revealOrder: [0, 1, 2],
-        avatarId: "default",
+        avatarId: "dino",
         createdAt: "2026-01-01T00:00:00Z",
         completed: false
       },
@@ -111,7 +111,7 @@ describe("Goal migration", () => {
         totalTasks: 12,
         completedTasks: 2,
         revealOrder: [0, 1, 2],
-        avatarId: "default",
+        avatarId: "dino",
         createdAt: "2026-01-01T00:00:00Z",
         completed: false
       }
@@ -121,7 +121,7 @@ describe("Goal migration", () => {
     const cleaned = removeOrphanedGoals(goals, children);
 
     assert.equal(cleaned.length, 1);
-    assert.equal(cleaned[0].id, "g1");
+    assert.equal(cleaned[0]?.id, "g1");
   });
 
   it("should keep all goals if all childIds are valid", () => {
@@ -135,7 +135,7 @@ describe("Goal migration", () => {
         totalTasks: 16,
         completedTasks: 0,
         revealOrder: [0, 1, 2],
-        avatarId: "default",
+        avatarId: "dino",
         createdAt: "2026-01-01T00:00:00Z",
         completed: false
       },
@@ -148,7 +148,7 @@ describe("Goal migration", () => {
         totalTasks: 12,
         completedTasks: 2,
         revealOrder: [0, 1, 2],
-        avatarId: "default",
+        avatarId: "dino",
         createdAt: "2026-01-01T00:00:00Z",
         completed: false
       }

@@ -60,6 +60,7 @@ describe("completeTask", () => {
   function makeGoal(overrides: Partial<Goal> = {}): Goal {
     return {
       id: "1",
+      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -159,6 +160,7 @@ describe("normalizeGoal", () => {
   it("defensively reads well-formed stored data", () => {
     const persisted: PersistedGoal = {
       id: "1",
+      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -180,6 +182,7 @@ describe("normalizeGoal", () => {
   it("falls back to the default avatar when avatarId is missing or unknown", () => {
     const base: PersistedGoal = {
       id: "1",
+      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -196,6 +199,7 @@ describe("normalizeGoal", () => {
   it("repairs a missing or malformed reveal order", () => {
     const base: PersistedGoal = {
       id: "1",
+      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -226,6 +230,7 @@ describe("normalizeGoal", () => {
   it("derives completed from completedTasks/totalTasks when reading legacy data", () => {
     const base: PersistedGoal = {
       id: "1",
+      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -245,6 +250,7 @@ describe("updateGoal", () => {
   function makeGoal(overrides: Partial<Goal> = {}): Goal {
     return {
       id: "1",
+      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -285,7 +291,7 @@ describe("Goal", () => {
         rewardName: "Ice Cream",
         imageUri: "...",
         totalTasks: 16,
-        avatarId: "avatar-1"
+        avatarId: "dino"
       }, "child-12345");
       assert.ok(Object.hasOwn(goal, "childId"), "goal should have childId property");
       assert.strictEqual(typeof goal.childId, "string", "childId should be a string");
@@ -293,7 +299,7 @@ describe("Goal", () => {
     });
 
     it("migrateGoalV1ToV2 should assign childId to goal", () => {
-      const oldGoal: any = {
+      const oldGoal: Omit<Goal, "childId"> = {
         id: "goal-123",
         childName: "Alex",
         rewardName: "Cake",
@@ -301,7 +307,7 @@ describe("Goal", () => {
         totalTasks: 12,
         completedTasks: 0,
         revealOrder: [0, 1, 2],
-        avatarId: "avatar-1",
+        avatarId: "dino",
         createdAt: new Date().toISOString(),
         completed: false
       };

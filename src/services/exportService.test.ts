@@ -7,6 +7,7 @@ import type { Goal } from "../domain/goal";
 
 const sampleGoal: Goal = {
   id: "1",
+  childId: "child-1",
   childName: "Kuba",
   rewardName: "Hulajnoga",
   imageUri: "file://reward.jpg",

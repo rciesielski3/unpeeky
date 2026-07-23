@@ -10,7 +10,7 @@ describe("app settings defaults", () => {
 
     assert.equal(DEFAULT_APP_SETTINGS.globalSettings.isReminderEnabled, false);
     assert.equal(settings.globalSettings.isReminderEnabled, false);
-    assert.equal(settings.children[0].settings.notificationTime, "18:00");
+    assert.equal(settings.children[0]!.settings.notificationTime, "18:00");
   });
 
   it("keeps existing reminder preference when stored settings are normalized", () => {
@@ -22,14 +22,14 @@ describe("app settings defaults", () => {
   it("defaults the parent greeting to Rodzicu and supports custom labels", () => {
     const settings = normalizeSettings(null);
 
-    assert.equal(settings.children[0].settings.parentLabel, "Rodzicu");
-    assert.equal(strings.goals.greeting(settings.children[0].settings.parentLabel), "Cześć, Rodzicu! 👋");
+    assert.equal(settings.children[0]!.settings.parentLabel, "Rodzicu");
+    assert.equal(strings.goals.greeting(settings.children[0]!.settings.parentLabel), "Cześć, Rodzicu! 👋");
     assert.equal(strings.goals.greeting("Babcia"), "Cześć, Babcia! 👋");
   });
 
   it("sanitizes stored parent labels", () => {
-    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "  Tata  ", notificationTime: "18:00", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).children[0].settings.parentLabel, "Tata");
-    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "", notificationTime: "18:00", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).children[0].settings.parentLabel, "Rodzicu");
+    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "  Tata  ", notificationTime: "18:00", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).children[0]!.settings.parentLabel, "Tata");
+    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "", notificationTime: "18:00", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).children[0]!.settings.parentLabel, "Rodzicu");
   });
 
   it("explains where to find the parent PIN without exposing it", () => {
