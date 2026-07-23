@@ -1,0 +1,299 @@
+diff --git a/src/domain/goal.ts b/src/domain/goal.ts
+index f2a79f6..8a5dd26 100644
+--- a/src/domain/goal.ts
++++ b/src/domain/goal.ts
+@@ -34,28 +34,54 @@ export type Goal = {
+   completed: boolean;
+ };
+ 
+-export type AppSettings = {
+-  isPremium: boolean;
+-  isReminderEnabled: boolean;
+-  notificationTime: string;
+-  childName: string;
++export type ChildSettings = {
+   parentLabel: string;
+-  parentPin: string;
+-  appMode: AppMode | null;
++  notificationTime: string;
+   tileColorId: TileColorId;
+ };
+ 
+-export const DEFAULT_APP_SETTINGS: AppSettings = {
+-  isPremium: false,
+-  isReminderEnabled: false,
+-  notificationTime: "18:00",
+-  childName: "",
++export type GlobalSettings = {
++  pin: string;
++  isPremium: boolean;
++  exportData: Goal[];
++  appMode: AppMode | null;
++  isReminderEnabled?: boolean;
++};
++
++export type AppSettings = {
++  children: Array<{
++    id: string;
++    name: string;
++    settings: ChildSettings;
++  }>;
++  globalSettings: GlobalSettings;
++};
++
++export const DEFAULT_CHILD_SETTINGS: ChildSettings = {
+   parentLabel: "Rodzicu",
+-  parentPin: "",
+-  appMode: null,
++  notificationTime: "18:00",
+   tileColorId: "lavender"
+ };
+ 
++export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
++  pin: "",
++  isPremium: false,
++  exportData: [],
++  appMode: null,
++  isReminderEnabled: false
++};
++
++export const DEFAULT_APP_SETTINGS: AppSettings = {
++  children: [
++    {
++      id: "child-1",
++      name: "",
++      settings: DEFAULT_CHILD_SETTINGS
++    }
++  ],
++  globalSettings: DEFAULT_GLOBAL_SETTINGS
++};
++
+ export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;
+ export type PersistedGoal = Omit<Goal, "avatarId" | "revealOrder"> &
+   Partial<Pick<Goal, "completed" | "revealOrder">> & {
+@@ -103,25 +129,38 @@ export function normalizeGoal(goal: PersistedGoal): Goal {
+ }
+ 
+ export function normalizeSettings(settings: Partial<AppSettings> | null | undefined): AppSettings {
+-  const nextSettings = {
+-    ...DEFAULT_APP_SETTINGS,
+-    ...settings
+-  };
+-  const isStoredReminderEnabled = typeof settings?.isReminderEnabled === "boolean";
+-  const notificationTime = isNotificationTime(nextSettings.notificationTime)
+-    ? nextSettings.notificationTime
+-    : DEFAULT_APP_SETTINGS.notificationTime;
++  if (!settings || !settings.children) {
++    return DEFAULT_APP_SETTINGS;
++  }
++
++  // Normalize children array
++  const normalizedChildren = settings.children.map((child) => ({
++    id: child.id || `child-${Date.now()}`,
++    name: typeof child.name === "string" ? child.name : "Child",
++    settings: {
++      parentLabel: normalizeParentLabel(child.settings?.parentLabel),
++      notificationTime: isNotificationTime(child.settings?.notificationTime)
++        ? child.settings.notificationTime
++        : DEFAULT_CHILD_SETTINGS.notificationTime,
++      tileColorId: isTileColorId(child.settings?.tileColorId)
++        ? child.settings.tileColorId
++        : DEFAULT_CHILD_SETTINGS.tileColorId
++    }
++  }));
++
++  // Normalize global settings
++  const globalSettings = settings.globalSettings || DEFAULT_GLOBAL_SETTINGS;
++  const isStoredReminderEnabled = typeof globalSettings?.isReminderEnabled === "boolean";
+ 
+   return {
+-    ...nextSettings,
+-    appMode: isAppMode(nextSettings.appMode) ? nextSettings.appMode : null,
+-    isReminderEnabled: isStoredReminderEnabled
+-      ? Boolean(settings?.isReminderEnabled)
+-      : DEFAULT_APP_SETTINGS.isReminderEnabled,
+-    notificationTime,
+-    parentLabel: normalizeParentLabel(nextSettings.parentLabel),
+-    parentPin: isParentPinValid(nextSettings.parentPin) ? nextSettings.parentPin : generateParentPin(),
+-    tileColorId: isTileColorId(nextSettings.tileColorId) ? nextSettings.tileColorId : DEFAULT_APP_SETTINGS.tileColorId
++    children: normalizedChildren,
++    globalSettings: {
++      pin: isParentPinValid(globalSettings.pin) ? globalSettings.pin : generateParentPin(),
++      isPremium: Boolean(globalSettings.isPremium),
++      exportData: Array.isArray(globalSettings.exportData) ? globalSettings.exportData : [],
++      appMode: isAppMode(globalSettings.appMode) ? globalSettings.appMode : null,
++      isReminderEnabled: isStoredReminderEnabled ? Boolean(globalSettings.isReminderEnabled) : false
++    }
+   };
+ }
+ 
+@@ -151,12 +190,12 @@ function isNotificationTime(notificationTime: unknown): notificationTime is stri
+ 
+ function normalizeParentLabel(parentLabel: unknown): string {
+   if (typeof parentLabel !== "string") {
+-    return DEFAULT_APP_SETTINGS.parentLabel;
++    return DEFAULT_CHILD_SETTINGS.parentLabel;
+   }
+ 
+   const normalizedParentLabel = parentLabel.trim().slice(0, 24);
+ 
+-  return normalizedParentLabel || DEFAULT_APP_SETTINGS.parentLabel;
++  return normalizedParentLabel || DEFAULT_CHILD_SETTINGS.parentLabel;
+ }
+ 
+ export function getGoalProgress(goal: Pick<Goal, "completedTasks" | "totalTasks">): number {
+diff --git a/src/domain/settings.test.ts b/src/domain/settings.test.ts
+index 2e94e99..2b71912 100644
+--- a/src/domain/settings.test.ts
++++ b/src/domain/settings.test.ts
+@@ -8,28 +8,28 @@ describe("app settings defaults", () => {
+   it("keeps daily reminders disabled for a fresh install", () => {
+     const settings = normalizeSettings(null);
+ 
+-    assert.equal(DEFAULT_APP_SETTINGS.isReminderEnabled, false);
+-    assert.equal(settings.isReminderEnabled, false);
+-    assert.equal(settings.notificationTime, "18:00");
++    assert.equal(DEFAULT_APP_SETTINGS.globalSettings.isReminderEnabled, false);
++    assert.equal(settings.globalSettings.isReminderEnabled, false);
++    assert.equal(settings.children[0].settings.notificationTime, "18:00");
+   });
+ 
+   it("keeps existing reminder preference when stored settings are normalized", () => {
+-    assert.equal(normalizeSettings({ isReminderEnabled: true, notificationTime: "19:30" }).isReminderEnabled, true);
+-    assert.equal(normalizeSettings({ isReminderEnabled: false, notificationTime: "19:30" }).isReminderEnabled, false);
+-    assert.equal(normalizeSettings({ notificationTime: "19:30" }).isReminderEnabled, false);
++    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "P", notificationTime: "19:30", tileColorId: "lavender" } }], globalSettings: { isReminderEnabled: true, pin: "", isPremium: false, exportData: [], appMode: null } }).globalSettings.isReminderEnabled, true);
++    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "P", notificationTime: "19:30", tileColorId: "lavender" } }], globalSettings: { isReminderEnabled: false, pin: "", isPremium: false, exportData: [], appMode: null } }).globalSettings.isReminderEnabled, false);
++    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "P", notificationTime: "19:30", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).globalSettings.isReminderEnabled, false);
+   });
+ 
+   it("defaults the parent greeting to Rodzicu and supports custom labels", () => {
+     const settings = normalizeSettings(null);
+ 
+-    assert.equal(settings.parentLabel, "Rodzicu");
+-    assert.equal(strings.goals.greeting(settings.parentLabel), "Cześć, Rodzicu! 👋");
++    assert.equal(settings.children[0].settings.parentLabel, "Rodzicu");
++    assert.equal(strings.goals.greeting(settings.children[0].settings.parentLabel), "Cześć, Rodzicu! 👋");
+     assert.equal(strings.goals.greeting("Babcia"), "Cześć, Babcia! 👋");
+   });
+ 
+   it("sanitizes stored parent labels", () => {
+-    assert.equal(normalizeSettings({ parentLabel: "  Tata  " }).parentLabel, "Tata");
+-    assert.equal(normalizeSettings({ parentLabel: "" }).parentLabel, "Rodzicu");
++    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "  Tata  ", notificationTime: "18:00", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).children[0].settings.parentLabel, "Tata");
++    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "", notificationTime: "18:00", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).children[0].settings.parentLabel, "Rodzicu");
+   });
+ 
+   it("explains where to find the parent PIN without exposing it", () => {
+diff --git a/src/storage/appStorage.test.ts b/src/storage/appStorage.test.ts
+new file mode 100644
+index 0000000..69fe3eb
+--- /dev/null
++++ b/src/storage/appStorage.test.ts
+@@ -0,0 +1,39 @@
++import { describe, it } from "node:test";
++import assert from "node:assert/strict";
++
++import { migrateSettingsV1ToV2 } from "./appStorage";
++
++describe("AppSettings migration", () => {
++  it("should migrate v0.1.12 single-child to v0.1.13 multi-child schema", () => {
++    const oldSettings = {
++      childName: "Alex",
++      parentLabel: "Mom",
++      notificationTime: "18:00",
++      parentPin: "1234",
++      isPremium: false,
++      tileColorId: "lavender",
++      appMode: "singleDevice"
++    };
++
++    const migrated = migrateSettingsV1ToV2(oldSettings as any);
++
++    assert.equal(migrated.children.length, 1);
++    assert.equal(migrated.children[0].name, "Alex");
++    assert.equal(migrated.children[0].settings.parentLabel, "Mom");
++    assert.equal(migrated.globalSettings.pin, "1234");
++  });
++
++  it("should handle missing childName gracefully", () => {
++    const oldSettings = {
++      parentLabel: "Parent",
++      notificationTime: "18:00",
++      parentPin: "1234",
++      isPremium: false,
++      tileColorId: "lavender",
++      appMode: "singleDevice"
++    };
++
++    const migrated = migrateSettingsV1ToV2(oldSettings as any);
++    assert.equal(migrated.children[0].name, "Child"); // fallback
++  });
++});
+diff --git a/src/storage/appStorage.ts b/src/storage/appStorage.ts
+index ab456f5..9bc56f1 100644
+--- a/src/storage/appStorage.ts
++++ b/src/storage/appStorage.ts
+@@ -8,6 +8,30 @@ const STORAGE_KEYS = {
+   settings: "settings"
+ } as const;
+ 
++export function migrateSettingsV1ToV2(oldSettings: any): AppSettings {
++  const childId = `child-${Date.now()}`;
++  return {
++    children: [
++      {
++        id: childId,
++        name: oldSettings.childName || "Child",
++        settings: {
++          parentLabel: oldSettings.parentLabel || "Parent",
++          notificationTime: oldSettings.notificationTime || "18:00",
++          tileColorId: oldSettings.tileColorId || "lavender"
++        }
++      }
++    ],
++    globalSettings: {
++      pin: oldSettings.parentPin || oldSettings.pin || "",
++      isPremium: oldSettings.isPremium || false,
++      exportData: oldSettings.exportData || [],
++      appMode: oldSettings.appMode || null,
++      isReminderEnabled: oldSettings.isReminderEnabled !== undefined ? oldSettings.isReminderEnabled : false
++    }
++  };
++}
++
+ export async function loadGoals(): Promise<Goal[]> {
+   const goals = await readJson<PersistedGoal[]>(STORAGE_KEYS.goals, []);
+ 
+@@ -29,14 +53,25 @@ export async function saveGoals(goals: Goal[]): Promise<void> {
+ }
+ 
+ export async function loadSettings(): Promise<AppSettings> {
+-  const settings = await readJson<Partial<AppSettings> | null>(STORAGE_KEYS.settings, null);
+-  const normalizedSettings = normalizeSettings(settings);
++  try {
++    const settings = await AsyncStorage.getItem(STORAGE_KEYS.settings);
++    if (!settings) {
++      return normalizeSettings(null);
++    }
+ 
+-  if (JSON.stringify(settings) !== JSON.stringify(normalizedSettings)) {
+-    await saveSettings(normalizedSettings);
+-  }
++    const parsed = JSON.parse(settings);
++
++    // Detect v0.1.12 schema (has childName, not children array)
++    if (parsed.childName && !parsed.children) {
++      return migrateSettingsV1ToV2(parsed);
++    }
+ 
+-  return normalizedSettings;
++    // v0.1.13+ schema (has children array)
++    return normalizeSettings(parsed);
++  } catch (error) {
++    console.error("Failed to load settings, creating default", error);
++    return normalizeSettings(null);
++  }
+ }
+ 
+ export async function saveSettings(settings: AppSettings): Promise<void> {

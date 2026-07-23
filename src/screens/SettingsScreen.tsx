@@ -27,13 +27,13 @@ import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type SettingsScreenProps = {
-  activeChildId: string;
+  activeChildId?: string;
   onBack: () => void;
   onResetGoals: () => void;
-  onSelectChild: (childId: string) => void;
+  onSelectChild?: (childId: string) => void;
   onSettingsChange: (settings: AppSettings) => void;
   settings: AppSettings;
-  children: Array<{ id: string; name: string; settings: { parentLabel: string; notificationTime: string; tileColorId: string } }>;
+  childrenList?: Array<{ id: string; name: string; settings: { parentLabel: string; notificationTime: string; tileColorId: string } }>;
   theme?: AppTheme;
 };
 
@@ -53,13 +53,10 @@ const SETTINGS_ICON_SOURCES = {
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 export function SettingsScreen({
-  activeChildId,
   onBack,
   onResetGoals,
-  onSelectChild,
   onSettingsChange,
   settings,
-  children,
   theme = defaultAppTheme
 }: SettingsScreenProps) {
   const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);

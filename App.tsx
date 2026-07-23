@@ -262,7 +262,7 @@ function AppContent() {
           onOpenSettings={() => setRoute("settings")}
           onSelectChild={setActiveChildId}
           parentLabel={activeChild.settings.parentLabel}
-          children={settings.children}
+          childrenList={settings.children}
           theme={appTheme}
         />
       ) : null}
@@ -310,7 +310,7 @@ function AppContent() {
           onSelectChild={setActiveChildId}
           onSettingsChange={setSettings}
           settings={settings}
-          children={settings.children}
+          childrenList={settings.children}
           theme={appTheme}
         />
       ) : null}

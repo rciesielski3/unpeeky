@@ -1,10 +1,13 @@
-import { describe, it, beforeEach, afterEach } from "node:test";
+import { describe, it, beforeEach } from "node:test";
 import assert from "node:assert/strict";
 
 // Mock AsyncStorage
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 const mockAsyncStorage = {
-  getItem: async (key: string) => null as string | null,
-  setItem: async (key: string, value: string) => {}
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  getItem: async (_key: string) => null as string | null,
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
+  setItem: async (_key: string, _value: string) => {}
 };
 
 // We'll test the activeChildId state management through the App component

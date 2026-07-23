@@ -1,0 +1,202 @@
+name: Upload to Play Store
+
+# Manually triggered only. Provide the version tag that was built and the
+# target track. If a matching artifact exists from build-release-bundle.yml
+# it is reused; otherwise a full build is run as fallback before uploading.
+
+on:
+  workflow_dispatch:
+    inputs:
+      version_tag:
+        description: "Version tag to upload (e.g. v2.0.8). Must match a tag in the repo."
+        required: true
+      track:
+        description: "Play Store release track"
+        required: true
+        default: "internal"
+        type: choice
+        options:
+          - internal
+          - alpha
+          - beta
+          - production
+      status:
+        description: "Release status on Play Store"
+        required: true
+        default: "draft"
+        type: choice
+        options:
+          - draft
+          - completed
+      create_github_release:
+        description: "Create GitHub Release (always happens on production track)"
+        required: false
+        default: "false"
+        type: boolean
+
+jobs:
+  upload-to-play-store:
+    runs-on: ubuntu-latest
+
+    steps:
+      # Checkout the exact tag so release notes and source are available for fallback builds.
+      - name: Checkout tag
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version_tag }}
+
+      # --- Attempt to reuse a pre-built artifact ---
+
+      - name: Try to download pre-built artifact
+        id: download
+        uses: dawidd6/action-download-artifact@v3
+        continue-on-error: true
+        with:
+          workflow: build-release-bundle.yml
+          name: release-bundle-${{ github.event.inputs.version_tag }}
+          path: downloaded-artifact/
+          if_no_artifact_found: warn
+
+      - name: Locate downloaded AAB
+        id: locate-aab
+        run: |
+          AAB_FILE=$(find downloaded-artifact/ -name "*.aab" -type f 2>/dev/null | head -1)
+          if [ -n "$AAB_FILE" ]; then
+            echo "found=true"  >> $GITHUB_OUTPUT
+            echo "path=${AAB_FILE}" >> $GITHUB_OUTPUT
+            echo "Pre-built artifact found: ${AAB_FILE}"
+          else
+            echo "found=false" >> $GITHUB_OUTPUT
+            echo "No pre-built artifact found — will build from source as fallback."
+          fi
+
+      # --- Fallback: build if no pre-built artifact ---
+
+      - name: Set up JDK (fallback build)
+        if: steps.locate-aab.outputs.found == 'false'
+        uses: actions/setup-java@v4
+        with:
+          distribution: "temurin"
+          java-version: "17"
+
+      - name: Setup Android SDK (fallback build)
+        if: steps.locate-aab.outputs.found == 'false'
+        uses: android-actions/setup-android@v3
+
+      - name: Set up Node.js (fallback build)
+        if: steps.locate-aab.outputs.found == 'false'
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install dependencies (fallback build)
+        if: steps.locate-aab.outputs.found == 'false'
+        run: npm install
+
+      - name: Decode keystore (fallback build)
+        if: steps.locate-aab.outputs.found == 'false'
+        run: |
+          echo "${{ secrets.ANDROID_KEYSTORE_BASE64 }}" | base64 -d > /tmp/release.keystore
+          echo "KEYSTORE_PATH=/tmp/release.keystore" >> $GITHUB_ENV
+
+      - name: Build release bundle (fallback)
+        if: steps.locate-aab.outputs.found == 'false'
+        env:
+          CAREXPLORER_UPLOAD_STORE_FILE: ${{ env.KEYSTORE_PATH }}
+          CAREXPLORER_UPLOAD_STORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          CAREXPLORER_UPLOAD_KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          CAREXPLORER_UPLOAD_KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+          EXPO_PUBLIC_ADMOB_ANDROID_APP_ID: ${{ secrets.EXPO_PUBLIC_ADMOB_ANDROID_APP_ID }}
+        run: |
+          cd android
+          ./gradlew bundleRelease
+
+      # --- Resolve final AAB path ---
+
+      - name: Set AAB path (pre-built artifact)
+        if: steps.locate-aab.outputs.found == 'true'
+        run: echo "AAB_PATH=${{ steps.locate-aab.outputs.path }}" >> $GITHUB_ENV
+
+      - name: Set AAB path (fallback fresh build)
+        if: steps.locate-aab.outputs.found == 'false'
+        run: |
+          # Search for AAB file in fallback build outputs
+          AAB_FILE=$(find android/app/build/outputs/bundle -name "*.aab" -type f 2>/dev/null | head -1)
+          if [ -z "$AAB_FILE" ]; then
+            echo "ERROR: AAB file not found in build outputs!"
+            echo "Searched in: android/app/build/outputs/bundle/"
+            find android/app/build -type f -name "*.aab" 2>/dev/null || echo "No AAB files found anywhere in build directory"
+            exit 1
+          fi
+          echo "Found AAB from fallback build: ${AAB_FILE}"
+          echo "AAB_PATH=${AAB_FILE}" >> $GITHUB_ENV
+
+      - name: Verify AAB file exists before upload
+        run: |
+          if [ ! -f "$AAB_PATH" ]; then
+            echo "ERROR: AAB file does not exist at: $AAB_PATH"
+            exit 1
+          fi
+          echo "✓ AAB file verified: $AAB_PATH"
+          ls -lh "$AAB_PATH"
+
+      # --- Upload to Play Store ---
+
+      - name: Upload AAB to Play Store
+        uses: r0adkll/upload-google-play@v1
+        with:
+          serviceAccountJson: ${{ secrets.PLAY_STORE_SERVICE_ACCOUNT_JSON }}
+          packageName: "com.adateo.carexplorer"
+          releaseFiles: "${{ env.AAB_PATH }}"
+          tracks: "${{ github.event.inputs.track }}"
+          status: ${{ github.event.inputs.status }}
+          skipCommitHash: true
+
+      # --- GitHub Release (production track or explicit opt-in) ---
+
+      - name: Check for release notes file
+        id: release-notes
+        if: ${{ github.event.inputs.track == 'production' || github.event.inputs.create_github_release == 'true' }}
+        run: |
+          NOTES_FILE="RELEASE_NOTES_${{ github.event.inputs.version_tag }}.md"
+          if [ -f "$NOTES_FILE" ]; then
+            echo "exists=true"   >> $GITHUB_OUTPUT
+            echo "path=$NOTES_FILE" >> $GITHUB_OUTPUT
+            echo "Release notes found: $NOTES_FILE"
+          else
+            echo "exists=false" >> $GITHUB_OUTPUT
+            echo "Warning: $NOTES_FILE not found. GitHub Release will use a placeholder body."
+          fi
+
+      - name: Create GitHub Release (with release notes)
+        if: >-
+          ${{
+            (github.event.inputs.track == 'production' || github.event.inputs.create_github_release == 'true')
+            && steps.release-notes.outputs.exists == 'true'
+          }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version_tag }}
+          name: Release ${{ github.event.inputs.version_tag }}
+          body_path: ${{ steps.release-notes.outputs.path }}
+          draft: false
+          prerelease: false
+          files: ${{ env.AAB_PATH }}
+
+      - name: Create GitHub Release (no release notes found)
+        if: >-
+          ${{
+            (github.event.inputs.track == 'production' || github.event.inputs.create_github_release == 'true')
+            && steps.release-notes.outputs.exists == 'false'
+          }}
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ github.event.inputs.version_tag }}
+          name: Release ${{ github.event.inputs.version_tag }}
+          body: |
+            Release ${{ github.event.inputs.version_tag }}
+
+            _No RELEASE_NOTES_${{ github.event.inputs.version_tag }}.md file was found at this tag._
+          draft: false
+          prerelease: false
+          files: ${{ env.AAB_PATH }}
