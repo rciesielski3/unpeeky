@@ -85,21 +85,21 @@ export function GoalsScreen({
       {childrenList.length > 1 && (
         <View style={styles.childSelector}>
           <Pressable
-            accessibilityLabel="Select child"
+            accessibilityLabel={strings.goals.selectChildLabel}
             accessibilityRole="button"
             onPress={() => {
               const options = childrenList.map((child) => ({
                 text: child.name,
                 onPress: () => onSelectChild?.(child.id)
               }));
-              options.push({ text: "Cancel", onPress: () => {} });
-              Alert.alert("Select Child", undefined, options);
+              options.push({ text: strings.goals.selectChildCancel, onPress: () => {} });
+              Alert.alert(strings.goals.selectChildTitle, undefined, options);
             }}
             style={styles.childButton}
           >
-            <Text style={styles.childButtonText}>{activeChild?.name || "Select Child"}</Text>
+            <Text style={styles.childButtonText}>{activeChild?.name || strings.goals.selectChildFallback}</Text>
             {childrenList.length > 1 && (
-              <Text style={styles.childButtonSubtitle}>Tap to switch</Text>
+              <Text style={styles.childButtonSubtitle}>{strings.goals.switchChildHint}</Text>
             )}
           </Pressable>
         </View>

@@ -1,14 +1,29 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
 import { normalizeGoal, normalizeSettings } from "../domain/goal";
-import type { AppSettings, Goal, PersistedGoal } from "../domain/goal";
+import type { AppMode, AppSettings, Goal, PersistedGoal, TileColorId } from "../domain/goal";
 
 const STORAGE_KEYS = {
   goals: "goals",
   settings: "settings"
 } as const;
 
-export function migrateSettingsV1ToV2(oldSettings: any): AppSettings {
+type LegacySettingsInput = {
+  childName?: string;
+  parentLabel?: string;
+  notificationTime?: string;
+  tileColorId?: string;
+  parentPin?: string;
+  pin?: string;
+  isPremium?: boolean;
+  exportData?: Goal[];
+  appMode?: AppMode | null;
+  isReminderEnabled?: boolean;
+};
+
+type LegacyGoalInput = Omit<Goal, "childId"> & { childId?: string };
+
+export function migrateSettingsV1ToV2(oldSettings: LegacySettingsInput): AppSettings {
   const childId = `child-${Date.now()}`;
   return {
     children: [
@@ -18,7 +33,7 @@ export function migrateSettingsV1ToV2(oldSettings: any): AppSettings {
         settings: {
           parentLabel: oldSettings.parentLabel || "Parent",
           notificationTime: oldSettings.notificationTime || "18:00",
-          tileColorId: oldSettings.tileColorId || "lavender"
+          tileColorId: (oldSettings.tileColorId as TileColorId) || "lavender"
         }
       }
     ],
@@ -79,7 +94,7 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
 }
 
 export function migrateGoalsV1ToV2(
-  oldGoals: any[],
+  oldGoals: LegacyGoalInput[],
   defaultChildId: string
 ): Goal[] {
   return oldGoals.map(goal => ({

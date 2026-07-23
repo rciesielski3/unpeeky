@@ -39,30 +39,21 @@ export function ChildScreen({
   theme = defaultAppTheme,
   tileColor
 }: ChildScreenProps) {
-  // Safety check: ensure goal belongs to active child
-  if (!goal || goal.childId !== activeChildId) {
-    return (
-      <View style={[styles.errorContainer, { backgroundColor: theme.childBackground }]}>
-        <Text style={styles.errorText}>Goal not found</Text>
-      </View>
-    );
-  }
-
   const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
-  const isComplete = isGoalComplete(goal);
-  const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
-  const progress = getGoalProgress(goal);
+  const isComplete = goal ? isGoalComplete(goal) : false;
+  const remainingTasks = goal ? Math.max(0, goal.totalTasks - goal.completedTasks) : 0;
+  const progress = goal ? getGoalProgress(goal) : 0;
   const hasPlayedCompletionFeedback = useRef(isComplete);
-  const lastGoalId = useRef(goal.id);
+  const lastGoalId = useRef(goal?.id);
 
-  if (lastGoalId.current !== goal.id) {
+  if (goal && lastGoalId.current !== goal.id) {
     hasPlayedCompletionFeedback.current = isComplete;
     lastGoalId.current = goal.id;
   }
 
   useEffect(() => {
     setIsCelebrationOpen(false);
-  }, [goal.id]);
+  }, [goal?.id]);
 
   useEffect(() => {
     if (isComplete) {
@@ -76,6 +67,16 @@ export function ChildScreen({
       hasPlayedCompletionFeedback.current = false;
     }
   }, [isComplete]);
+
+  // Safety check: ensure goal belongs to active child.
+  // Placed after all hooks so hook order stays stable across renders.
+  if (!goal || goal.childId !== activeChildId) {
+    return (
+      <View style={[styles.errorContainer, { backgroundColor: theme.childBackground }]}>
+        <Text style={styles.errorText}>{strings.child.goalNotFound}</Text>
+      </View>
+    );
+  }
 
   return (
     <>

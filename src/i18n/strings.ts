@@ -62,7 +62,8 @@ export const strings = {
     rejectButton: "Odrzuć",
     approveTaskButton: "Zatwierdź zadanie",
     backToParentButton: "Wróć do rodzica",
-    soundButton: "Dźwięk"
+    soundButton: "Dźwięk",
+    goalNotFound: "Nie znaleziono celu"
   },
   approveTask: {
     title: "Zatwierdź zadanie",
@@ -105,7 +106,12 @@ export const strings = {
     thumbnailLabel: (rewardName: string) => `Zdjęcie nagrody: ${rewardName}`,
     cardProgress: (childName: string, completedTasks: number, totalTasks: number) =>
       `${childName} - ${completedTasks}/${totalTasks}`,
-    tasksTotal: (totalTasks: number) => ` / ${totalTasks} ${getPolishTaskLabel(totalTasks)}`
+    tasksTotal: (totalTasks: number) => ` / ${totalTasks} ${getPolishTaskLabel(totalTasks)}`,
+    selectChildLabel: "Wybierz dziecko",
+    selectChildTitle: "Wybierz dziecko",
+    selectChildFallback: "Wybierz dziecko",
+    switchChildHint: "Dotknij, aby zmienić",
+    selectChildCancel: "Anuluj"
   },
   navigation: {
     goals: "Cele",
@@ -177,7 +183,28 @@ export const strings = {
     notificationScheduled: "Przypomnienie zapisane.",
     notificationDenied: "Powiadomienia wymagają zgody w ustawieniach telefonu.",
     notificationError: "Nie udało się zapisać przypomnienia.",
-    backButton: "Wróć"
+    backButton: "Wróć",
+    manageChildren: {
+      sectionTitle: "ZARZĄDZAJ DZIEĆMI",
+      addChild: "+ Dodaj dziecko",
+      editButton: "Edytuj",
+      deleteButton: "Usuń",
+      addModalTitle: "Dodaj nowe dziecko",
+      childNamePlaceholder: "Imię dziecka",
+      cancel: "Anuluj",
+      add: "Dodaj",
+      save: "Zapisz",
+      editModalTitle: (childName: string) => `Edytuj: ${childName}`,
+      nameLabel: "Imię",
+      parentLabelLabel: "Zwrot do rodzica",
+      notificationTimeLabel: "Godzina przypomnienia",
+      tileColorLabel: "Kolor kafelków",
+      deleteConfirmTitle: "Usunąć dziecko?",
+      deleteConfirmMeta: "Wszystkie cele tego dziecka zostaną usunięte.",
+      cannotDeleteTitle: "Nie można usunąć",
+      cannotDeleteMeta: "Musi istnieć co najmniej jedno dziecko.",
+      noChildrenConfigured: "Brak skonfigurowanych dzieci"
+    }
   },
   notifications: {
     title: "Unpeeky",

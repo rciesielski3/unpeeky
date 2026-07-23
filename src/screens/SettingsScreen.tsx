@@ -16,7 +16,7 @@ import {
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
-import type { AppSettings, TileColorId, ChildSettings } from "../domain/goal";
+import type { AppSettings, TileColorId } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { cancelDailyReminder, parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
 import { PREMIUM_PRODUCT_ID, purchasePremium } from "../premium/premiumPurchase";
@@ -53,14 +53,15 @@ const SETTINGS_ICON_SOURCES = {
 /* eslint-enable @typescript-eslint/no-var-requires */
 
 export function SettingsScreen({
+  activeChildId,
   onBack,
   onResetGoals,
   onSettingsChange,
   settings,
   theme = defaultAppTheme
 }: SettingsScreenProps) {
-  // Get the active child (first child by default)
-  const activeChild = settings.children[0];
+  // Edit the child the user is currently viewing, falling back to the first child.
+  const activeChild = settings.children.find((child) => child.id === activeChildId) ?? settings.children[0];
   const notificationTimeDraft = activeChild?.settings.notificationTime || "18:00";
   const parentLabelDraft = activeChild?.settings.parentLabel || "Rodzicu";
   const parentPinDraft = settings.globalSettings.pin;
@@ -307,16 +308,19 @@ export function SettingsScreen({
 
   function deleteChild(childId: string) {
     Alert.alert(
-      "Delete Child?",
-      "All goals for this child will be deleted.",
+      strings.settings.manageChildren.deleteConfirmTitle,
+      strings.settings.manageChildren.deleteConfirmMeta,
       [
-        { text: "Cancel", onPress: () => {} },
+        { text: strings.settings.manageChildren.cancel, onPress: () => {} },
         {
-          text: "Delete",
+          text: strings.settings.manageChildren.deleteButton,
           style: "destructive",
           onPress: () => {
             if (settings.children.length <= 1) {
-              Alert.alert("Cannot Delete", "At least one child must exist.");
+              Alert.alert(
+                strings.settings.manageChildren.cannotDeleteTitle,
+                strings.settings.manageChildren.cannotDeleteMeta
+              );
               return;
             }
 
@@ -336,7 +340,7 @@ export function SettingsScreen({
         keyboardShouldPersistTaps="handled"
         style={styles.container}
       >
-        <Text style={styles.title}>No children configured</Text>
+        <Text style={styles.title}>{strings.settings.manageChildren.noChildrenConfigured}</Text>
       </ScrollView>
     );
   }
@@ -510,7 +514,7 @@ export function SettingsScreen({
 
       {/* Manage Children Section */}
       <View style={styles.card}>
-        <Text style={styles.sectionEyebrow}>Manage Children</Text>
+        <Text style={styles.sectionEyebrow}>{strings.settings.manageChildren.sectionTitle}</Text>
 
         {/* Child list */}
         {settings.children.map((child) => (
@@ -526,14 +530,14 @@ export function SettingsScreen({
                 onPress={() => openEditChildModal(child)}
                 style={styles.childButton}
               >
-                <Text style={styles.childButtonText}>Edit</Text>
+                <Text style={styles.childButtonText}>{strings.settings.manageChildren.editButton}</Text>
               </Pressable>
               {settings.children.length > 1 && (
                 <Pressable
                   onPress={() => deleteChild(child.id)}
                   style={[styles.childButton, styles.deleteButton]}
                 >
-                  <Text style={styles.childButtonTextDelete}>Delete</Text>
+                  <Text style={styles.childButtonTextDelete}>{strings.settings.manageChildren.deleteButton}</Text>
                 </Pressable>
               )}
             </View>
@@ -545,7 +549,7 @@ export function SettingsScreen({
           onPress={() => openAddChildModal()}
           style={[styles.childButton, styles.addButton]}
         >
-          <Text style={styles.addButtonText}>+ Add Child</Text>
+          <Text style={styles.addButtonText}>{strings.settings.manageChildren.addChild}</Text>
         </Pressable>
       </View>
 
@@ -628,10 +632,10 @@ export function SettingsScreen({
       <Modal visible={addChildModalVisible} transparent onRequestClose={() => setAddChildModalVisible(false)}>
         <View style={styles.modalOverlay}>
           <View style={styles.modalContent}>
-            <Text style={styles.modalTitle}>Add New Child</Text>
+            <Text style={styles.modalTitle}>{strings.settings.manageChildren.addModalTitle}</Text>
             <TextInput
               style={styles.modalInput}
-              placeholder="Child's name"
+              placeholder={strings.settings.manageChildren.childNamePlaceholder}
               placeholderTextColor={colors.textMuted}
               value={newChildName}
               onChangeText={setNewChildName}
@@ -642,13 +646,13 @@ export function SettingsScreen({
                 style={[styles.modalButton, styles.cancelButton]}
                 onPress={() => setAddChildModalVisible(false)}
               >
-                <Text style={styles.cancelButtonText}>Cancel</Text>
+                <Text style={styles.cancelButtonText}>{strings.settings.manageChildren.cancel}</Text>
               </Pressable>
               <Pressable
                 style={[styles.modalButton, styles.confirmButton]}
                 onPress={addChild}
               >
-                <Text style={styles.confirmButtonText}>Add</Text>
+                <Text style={styles.confirmButtonText}>{strings.settings.manageChildren.add}</Text>
               </Pressable>
             </View>
           </View>
@@ -660,16 +664,18 @@ export function SettingsScreen({
         <View style={styles.modalOverlay}>
           {editingChild && (
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>Edit {editingChild.name}</Text>
+              <Text style={styles.modalTitle}>
+                {strings.settings.manageChildren.editModalTitle(editingChild.name)}
+              </Text>
 
-              <Text style={styles.modalLabel}>Name</Text>
+              <Text style={styles.modalLabel}>{strings.settings.manageChildren.nameLabel}</Text>
               <TextInput
                 style={styles.modalInput}
                 value={editChildName}
                 onChangeText={setEditChildName}
               />
 
-              <Text style={styles.modalLabel}>Parent Label</Text>
+              <Text style={styles.modalLabel}>{strings.settings.manageChildren.parentLabelLabel}</Text>
               <View style={styles.parentLabelOptions}>
                 {PARENT_LABEL_OPTIONS.map((parentLabel) => {
                   const isSelected = editChildParentLabel === parentLabel;
@@ -690,7 +696,7 @@ export function SettingsScreen({
                 })}
               </View>
 
-              <Text style={styles.modalLabel}>Notification Time</Text>
+              <Text style={styles.modalLabel}>{strings.settings.manageChildren.notificationTimeLabel}</Text>
               <Pressable
                 style={styles.timePickerButton}
                 onPress={() => setIsEditingChildTimePicker(true)}
@@ -698,7 +704,7 @@ export function SettingsScreen({
                 <Text style={styles.timePickerButtonText}>{editChildNotificationTime}</Text>
               </Pressable>
 
-              <Text style={styles.modalLabel}>Tile Color</Text>
+              <Text style={styles.modalLabel}>{strings.settings.manageChildren.tileColorLabel}</Text>
               <View style={styles.tileColorOptions}>
                 {TILE_COLOR_OPTIONS.map((tileColor) => {
                   const isSelected = editChildTileColorId === tileColor.id;
@@ -722,13 +728,13 @@ export function SettingsScreen({
                   style={[styles.modalButton, styles.cancelButton]}
                   onPress={() => setEditingChild(null)}
                 >
-                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                  <Text style={styles.cancelButtonText}>{strings.settings.manageChildren.cancel}</Text>
                 </Pressable>
                 <Pressable
                   style={[styles.modalButton, styles.confirmButton]}
                   onPress={saveEditChild}
                 >
-                  <Text style={styles.confirmButtonText}>Save</Text>
+                  <Text style={styles.confirmButtonText}>{strings.settings.manageChildren.save}</Text>
                 </Pressable>
               </View>
             </View>
