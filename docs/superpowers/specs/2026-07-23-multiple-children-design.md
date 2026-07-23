@@ -2,7 +2,7 @@
 
 > **Status:** Ready for implementation planning  
 > **Date:** 2026-07-23  
-> **Version:** v0.1.11 (planned release)
+> **Version:** v0.1.13 (planned release, current: v0.1.12)
 
 ## Goal
 
@@ -28,7 +28,7 @@ Enable a single parent account to manage goals for 2+ children independently. Ea
 - **Scope:** Multi-child data model + UI for child management. No new features beyond child switching and per-child settings.
 - **Backward compatibility:** v0.1.12 single-child data must migrate without data loss or user action.
 - **No breaking changes:** Existing Goal logic, ApproveTaskScreen, AddGoalScreen, reward flow unchanged.
-- **Timeline:** v0.1.11 release (target: end of August 2026, before Play Store promotion decisions).
+- **Timeline:** v0.1.13 release (target: end of August 2026, after API 36 migration in v0.1.12).
 - **Testing:** Unit + integration + E2E covering migration, child isolation, settings per-child.
 
 ---
@@ -65,9 +65,40 @@ type TileColorId = "lavender" | "mint" | "peach" | "rose" | "sky" | "vanilla" | 
 type AppMode = "singleDevice" | "twoDevices";
 ```
 
-### Goal (Unchanged)
+### Goal (UPDATED - CRITICAL CHANGE)
 
-Goal structure remains identical. Goals are grouped per child via database queries (e.g., "all goals where childId = 'alex-id'").
+**Goal structure MUST be updated to add `childId` field:**
+
+```typescript
+type Goal = {
+  id: string;
+  childId: string;                         // NEW: Links goal to specific child ("child-{timestamp}")
+  childName: string;                       // (existing)
+  rewardName: string;                      // (existing)
+  imageUri: string;                        // (existing)
+  totalTasks: TileCount;                   // (existing)
+  completedTasks: number;                  // (existing)
+  revealOrder: number[];                   // (existing)
+  avatarId: AvatarId;                      // (existing)
+  createdAt: string;                       // (existing)
+  completed: boolean;                      // (existing)
+};
+```
+
+**Migration (v0.1.12 → v0.1.13):** All existing goals get assigned to the migrated child:
+
+```typescript
+function migrateGoalsV1ToV2(oldGoals: Goal[], migratedChildId: string): Goal[] {
+  return oldGoals.map(goal => ({
+    ...goal,
+    childId: migratedChildId  // Assign all existing goals to first (migrated) child
+  }));
+}
+```
+
+**Querying:** Filter by `childId`:
+- "Get all goals for active child" → `goals.filter(g => g.childId === activeChildId)`
+- Delete child → Remove all goals where `g.childId === childId`
 
 ### Migration: v0.1.12 → v0.1.13
 
@@ -179,9 +210,44 @@ No changes. Use active child context implicitly (child filtering handled at Goal
 
 ```typescript
 const [activeChildId, setActiveChildId] = useState<string>(() => {
-  // Initialize to first child on first load, or remembered selection
+  // Load from AsyncStorage (persisted across app restarts)
+  // Falls back to first child on first launch
   return settings?.children?.[0]?.id || "default";
 });
+```
+
+**Persist activeChildId on change:**
+
+```typescript
+useEffect(() => {
+  // Save activeChildId to AsyncStorage whenever it changes
+  AsyncStorage.setItem("activeChildId", activeChildId).catch(err => 
+    console.error("Failed to persist activeChildId", err)
+  );
+}, [activeChildId]);
+```
+
+**Load activeChildId on app hydration (in existing hydrateApp effect):**
+
+```typescript
+async function hydrateApp() {
+  try {
+    const [storedGoals, storedSettings, storedActiveChildId] = await Promise.all([
+      loadGoals(),
+      loadSettings(),
+      AsyncStorage.getItem("activeChildId")
+    ]);
+    
+    // ... existing hydration logic ...
+    
+    // Restore activeChildId if it exists and is still valid
+    if (storedActiveChildId && storedSettings?.children?.some(c => c.id === storedActiveChildId)) {
+      setActiveChildId(storedActiveChildId);
+    } else if (storedSettings?.children?.length > 0) {
+      setActiveChildId(storedSettings.children[0].id);
+    }
+  } catch { /* ... */ }
+}
 ```
 
 **Pass to relevant screens:**
@@ -238,6 +304,11 @@ const [activeChildId, setActiveChildId] = useState<string>(() => {
    - Delete child → goals removed, state consistent ✓
    - Delete last child → blocked or auto-create ✓
 
+3. **Goal childId assignment:**
+   - Migration: all goals get childId from migrated child ✓
+   - New goals created with correct childId ✓
+   - Orphaned goals (invalid childId) cleaned up on launch ✓
+
 ### Integration Tests
 
 1. **Multi-child flow:**
@@ -257,6 +328,15 @@ const [activeChildId, setActiveChildId] = useState<string>(() => {
    - Import on fresh install → children + goals restored ✓
    - Import v0.1.12 export → data wraps correctly ✓
 
+4. **activeChildId persistence:**
+   - Set activeChildId to child B → AsyncStorage.getItem returns child B ✓
+   - Close and reopen app → activeChildId restored to child B ✓
+   - Delete active child → fallback to first child on restart ✓
+
+5. **Concurrent writes (edge case):**
+   - Switch child while creating goal → goal assigned to correct child ✓
+   - Rapid child switches → no race conditions, goals isolated ✓
+
 ### E2E Tests
 
 1. **Full user flow:**
@@ -264,6 +344,11 @@ const [activeChildId, setActiveChildId] = useState<string>(() => {
    - Parent creates goals for 2 children ✓
    - Child switches, completes task → only active child's tile reveals ✓
    - Settings reflect per-child customization ✓
+
+2. **Persistence across app lifecycle:**
+   - Create 2 children with customized settings ✓
+   - Kill and restart app → activeChildId restored, settings intact ✓
+   - Delete child, restart → fallback child restored correctly ✓
 
 ---
 
