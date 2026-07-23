@@ -41,7 +41,7 @@ class MockAsyncStorage {
 // Import domain functions and real storage functions
 import { createGoal, normalizeSettings } from "../src/domain/goal";
 import type { Goal, AppSettings, GoalDraft } from "../src/domain/goal";
-import { removeOrphanedGoals, loadSettings, saveSettings, migrateGoalsV1ToV2, migrateSettingsV1ToV2 } from "../src/storage/appStorage";
+import { removeOrphanedGoals, migrateGoalsV1ToV2, migrateSettingsV1ToV2 } from "../src/storage/appStorage";
 
 describe("Multiple Children E2E", () => {
   let asyncStorage: MockAsyncStorage;
@@ -815,7 +815,7 @@ describe("Multiple Children E2E", () => {
         "child-1"
       );
       const goal2 = createGoal(
-        { childName: "Jordan", rewardName: "Candy", imageUri: "file://r2.png", totalTasks: 10, avatarId: "unicorn" },
+        { childName: "Jordan", rewardName: "Candy", imageUri: "file://r2.png", totalTasks: 12, avatarId: "unicorn" },
         "child-2"
       );
 
