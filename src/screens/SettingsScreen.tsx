@@ -16,7 +16,7 @@ import {
 import { ParentAdSlot } from "../components/ParentAdSlot";
 import { ScreenDecorations } from "../components/ScreenDecorations";
 import { generateParentPin, isParentPinValid as validateParentPin, TILE_COLOR_OPTIONS } from "../domain/goal";
-import type { AppSettings, TileColorId } from "../domain/goal";
+import type { AppSettings, TileColorId, ChildSettings } from "../domain/goal";
 import { strings } from "../i18n/strings";
 import { cancelDailyReminder, parseNotificationTime, scheduleDaily } from "../notifications/scheduleDaily";
 import { PREMIUM_PRODUCT_ID, purchasePremium } from "../premium/premiumPurchase";
@@ -59,30 +59,36 @@ export function SettingsScreen({
   settings,
   theme = defaultAppTheme
 }: SettingsScreenProps) {
-  const [notificationTimeDraft, setNotificationTimeDraft] = useState(settings.notificationTime);
-  const [parentLabelDraft, setParentLabelDraft] = useState(settings.parentLabel);
-  const [parentPinDraft, setParentPinDraft] = useState(settings.parentPin);
+  // Get the active child (first child by default)
+  const activeChild = settings.children[0];
+  const notificationTimeDraft = activeChild?.settings.notificationTime || "18:00";
+  const parentLabelDraft = activeChild?.settings.parentLabel || "Rodzicu";
+  const parentPinDraft = settings.globalSettings.pin;
+
   const [notificationMessage, setNotificationMessage] = useState<string | null>(null);
   const [isTimePickerOpen, setIsTimePickerOpen] = useState(false);
   const [isAboutOpen, setIsAboutOpen] = useState(false);
   const [isPremiumOpen, setIsPremiumOpen] = useState(false);
   const [premiumMessage, setPremiumMessage] = useState<string | null>(null);
   const [isExporting, setIsExporting] = useState(false);
-  const isReminderEnabled = settings.isReminderEnabled;
+  const [parentPinInput, setParentPinInput] = useState(parentPinDraft);
+
+  // Child management states
+  const [addChildModalVisible, setAddChildModalVisible] = useState(false);
+  const [newChildName, setNewChildName] = useState("");
+  const [editingChild, setEditingChild] = useState<typeof activeChild | null>(null);
+  const [editChildName, setEditChildName] = useState("");
+  const [editChildParentLabel, setEditChildParentLabel] = useState("");
+  const [editChildNotificationTime, setEditChildNotificationTime] = useState("");
+  const [editChildTileColorId, setEditChildTileColorId] = useState<TileColorId>("lavender");
+
+  const isReminderEnabled = settings.globalSettings.isReminderEnabled;
   const isNotificationTimeValid = !isReminderEnabled || parseNotificationTime(notificationTimeDraft) !== null;
-  const isParentPinValid = validateParentPin(parentPinDraft);
+  const isParentPinValid = validateParentPin(parentPinInput);
 
   useEffect(() => {
-    setNotificationTimeDraft(settings.notificationTime);
-  }, [settings.notificationTime]);
-
-  useEffect(() => {
-    setParentLabelDraft(settings.parentLabel);
-  }, [settings.parentLabel]);
-
-  useEffect(() => {
-    setParentPinDraft(settings.parentPin);
-  }, [settings.parentPin]);
+    setParentPinInput(parentPinDraft);
+  }, [parentPinDraft]);
 
   function updateSettings(nextSettings: Partial<AppSettings>) {
     onSettingsChange({
@@ -93,16 +99,13 @@ export function SettingsScreen({
 
   async function handleReminderToggle(isEnabled: boolean) {
     if (!isEnabled) {
-      updateSettings({ isReminderEnabled: false });
+      updateSettings({ globalSettings: { ...settings.globalSettings, isReminderEnabled: false } });
       setNotificationMessage(null);
       await cancelDailyReminder();
       return;
     }
 
-    const notificationTime = notificationTimeDraft || settings.notificationTime || "18:00";
-
-    setNotificationTimeDraft(notificationTime);
-    await saveNotificationTime(notificationTime);
+    await saveNotificationTime(notificationTimeDraft);
   }
 
   async function saveNotificationTime(notificationTime: string) {
@@ -110,7 +113,16 @@ export function SettingsScreen({
       return;
     }
 
-    updateSettings({ isReminderEnabled: true, notificationTime });
+    const updatedChildren = settings.children.map(child =>
+      child.id === activeChild?.id
+        ? { ...child, settings: { ...child.settings, notificationTime } }
+        : child
+    );
+
+    updateSettings({
+      children: updatedChildren,
+      globalSettings: { ...settings.globalSettings, isReminderEnabled: true }
+    });
     const scheduleResult = await scheduleDaily(notificationTime);
 
     setNotificationMessage(getNotificationMessage(scheduleResult));
@@ -118,8 +130,6 @@ export function SettingsScreen({
 
   function handleChangeNotificationTime(hour: number, minute: number) {
     const notificationTime = `${formatTimePart(hour)}:${formatTimePart(minute)}`;
-
-    setNotificationTimeDraft(notificationTime);
     void saveNotificationTime(notificationTime);
   }
 
@@ -129,48 +139,54 @@ export function SettingsScreen({
 
   function handleParentPinBlur() {
     if (isParentPinValid) {
-      updateSettings({ parentPin: parentPinDraft });
+      updateSettings({ globalSettings: { ...settings.globalSettings, pin: parentPinInput } });
       return;
     }
 
-    setParentPinDraft(settings.parentPin);
+    setParentPinInput(settings.globalSettings.pin);
   }
 
   function handleParentPinChange(text: string) {
     const parentPin = text.replace(/\D/g, "").slice(0, 4);
-
-    setParentPinDraft(parentPin);
+    setParentPinInput(parentPin);
 
     if (validateParentPin(parentPin)) {
-      updateSettings({ parentPin });
+      updateSettings({ globalSettings: { ...settings.globalSettings, pin: parentPin } });
     }
   }
 
   function handleGenerateParentPin() {
     const parentPin = generateParentPin();
-
-    setParentPinDraft(parentPin);
-    updateSettings({ parentPin });
+    setParentPinInput(parentPin);
+    updateSettings({ globalSettings: { ...settings.globalSettings, pin: parentPin } });
   }
 
   function handleChangeTileColor(tileColorId: TileColorId) {
-    updateSettings({ tileColorId });
+    const updatedChildren = settings.children.map(child =>
+      child.id === activeChild?.id
+        ? { ...child, settings: { ...child.settings, tileColorId } }
+        : child
+    );
+    updateSettings({ children: updatedChildren });
   }
 
   function handleSelectParentLabel(parentLabel: string) {
-    setParentLabelDraft(parentLabel);
-    updateSettings({ parentLabel });
+    const updatedChildren = settings.children.map(child =>
+      child.id === activeChild?.id
+        ? { ...child, settings: { ...child.settings, parentLabel } }
+        : child
+    );
+    updateSettings({ children: updatedChildren });
   }
 
   function handleParentLabelChange(text: string) {
-    setParentLabelDraft(text.slice(0, 24));
-  }
-
-  function handleParentLabelBlur() {
-    const parentLabel = parentLabelDraft.trim() || "Rodzicu";
-
-    setParentLabelDraft(parentLabel);
-    updateSettings({ parentLabel });
+    const trimmed = text.slice(0, 24);
+    const updatedChildren = settings.children.map(child =>
+      child.id === activeChild?.id
+        ? { ...child, settings: { ...child.settings, parentLabel: trimmed } }
+        : child
+    );
+    updateSettings({ children: updatedChildren });
   }
 
   function handleChangeMode() {
@@ -180,7 +196,7 @@ export function SettingsScreen({
         text: "Tak, zmień",
         style: "destructive",
         onPress: () => {
-          updateSettings({ appMode: null });
+          updateSettings({ globalSettings: { ...settings.globalSettings, appMode: null } });
           onBack();
         }
       }
@@ -214,7 +230,7 @@ export function SettingsScreen({
       const purchaseResult = await premiumAction();
 
       if (purchaseResult.status === "activated") {
-        updateSettings({ isPremium: true });
+        updateSettings({ globalSettings: { ...settings.globalSettings, isPremium: true } });
         setIsPremiumOpen(false);
         return;
       }
@@ -223,6 +239,100 @@ export function SettingsScreen({
     } catch {
       setPremiumMessage(fallbackErrorMessage);
     }
+  }
+
+  // Child management functions
+  function openAddChildModal() {
+    setNewChildName("");
+    setAddChildModalVisible(true);
+  }
+
+  function addChild() {
+    if (!newChildName.trim()) return;
+
+    const newChild = {
+      id: `child-${Date.now()}`,
+      name: newChildName,
+      settings: {
+        parentLabel: "Rodzicu",
+        notificationTime: "18:00",
+        tileColorId: "lavender" as TileColorId
+      }
+    };
+
+    updateSettings({
+      children: [...settings.children, newChild]
+    });
+    setAddChildModalVisible(false);
+  }
+
+  function openEditChildModal(child: typeof activeChild) {
+    if (!child) return;
+    setEditingChild(child);
+    setEditChildName(child.name);
+    setEditChildParentLabel(child.settings.parentLabel);
+    setEditChildNotificationTime(child.settings.notificationTime);
+    setEditChildTileColorId(child.settings.tileColorId);
+  }
+
+  function saveEditChild() {
+    if (!editingChild) return;
+
+    const updated = {
+      ...settings,
+      children: settings.children.map(c =>
+        c.id === editingChild.id
+          ? {
+              ...c,
+              name: editChildName,
+              settings: {
+                parentLabel: editChildParentLabel,
+                notificationTime: editChildNotificationTime,
+                tileColorId: editChildTileColorId
+              }
+            }
+          : c
+      )
+    };
+
+    updateSettings(updated);
+    setEditingChild(null);
+  }
+
+  function deleteChild(childId: string) {
+    Alert.alert(
+      "Delete Child?",
+      "All goals for this child will be deleted.",
+      [
+        { text: "Cancel", onPress: () => {} },
+        {
+          text: "Delete",
+          style: "destructive",
+          onPress: () => {
+            if (settings.children.length <= 1) {
+              Alert.alert("Cannot Delete", "At least one child must exist.");
+              return;
+            }
+
+            updateSettings({
+              children: settings.children.filter(c => c.id !== childId)
+            });
+          }
+        }
+      ]
+    );
+  }
+
+  if (!activeChild) {
+    return (
+      <ScrollView
+        contentContainerStyle={[styles.screen, { backgroundColor: theme.settingsBackground }]}
+        keyboardShouldPersistTaps="handled"
+        style={styles.container}
+      >
+        <Text style={styles.title}>No children configured</Text>
+      </ScrollView>
+    );
   }
 
   return (
@@ -247,20 +357,20 @@ export function SettingsScreen({
         </View>
         <Pressable
           accessibilityRole="button"
-          accessibilityState={{ selected: settings.isPremium }}
+          accessibilityState={{ selected: settings.globalSettings.isPremium }}
           onPress={() => setIsPremiumOpen(true)}
           style={styles.premiumButton}
         >
           <Image source={SETTINGS_ICON_SOURCES.premium} style={styles.premiumButtonIcon} />
           <Text style={styles.premiumButtonText}>
-            {settings.isPremium ? strings.settings.premiumActiveButton : strings.settings.premiumUpgradeButton}
+            {settings.globalSettings.isPremium ? strings.settings.premiumActiveButton : strings.settings.premiumUpgradeButton}
           </Text>
         </Pressable>
 
         {__DEV__ ? (
           <Pressable
             accessibilityRole="button"
-            onPress={() => updateSettings({ isPremium: false })}
+            onPress={() => updateSettings({ globalSettings: { ...settings.globalSettings, isPremium: false } })}
             style={styles.devPremiumButton}
           >
             <Text style={styles.devPremiumButtonText}>Disable Premium</Text>
@@ -275,7 +385,7 @@ export function SettingsScreen({
         </View>
         <View style={styles.tileColorOptions}>
           {TILE_COLOR_OPTIONS.map((tileColor) => {
-            const isSelected = settings.tileColorId === tileColor.id;
+            const isSelected = activeChild.settings.tileColorId === tileColor.id;
 
             return (
               <Pressable
@@ -301,7 +411,7 @@ export function SettingsScreen({
         </View>
         <View style={styles.parentLabelOptions}>
           {PARENT_LABEL_OPTIONS.map((parentLabel) => {
-            const isSelected = settings.parentLabel === parentLabel;
+            const isSelected = activeChild.settings.parentLabel === parentLabel;
 
             return (
               <Pressable
@@ -323,7 +433,6 @@ export function SettingsScreen({
         </View>
         <TextInput
           maxLength={24}
-          onBlur={handleParentLabelBlur}
           onChangeText={handleParentLabelChange}
           placeholder={strings.settings.parentLabelCustomPlaceholder}
           placeholderTextColor={colors.textMuted}
@@ -384,13 +493,54 @@ export function SettingsScreen({
             onChangeText={handleParentPinChange}
             placeholder={strings.settings.parentPinPlaceholder}
             style={[styles.pinInput, !isParentPinValid && styles.invalidTimeInput]}
-            value={parentPinDraft}
+            value={parentPinInput}
           />
         </View>
         <Pressable accessibilityRole="button" onPress={handleGenerateParentPin} style={styles.textButton}>
           <Text style={styles.textButtonLabel}>{strings.settings.generateParentPinButton}</Text>
         </Pressable>
         {!isParentPinValid ? <Text style={styles.errorText}>{strings.settings.parentPinError}</Text> : null}
+      </View>
+
+      {/* Manage Children Section */}
+      <View style={styles.card}>
+        <Text style={styles.sectionEyebrow}>Manage Children</Text>
+
+        {/* Child list */}
+        {settings.children.map((child) => (
+          <View key={child.id} style={styles.childItem}>
+            <View>
+              <Text style={styles.childName}>{child.name}</Text>
+              <Text style={styles.childLabel}>
+                {child.settings.parentLabel} • {child.settings.notificationTime}
+              </Text>
+            </View>
+            <View style={styles.childActions}>
+              <Pressable
+                onPress={() => openEditChildModal(child)}
+                style={styles.childButton}
+              >
+                <Text style={styles.childButtonText}>Edit</Text>
+              </Pressable>
+              {settings.children.length > 1 && (
+                <Pressable
+                  onPress={() => deleteChild(child.id)}
+                  style={[styles.childButton, styles.deleteButton]}
+                >
+                  <Text style={styles.childButtonTextDelete}>Delete</Text>
+                </Pressable>
+              )}
+            </View>
+          </View>
+        ))}
+
+        {/* Add child button */}
+        <Pressable
+          onPress={() => openAddChildModal()}
+          style={[styles.childButton, styles.addButton]}
+        >
+          <Text style={styles.addButtonText}>+ Add Child</Text>
+        </Pressable>
       </View>
 
       <View style={styles.card}>
@@ -439,11 +589,11 @@ export function SettingsScreen({
         />
       </View>
 
-      <ParentAdSlot isPremium={settings.isPremium} />
+      <ParentAdSlot isPremium={settings.globalSettings.isPremium} />
 
       <AboutModal onClose={() => setIsAboutOpen(false)} visible={isAboutOpen} />
       <PremiumModal
-        isPremium={settings.isPremium}
+        isPremium={settings.globalSettings.isPremium}
         message={premiumMessage}
         onActivate={() => handlePremiumAction(purchasePremium, strings.settings.premiumPurchaseError)}
         onClose={() => {
@@ -459,6 +609,118 @@ export function SettingsScreen({
         onSelect={handleChangeNotificationTime}
         visible={isTimePickerOpen}
       />
+
+      {/* Add Child Modal */}
+      <Modal visible={addChildModalVisible} transparent onRequestClose={() => setAddChildModalVisible(false)}>
+        <View style={styles.modalOverlay}>
+          <View style={styles.modalContent}>
+            <Text style={styles.modalTitle}>Add New Child</Text>
+            <TextInput
+              style={styles.modalInput}
+              placeholder="Child's name"
+              placeholderTextColor={colors.textMuted}
+              value={newChildName}
+              onChangeText={setNewChildName}
+              autoFocus
+            />
+            <View style={styles.modalActions}>
+              <Pressable
+                style={[styles.modalButton, styles.cancelButton]}
+                onPress={() => setAddChildModalVisible(false)}
+              >
+                <Text style={styles.cancelButtonText}>Cancel</Text>
+              </Pressable>
+              <Pressable
+                style={[styles.modalButton, styles.confirmButton]}
+                onPress={addChild}
+              >
+                <Text style={styles.confirmButtonText}>Add</Text>
+              </Pressable>
+            </View>
+          </View>
+        </View>
+      </Modal>
+
+      {/* Edit Child Modal */}
+      <Modal visible={Boolean(editingChild)} transparent onRequestClose={() => setEditingChild(null)}>
+        <View style={styles.modalOverlay}>
+          {editingChild && (
+            <View style={styles.modalContent}>
+              <Text style={styles.modalTitle}>Edit {editingChild.name}</Text>
+
+              <Text style={styles.modalLabel}>Name</Text>
+              <TextInput
+                style={styles.modalInput}
+                value={editChildName}
+                onChangeText={setEditChildName}
+              />
+
+              <Text style={styles.modalLabel}>Parent Label</Text>
+              <View style={styles.parentLabelOptions}>
+                {PARENT_LABEL_OPTIONS.map((parentLabel) => {
+                  const isSelected = editChildParentLabel === parentLabel;
+                  return (
+                    <Pressable
+                      key={parentLabel}
+                      onPress={() => setEditChildParentLabel(parentLabel)}
+                      style={[
+                        styles.parentLabelOption,
+                        isSelected && { backgroundColor: theme.accentSoft, borderColor: theme.accent }
+                      ]}
+                    >
+                      <Text style={[styles.parentLabelOptionText, isSelected && { color: theme.accentDark }]}>
+                        {parentLabel}
+                      </Text>
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <Text style={styles.modalLabel}>Notification Time</Text>
+              <Pressable
+                style={styles.timePickerButton}
+                onPress={() => setIsTimePickerOpen(true)}
+              >
+                <Text style={styles.timePickerButtonText}>{editChildNotificationTime}</Text>
+              </Pressable>
+
+              <Text style={styles.modalLabel}>Tile Color</Text>
+              <View style={styles.tileColorOptions}>
+                {TILE_COLOR_OPTIONS.map((tileColor) => {
+                  const isSelected = editChildTileColorId === tileColor.id;
+                  return (
+                    <Pressable
+                      key={tileColor.id}
+                      onPress={() => setEditChildTileColorId(tileColor.id)}
+                      style={[
+                        styles.tileColorOption,
+                        isSelected && { borderColor: theme.accent, borderWidth: 3 }
+                      ]}
+                    >
+                      <View style={[styles.tileColorSwatch, { backgroundColor: tileColor.color }]} />
+                    </Pressable>
+                  );
+                })}
+              </View>
+
+              <View style={styles.modalActions}>
+                <Pressable
+                  style={[styles.modalButton, styles.cancelButton]}
+                  onPress={() => setEditingChild(null)}
+                >
+                  <Text style={styles.cancelButtonText}>Cancel</Text>
+                </Pressable>
+                <Pressable
+                  style={[styles.modalButton, styles.confirmButton]}
+                  onPress={saveEditChild}
+                >
+                  <Text style={styles.confirmButtonText}>Save</Text>
+                </Pressable>
+              </View>
+            </View>
+          )}
+        </View>
+      </Modal>
     </ScrollView>
   );
 }
@@ -790,6 +1052,126 @@ const styles = StyleSheet.create({
     justifyContent: "center",
     padding: spacing.lg
   },
+  modalContent: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    padding: spacing.lg,
+    shadowColor: colors.accentDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    width: "100%",
+    maxWidth: 400
+  },
+  modalTitle: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 24,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  modalLabel: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "700",
+    marginTop: spacing.sm
+  },
+  modalInput: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "700",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md
+  },
+  modalActions: {
+    flexDirection: "row",
+    gap: spacing.sm,
+    marginTop: spacing.md
+  },
+  modalButton: {
+    alignItems: "center",
+    borderRadius: radii.pill,
+    flex: 1,
+    justifyContent: "center",
+    minHeight: 48,
+    paddingHorizontal: spacing.md
+  },
+  cancelButton: {
+    backgroundColor: colors.surfaceMuted
+  },
+  cancelButtonText: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  confirmButton: {
+    backgroundColor: colors.accent
+  },
+  confirmButtonText: {
+    color: colors.surface,
+    fontSize: 16,
+    fontWeight: "800"
+  },
+  childItem: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderRadius: radii.md,
+    flexDirection: "row",
+    gap: spacing.md,
+    justifyContent: "space-between",
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md,
+    marginBottom: spacing.sm
+  },
+  childName: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  childLabel: {
+    color: colors.textMuted,
+    fontSize: 14,
+    marginTop: spacing.xs
+  },
+  childActions: {
+    flexDirection: "row",
+    gap: spacing.sm
+  },
+  childButton: {
+    alignItems: "center",
+    backgroundColor: colors.accent,
+    borderRadius: radii.md,
+    justifyContent: "center",
+    minHeight: 40,
+    paddingHorizontal: spacing.md
+  },
+  childButtonText: {
+    color: colors.surface,
+    fontSize: 14,
+    fontWeight: "700"
+  },
+  deleteButton: {
+    backgroundColor: colors.warning
+  },
+  childButtonTextDelete: {
+    color: colors.text,
+    fontSize: 14,
+    fontWeight: "700"
+  },
+  addButton: {
+    alignSelf: "stretch",
+    marginTop: spacing.sm
+  },
+  addButtonText: {
+    color: colors.surface,
+    fontSize: 16,
+    fontWeight: "800"
+  },
   timePickerCard: {
     backgroundColor: colors.surface,
     borderRadius: radii.lg,
@@ -1042,11 +1424,23 @@ const styles = StyleSheet.create({
     paddingHorizontal: spacing.lg,
     paddingVertical: spacing.sm
   },
-
   devPremiumButtonText: {
     color: colors.warningDark,
     fontSize: 13,
     fontWeight: "800"
+  },
+  timePickerButton: {
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    paddingHorizontal: spacing.md,
+    paddingVertical: spacing.md
+  },
+  timePickerButtonText: {
+    color: colors.text,
+    fontSize: 16,
+    fontWeight: "700"
   }
 });
 
