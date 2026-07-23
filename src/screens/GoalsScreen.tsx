@@ -18,6 +18,7 @@ import { colors, fonts, radii, spacing } from "../ui/theme";
 const INFO_ICON_SOURCE = require("../../assets/icons/settings-info.png");
 
 type GoalsScreenProps = {
+  activeChildId: string;
   goals: Goal[];
   isPremium: boolean;
   onAddGoal: () => void;
@@ -25,11 +26,14 @@ type GoalsScreenProps = {
   onEditGoal: (goalId: string) => void;
   onOpenGoal: (goalId: string) => void;
   onOpenSettings: () => void;
+  onSelectChild: (childId: string) => void;
   parentLabel: string;
+  children: Array<{ id: string; name: string; settings: { parentLabel: string; notificationTime: string; tileColorId: string } }>;
   theme?: AppTheme;
 };
 
 export function GoalsScreen({
+  activeChildId,
   goals,
   isPremium,
   onAddGoal,
@@ -37,7 +41,9 @@ export function GoalsScreen({
   onEditGoal,
   onOpenGoal,
   onOpenSettings,
+  onSelectChild,
   parentLabel,
+  children,
   theme = defaultAppTheme
 }: GoalsScreenProps) {
   const [openMenuGoalId, setOpenMenuGoalId] = useState<string | null>(null);

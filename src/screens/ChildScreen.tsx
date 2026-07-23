@@ -15,6 +15,7 @@ import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ChildScreenProps = {
+  activeChildId: string;
   canRevealTile: boolean;
   goal: Goal;
   onAddGoal?: () => void;
@@ -27,6 +28,7 @@ type ChildScreenProps = {
 };
 
 export function ChildScreen({
+  activeChildId,
   canRevealTile,
   goal,
   onAddGoal,
