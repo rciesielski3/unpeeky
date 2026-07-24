@@ -15,9 +15,33 @@ describe("app settings defaults", () => {
   });
 
   it("keeps existing reminder preference when stored settings are normalized", () => {
-    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "P", notificationTime: "19:30", tileColorId: "lavender" } }], globalSettings: { isReminderEnabled: true, pin: "", isPremium: false, exportData: [], appMode: null } }).globalSettings.isReminderEnabled, true);
-    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "P", notificationTime: "19:30", tileColorId: "lavender" } }], globalSettings: { isReminderEnabled: false, pin: "", isPremium: false, exportData: [], appMode: null } }).globalSettings.isReminderEnabled, false);
-    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "P", notificationTime: "19:30", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).globalSettings.isReminderEnabled, false);
+    assert.equal(
+      normalizeSettings({
+        children: [
+          { id: "1", name: "Child", settings: { parentLabel: "P", notificationTime: "19:30", tileColorId: "lavender" } }
+        ],
+        globalSettings: { isReminderEnabled: true, pin: "", isPremium: false, exportData: [], appMode: null }
+      }).globalSettings.isReminderEnabled,
+      true
+    );
+    assert.equal(
+      normalizeSettings({
+        children: [
+          { id: "1", name: "Child", settings: { parentLabel: "P", notificationTime: "19:30", tileColorId: "lavender" } }
+        ],
+        globalSettings: { isReminderEnabled: false, pin: "", isPremium: false, exportData: [], appMode: null }
+      }).globalSettings.isReminderEnabled,
+      false
+    );
+    assert.equal(
+      normalizeSettings({
+        children: [
+          { id: "1", name: "Child", settings: { parentLabel: "P", notificationTime: "19:30", tileColorId: "lavender" } }
+        ],
+        globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null }
+      }).globalSettings.isReminderEnabled,
+      false
+    );
   });
 
   it("defaults the parent greeting to Rodzicu and supports custom labels", () => {
@@ -29,8 +53,28 @@ describe("app settings defaults", () => {
   });
 
   it("sanitizes stored parent labels", () => {
-    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "  Tata  ", notificationTime: "18:00", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).children[0]!.settings.parentLabel, "Tata");
-    assert.equal(normalizeSettings({ children: [{ id: "1", name: "Child", settings: { parentLabel: "", notificationTime: "18:00", tileColorId: "lavender" } }], globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null } }).children[0]!.settings.parentLabel, "Rodzicu");
+    assert.equal(
+      normalizeSettings({
+        children: [
+          {
+            id: "1",
+            name: "Child",
+            settings: { parentLabel: "  Tata  ", notificationTime: "18:00", tileColorId: "lavender" }
+          }
+        ],
+        globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null }
+      }).children[0]!.settings.parentLabel,
+      "Tata"
+    );
+    assert.equal(
+      normalizeSettings({
+        children: [
+          { id: "1", name: "Child", settings: { parentLabel: "", notificationTime: "18:00", tileColorId: "lavender" } }
+        ],
+        globalSettings: { pin: "", isPremium: false, exportData: [], appMode: null }
+      }).children[0]!.settings.parentLabel,
+      "Rodzicu"
+    );
   });
 
   it("explains where to find the parent PIN without exposing it", () => {

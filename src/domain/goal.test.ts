@@ -1,7 +1,15 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import { completeTask, createGoal, getGoalProgress, isGoalComplete, normalizeGoal, updateGoal, migrateGoalV1ToV2 } from "./goal";
+import {
+  completeTask,
+  createGoal,
+  getGoalProgress,
+  isGoalComplete,
+  normalizeGoal,
+  updateGoal,
+  migrateGoalV1ToV2
+} from "./goal";
 import type { Goal, GoalDraft, PersistedGoal } from "./goal";
 import { DEFAULT_AVATAR_ID } from "./avatar";
 
@@ -286,13 +294,16 @@ describe("updateGoal", () => {
 describe("Goal", () => {
   describe("Goal.childId", () => {
     it("should have childId field", () => {
-      const goal = createGoal({
-        childName: "Alex",
-        rewardName: "Ice Cream",
-        imageUri: "...",
-        totalTasks: 16,
-        avatarId: "dino"
-      }, "child-12345");
+      const goal = createGoal(
+        {
+          childName: "Alex",
+          rewardName: "Ice Cream",
+          imageUri: "...",
+          totalTasks: 16,
+          avatarId: "dino"
+        },
+        "child-12345"
+      );
       assert.ok(Object.hasOwn(goal, "childId"), "goal should have childId property");
       assert.strictEqual(typeof goal.childId, "string", "childId should be a string");
       assert.strictEqual(goal.childId, "child-12345", "childId should match provided value");

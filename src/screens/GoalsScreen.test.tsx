@@ -47,7 +47,7 @@ describe("GoalsScreen filtering logic", () => {
 
   it("should correctly filter goals by activeChildId", () => {
     // Filter goals by child-1
-    const filteredGoals = mockGoals.filter(g => g.childId === "child-1");
+    const filteredGoals = mockGoals.filter((g) => g.childId === "child-1");
 
     assert.equal(filteredGoals.length, 2);
     assert.equal(filteredGoals[0]?.rewardName, "Cake");
@@ -55,13 +55,13 @@ describe("GoalsScreen filtering logic", () => {
   });
 
   it("should return empty array when no goals match activeChildId", () => {
-    const filteredGoals = mockGoals.filter(g => g.childId === "child-999");
+    const filteredGoals = mockGoals.filter((g) => g.childId === "child-999");
 
     assert.equal(filteredGoals.length, 0);
   });
 
   it("should filter goals for different child correctly", () => {
-    const filteredGoals = mockGoals.filter(g => g.childId === "child-2");
+    const filteredGoals = mockGoals.filter((g) => g.childId === "child-2");
 
     assert.equal(filteredGoals.length, 1);
     assert.equal(filteredGoals[0]?.rewardName, "Cookies");
@@ -80,7 +80,7 @@ describe("GoalsScreen child picker (Modal, not Alert)", () => {
   for (const count of [2, 3, 4, 5, 8]) {
     it(`renders one selectable entry per child with ${count} children`, () => {
       const children = makeChildren(count);
-      const rendered = children.map(child => child.id);
+      const rendered = children.map((child) => child.id);
 
       assert.equal(rendered.length, count);
       // No 3-item ceiling: the last child is present regardless of count.
@@ -103,7 +103,7 @@ describe("GoalsScreen child picker (Modal, not Alert)", () => {
   it("marks the active child as selected", () => {
     const children = makeChildren(4);
     const activeChildId = "child-3";
-    const activeFlags = children.map(child => child.id === activeChildId);
+    const activeFlags = children.map((child) => child.id === activeChildId);
 
     assert.deepEqual(activeFlags, [false, false, true, false]);
   });

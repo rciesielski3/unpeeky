@@ -28,7 +28,11 @@ type GoalsScreenProps = {
   onOpenSettings: () => void;
   onSelectChild?: (childId: string) => void;
   parentLabel: string;
-  childrenList?: Array<{ id: string; name: string; settings: { parentLabel: string; notificationTime: string; tileColorId: string } }>;
+  childrenList?: Array<{
+    id: string;
+    name: string;
+    settings: { parentLabel: string; notificationTime: string; tileColorId: string };
+  }>;
   theme?: AppTheme;
 };
 
@@ -92,9 +96,7 @@ export function GoalsScreen({
             style={styles.childButton}
           >
             <Text style={styles.childButtonText}>{activeChild?.name || strings.goals.selectChildFallback}</Text>
-            {childrenList.length > 1 && (
-              <Text style={styles.childButtonSubtitle}>{strings.goals.switchChildHint}</Text>
-            )}
+            {childrenList.length > 1 && <Text style={styles.childButtonSubtitle}>{strings.goals.switchChildHint}</Text>}
           </Pressable>
         </View>
       )}

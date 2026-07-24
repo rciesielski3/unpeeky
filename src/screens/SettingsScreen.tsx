@@ -33,7 +33,11 @@ type SettingsScreenProps = {
   onSelectChild?: (childId: string) => void;
   onSettingsChange: (settings: AppSettings) => void;
   settings: AppSettings;
-  childrenList?: Array<{ id: string; name: string; settings: { parentLabel: string; notificationTime: string; tileColorId: string } }>;
+  childrenList?: Array<{
+    id: string;
+    name: string;
+    settings: { parentLabel: string; notificationTime: string; tileColorId: string };
+  }>;
   theme?: AppTheme;
 };
 
@@ -115,10 +119,8 @@ export function SettingsScreen({
       return;
     }
 
-    const updatedChildren = settings.children.map(child =>
-      child.id === activeChild?.id
-        ? { ...child, settings: { ...child.settings, notificationTime } }
-        : child
+    const updatedChildren = settings.children.map((child) =>
+      child.id === activeChild?.id ? { ...child, settings: { ...child.settings, notificationTime } } : child
     );
 
     updateSettings({
@@ -171,29 +173,23 @@ export function SettingsScreen({
   }
 
   function handleChangeTileColor(tileColorId: TileColorId) {
-    const updatedChildren = settings.children.map(child =>
-      child.id === activeChild?.id
-        ? { ...child, settings: { ...child.settings, tileColorId } }
-        : child
+    const updatedChildren = settings.children.map((child) =>
+      child.id === activeChild?.id ? { ...child, settings: { ...child.settings, tileColorId } } : child
     );
     updateSettings({ children: updatedChildren });
   }
 
   function handleSelectParentLabel(parentLabel: string) {
-    const updatedChildren = settings.children.map(child =>
-      child.id === activeChild?.id
-        ? { ...child, settings: { ...child.settings, parentLabel } }
-        : child
+    const updatedChildren = settings.children.map((child) =>
+      child.id === activeChild?.id ? { ...child, settings: { ...child.settings, parentLabel } } : child
     );
     updateSettings({ children: updatedChildren });
   }
 
   function handleParentLabelChange(text: string) {
     const trimmed = text.slice(0, 24);
-    const updatedChildren = settings.children.map(child =>
-      child.id === activeChild?.id
-        ? { ...child, settings: { ...child.settings, parentLabel: trimmed } }
-        : child
+    const updatedChildren = settings.children.map((child) =>
+      child.id === activeChild?.id ? { ...child, settings: { ...child.settings, parentLabel: trimmed } } : child
     );
     updateSettings({ children: updatedChildren });
   }
@@ -289,7 +285,7 @@ export function SettingsScreen({
 
     const updated = {
       ...settings,
-      children: settings.children.map(c =>
+      children: settings.children.map((c) =>
         c.id === editingChild.id
           ? {
               ...c,
@@ -320,30 +316,26 @@ export function SettingsScreen({
   }
 
   function deleteChild(childId: string) {
-    Alert.alert(
-      strings.settings.manageChildren.deleteConfirmTitle,
-      strings.settings.manageChildren.deleteConfirmMeta,
-      [
-        { text: strings.settings.manageChildren.cancel, onPress: () => {} },
-        {
-          text: strings.settings.manageChildren.deleteButton,
-          style: "destructive",
-          onPress: () => {
-            if (settings.children.length <= 1) {
-              Alert.alert(
-                strings.settings.manageChildren.cannotDeleteTitle,
-                strings.settings.manageChildren.cannotDeleteMeta
-              );
-              return;
-            }
-
-            updateSettings({
-              children: settings.children.filter(c => c.id !== childId)
-            });
+    Alert.alert(strings.settings.manageChildren.deleteConfirmTitle, strings.settings.manageChildren.deleteConfirmMeta, [
+      { text: strings.settings.manageChildren.cancel, onPress: () => {} },
+      {
+        text: strings.settings.manageChildren.deleteButton,
+        style: "destructive",
+        onPress: () => {
+          if (settings.children.length <= 1) {
+            Alert.alert(
+              strings.settings.manageChildren.cannotDeleteTitle,
+              strings.settings.manageChildren.cannotDeleteMeta
+            );
+            return;
           }
+
+          updateSettings({
+            children: settings.children.filter((c) => c.id !== childId)
+          });
         }
-      ]
-    );
+      }
+    ]);
   }
 
   if (!activeChild) {
@@ -386,7 +378,9 @@ export function SettingsScreen({
         >
           <Image source={SETTINGS_ICON_SOURCES.premium} style={styles.premiumButtonIcon} />
           <Text style={styles.premiumButtonText}>
-            {settings.globalSettings.isPremium ? strings.settings.premiumActiveButton : strings.settings.premiumUpgradeButton}
+            {settings.globalSettings.isPremium
+              ? strings.settings.premiumActiveButton
+              : strings.settings.premiumUpgradeButton}
           </Text>
         </Pressable>
 
@@ -539,17 +533,11 @@ export function SettingsScreen({
               </Text>
             </View>
             <View style={styles.childActions}>
-              <Pressable
-                onPress={() => openEditChildModal(child)}
-                style={styles.childButton}
-              >
+              <Pressable onPress={() => openEditChildModal(child)} style={styles.childButton}>
                 <Text style={styles.childButtonText}>{strings.settings.manageChildren.editButton}</Text>
               </Pressable>
               {settings.children.length > 1 && (
-                <Pressable
-                  onPress={() => deleteChild(child.id)}
-                  style={[styles.childButton, styles.deleteButton]}
-                >
+                <Pressable onPress={() => deleteChild(child.id)} style={[styles.childButton, styles.deleteButton]}>
                   <Text style={styles.childButtonTextDelete}>{strings.settings.manageChildren.deleteButton}</Text>
                 </Pressable>
               )}
@@ -558,10 +546,7 @@ export function SettingsScreen({
         ))}
 
         {/* Add child button */}
-        <Pressable
-          onPress={() => openAddChildModal()}
-          style={[styles.childButton, styles.addButton]}
-        >
+        <Pressable onPress={() => openAddChildModal()} style={[styles.childButton, styles.addButton]}>
           <Text style={styles.addButtonText}>{strings.settings.manageChildren.addChild}</Text>
         </Pressable>
       </View>
@@ -661,10 +646,7 @@ export function SettingsScreen({
               >
                 <Text style={styles.cancelButtonText}>{strings.settings.manageChildren.cancel}</Text>
               </Pressable>
-              <Pressable
-                style={[styles.modalButton, styles.confirmButton]}
-                onPress={addChild}
-              >
+              <Pressable style={[styles.modalButton, styles.confirmButton]} onPress={addChild}>
                 <Text style={styles.confirmButtonText}>{strings.settings.manageChildren.add}</Text>
               </Pressable>
             </View>
@@ -677,16 +659,10 @@ export function SettingsScreen({
         <View style={styles.modalOverlay}>
           {editingChild && (
             <View style={styles.modalContent}>
-              <Text style={styles.modalTitle}>
-                {strings.settings.manageChildren.editModalTitle(editingChild.name)}
-              </Text>
+              <Text style={styles.modalTitle}>{strings.settings.manageChildren.editModalTitle(editingChild.name)}</Text>
 
               <Text style={styles.modalLabel}>{strings.settings.manageChildren.nameLabel}</Text>
-              <TextInput
-                style={styles.modalInput}
-                value={editChildName}
-                onChangeText={setEditChildName}
-              />
+              <TextInput style={styles.modalInput} value={editChildName} onChangeText={setEditChildName} />
 
               <Text style={styles.modalLabel}>{strings.settings.manageChildren.parentLabelLabel}</Text>
               <View style={styles.parentLabelOptions}>
@@ -710,10 +686,7 @@ export function SettingsScreen({
               </View>
 
               <Text style={styles.modalLabel}>{strings.settings.manageChildren.notificationTimeLabel}</Text>
-              <Pressable
-                style={styles.timePickerButton}
-                onPress={() => setIsEditingChildTimePicker(true)}
-              >
+              <Pressable style={styles.timePickerButton} onPress={() => setIsEditingChildTimePicker(true)}>
                 <Text style={styles.timePickerButtonText}>{editChildNotificationTime}</Text>
               </Pressable>
 
@@ -725,10 +698,7 @@ export function SettingsScreen({
                     <Pressable
                       key={tileColor.id}
                       onPress={() => setEditChildTileColorId(tileColor.id)}
-                      style={[
-                        styles.tileColorOption,
-                        isSelected && { borderColor: theme.accent, borderWidth: 3 }
-                      ]}
+                      style={[styles.tileColorOption, isSelected && { borderColor: theme.accent, borderWidth: 3 }]}
                     >
                       <View style={[styles.tileColorSwatch, { backgroundColor: tileColor.color }]} />
                     </Pressable>
@@ -737,16 +707,10 @@ export function SettingsScreen({
               </View>
 
               <View style={styles.modalActions}>
-                <Pressable
-                  style={[styles.modalButton, styles.cancelButton]}
-                  onPress={() => setEditingChild(null)}
-                >
+                <Pressable style={[styles.modalButton, styles.cancelButton]} onPress={() => setEditingChild(null)}>
                   <Text style={styles.cancelButtonText}>{strings.settings.manageChildren.cancel}</Text>
                 </Pressable>
-                <Pressable
-                  style={[styles.modalButton, styles.confirmButton]}
-                  onPress={saveEditChild}
-                >
+                <Pressable style={[styles.modalButton, styles.confirmButton]} onPress={saveEditChild}>
                   <Text style={styles.confirmButtonText}>{strings.settings.manageChildren.save}</Text>
                 </Pressable>
               </View>

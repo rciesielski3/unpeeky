@@ -31,7 +31,7 @@ describe("SettingsScreen - Manage Children", () => {
   });
 
   it("should display list of children", () => {
-    const childNames = mockSettings.children.map(c => c.name);
+    const childNames = mockSettings.children.map((c) => c.name);
     assert.ok(childNames.includes("Alex"));
     assert.ok(childNames.includes("Jordan"));
     assert.equal(mockSettings.children.length, 2);
@@ -50,7 +50,7 @@ describe("SettingsScreen - Manage Children", () => {
     };
 
     assert.equal(updated.children.length, 3);
-    assert.ok(updated.children.some(c => c.name === "Sam"));
+    assert.ok(updated.children.some((c) => c.name === "Sam"));
     assert.equal(updated.children[2]?.name, "Sam");
   });
 
@@ -58,9 +58,7 @@ describe("SettingsScreen - Manage Children", () => {
     const childToEdit = mockSettings.children[0]!;
     const updated = {
       ...mockSettings,
-      children: mockSettings.children.map(c =>
-        c.id === childToEdit.id ? { ...c, name: "Alexander" } : c
-      )
+      children: mockSettings.children.map((c) => (c.id === childToEdit.id ? { ...c, name: "Alexander" } : c))
     };
 
     assert.equal(updated.children[0]?.name, "Alexander");
@@ -71,7 +69,7 @@ describe("SettingsScreen - Manage Children", () => {
     const childToEdit = mockSettings.children[0]!;
     const updated = {
       ...mockSettings,
-      children: mockSettings.children.map(c =>
+      children: mockSettings.children.map((c) =>
         c.id === childToEdit.id
           ? {
               ...c,
@@ -88,7 +86,7 @@ describe("SettingsScreen - Manage Children", () => {
     const childToEdit = mockSettings.children[0]!;
     const updated = {
       ...mockSettings,
-      children: mockSettings.children.map(c =>
+      children: mockSettings.children.map((c) =>
         c.id === childToEdit.id
           ? {
               ...c,
@@ -105,7 +103,7 @@ describe("SettingsScreen - Manage Children", () => {
     const childToEdit = mockSettings.children[0]!;
     const updated = {
       ...mockSettings,
-      children: mockSettings.children.map(c =>
+      children: mockSettings.children.map((c) =>
         c.id === childToEdit.id
           ? {
               ...c,
@@ -122,11 +120,11 @@ describe("SettingsScreen - Manage Children", () => {
     const childIdToDelete = "c1";
     const updated = {
       ...mockSettings,
-      children: mockSettings.children.filter(c => c.id !== childIdToDelete)
+      children: mockSettings.children.filter((c) => c.id !== childIdToDelete)
     };
 
     assert.equal(updated.children.length, 1);
-    assert.ok(!updated.children.some(c => c.id === childIdToDelete));
+    assert.ok(!updated.children.some((c) => c.id === childIdToDelete));
     assert.equal(updated.children[0]?.name, "Jordan");
   });
 
@@ -156,9 +154,7 @@ describe("SettingsScreen - Manage Children", () => {
 
     const updated = {
       ...mockSettings,
-      children: mockSettings.children.map(c =>
-        c.id === childToEdit.id ? { ...c, ...updates } : c
-      )
+      children: mockSettings.children.map((c) => (c.id === childToEdit.id ? { ...c, ...updates } : c))
     };
 
     const editedChild = updated.children[0]!;

@@ -116,7 +116,13 @@ describe("Goal migration", () => {
         completed: false
       }
     ] as Goal[];
-    const children = [{ id: "child-1", name: "Alex", settings: { parentLabel: "Parent", notificationTime: "18:00", tileColorId: "lavender" as const } }];
+    const children = [
+      {
+        id: "child-1",
+        name: "Alex",
+        settings: { parentLabel: "Parent", notificationTime: "18:00", tileColorId: "lavender" as const }
+      }
+    ];
 
     const cleaned = removeOrphanedGoals(goals, children);
 
@@ -154,8 +160,16 @@ describe("Goal migration", () => {
       }
     ] as Goal[];
     const children = [
-      { id: "child-1", name: "Alex", settings: { parentLabel: "Parent", notificationTime: "18:00", tileColorId: "lavender" as const } },
-      { id: "child-2", name: "Bob", settings: { parentLabel: "Parent", notificationTime: "18:00", tileColorId: "lavender" as const } }
+      {
+        id: "child-1",
+        name: "Alex",
+        settings: { parentLabel: "Parent", notificationTime: "18:00", tileColorId: "lavender" as const }
+      },
+      {
+        id: "child-2",
+        name: "Bob",
+        settings: { parentLabel: "Parent", notificationTime: "18:00", tileColorId: "lavender" as const }
+      }
     ];
 
     const cleaned = removeOrphanedGoals(goals, children);

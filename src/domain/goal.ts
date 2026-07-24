@@ -179,8 +179,7 @@ export function resolveReminderTimeForActiveChild(
     return null;
   }
 
-  const activeChild =
-    settings.children.find((child) => child.id === activeChildId) ?? settings.children[0];
+  const activeChild = settings.children.find((child) => child.id === activeChildId) ?? settings.children[0];
 
   return activeChild?.settings.notificationTime ?? null;
 }

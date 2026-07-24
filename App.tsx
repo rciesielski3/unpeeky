@@ -12,13 +12,26 @@ import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { ModeSelectionScreen } from "./src/screens/ModeSelectionScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
-import { completeTask, createGoal, normalizeSettings, resolveReminderTimeForActiveChild, updateGoal } from "./src/domain/goal";
+import {
+  completeTask,
+  createGoal,
+  normalizeSettings,
+  resolveReminderTimeForActiveChild,
+  updateGoal
+} from "./src/domain/goal";
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
 import { cancelDailyReminder, scheduleDaily } from "./src/notifications/scheduleDaily";
 import { syncPremiumEntitlement } from "./src/premium/premiumPurchase";
-import { loadGoals, loadSettings, saveGoals, saveSettings, migrateGoalsV1ToV2, removeOrphanedGoals } from "./src/storage/appStorage";
+import {
+  loadGoals,
+  loadSettings,
+  saveGoals,
+  saveSettings,
+  migrateGoalsV1ToV2,
+  removeOrphanedGoals
+} from "./src/storage/appStorage";
 import { getAppTheme } from "./src/ui/appTheme";
 import { colors, fonts, radii, spacing } from "./src/ui/theme";
 import MobileAds from "react-native-google-mobile-ads";
@@ -69,25 +82,16 @@ function AppContent() {
         const normalizedSettings = normalizeSettings(storedSettings);
 
         // Migrate goals (assign childId if missing)
-        const migratedGoals = migrateGoalsV1ToV2(
-          storedGoals,
-          normalizedSettings.children[0]?.id || "child-default"
-        );
+        const migratedGoals = migrateGoalsV1ToV2(storedGoals, normalizedSettings.children[0]?.id || "child-default");
 
         // Remove orphaned goals
-        const cleanedGoals = removeOrphanedGoals(
-          migratedGoals,
-          normalizedSettings.children
-        );
+        const cleanedGoals = removeOrphanedGoals(migratedGoals, normalizedSettings.children);
 
         setGoals(cleanedGoals);
         setSettings(normalizedSettings);
 
         // Restore activeChildId if valid
-        if (
-          storedActiveChildId &&
-          normalizedSettings.children.some(c => c.id === storedActiveChildId)
-        ) {
+        if (storedActiveChildId && normalizedSettings.children.some((c) => c.id === storedActiveChildId)) {
           setActiveChildId(storedActiveChildId);
         } else if (normalizedSettings.children.length > 0) {
           setActiveChildId(normalizedSettings.children[0]!.id);
@@ -100,11 +104,15 @@ function AppContent() {
         void syncPremiumEntitlement().then((premiumResult) => {
           if (premiumResult.status === "activated") {
             setSettings((currentSettings) =>
-              currentSettings && !currentSettings.globalSettings.isPremium ? { ...currentSettings, globalSettings: { ...currentSettings.globalSettings, isPremium: true } } : currentSettings
+              currentSettings && !currentSettings.globalSettings.isPremium
+                ? { ...currentSettings, globalSettings: { ...currentSettings.globalSettings, isPremium: true } }
+                : currentSettings
             );
           } else if (premiumResult.status === "not_active") {
             setSettings((currentSettings) =>
-              currentSettings && currentSettings.globalSettings.isPremium ? { ...currentSettings, globalSettings: { ...currentSettings.globalSettings, isPremium: false } } : currentSettings
+              currentSettings && currentSettings.globalSettings.isPremium
+                ? { ...currentSettings, globalSettings: { ...currentSettings.globalSettings, isPremium: false } }
+                : currentSettings
             );
           }
         });
@@ -121,7 +129,7 @@ function AppContent() {
 
   useEffect(() => {
     if (activeChildId) {
-      AsyncStorage.setItem("activeChildId", activeChildId).catch(err =>
+      AsyncStorage.setItem("activeChildId", activeChildId).catch((err) =>
         console.error("Failed to persist activeChildId", err)
       );
     }
@@ -252,7 +260,11 @@ function AppContent() {
       return;
     }
 
-    setSettings((currentSettings) => (currentSettings ? { ...currentSettings, globalSettings: { ...currentSettings.globalSettings, appMode } } : currentSettings));
+    setSettings((currentSettings) =>
+      currentSettings
+        ? { ...currentSettings, globalSettings: { ...currentSettings.globalSettings, appMode } }
+        : currentSettings
+    );
     setRoute("goals");
   }
 
@@ -269,7 +281,7 @@ function AppContent() {
     );
   }
 
-  const activeChild = settings.children.find(c => c.id === activeChildId) ?? settings.children[0]!;
+  const activeChild = settings.children.find((c) => c.id === activeChildId) ?? settings.children[0]!;
   const appTheme = getAppTheme(activeChild.settings.tileColorId);
   // Mode selection is shown when appMode is null.
   // Users can reset mode via Settings → "Change Mode" button,
@@ -345,7 +357,8 @@ function AppContent() {
       ) : null}
     </>
   );
-  const shouldShowBottomNav = Boolean(settings.globalSettings.appMode) && route !== "addGoal" && route !== "approveTask";
+  const shouldShowBottomNav =
+    Boolean(settings.globalSettings.appMode) && route !== "addGoal" && route !== "approveTask";
   const routeBackground = getRouteBackground(route, appTheme);
 
   return (

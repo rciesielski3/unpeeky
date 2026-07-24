@@ -18,7 +18,7 @@ class MockAsyncStorage {
   }
 
   async multiGet(keys: string[]): Promise<Array<[string, string | null]>> {
-    return keys.map(key => [key, this.store.get(key) ?? null]);
+    return keys.map((key) => [key, this.store.get(key) ?? null]);
   }
 
   async multiSet(keyValuePairs: Array<[string, string]>): Promise<void> {
@@ -86,9 +86,7 @@ describe("Multiple Children E2E", () => {
       await asyncStorage.setItem("settings", JSON.stringify(updatedSettings));
 
       // Verify both children exist
-      const storedSettings = JSON.parse(
-        (await asyncStorage.getItem("settings")) || "{}"
-      ) as AppSettings;
+      const storedSettings = JSON.parse((await asyncStorage.getItem("settings")) || "{}") as AppSettings;
       assert.equal(storedSettings.children.length, 2, "Should have two children");
       assert.equal(storedSettings.children[1]?.name, "Jordan", "Second child should be Jordan");
 
@@ -117,26 +115,30 @@ describe("Multiple Children E2E", () => {
       await asyncStorage.setItem("goals", JSON.stringify(allGoals));
 
       // 5. Verify goal isolation - G1 should not be visible when viewing second child
-      const storedGoals = JSON.parse(
-        (await asyncStorage.getItem("goals")) || "[]"
-      ) as Goal[];
-      const child2Goals = storedGoals.filter(goal => goal.childId === child2Id);
+      const storedGoals = JSON.parse((await asyncStorage.getItem("goals")) || "[]") as Goal[];
+      const child2Goals = storedGoals.filter((goal) => goal.childId === child2Id);
       assert.equal(child2Goals.length, 1, "Child 2 should have exactly 1 goal");
       assert.equal(child2Goals[0]?.rewardName, "Candy", "Child 2's goal should be Candy");
       assert.equal(child2Goals[0]?.childId, child2Id, "Child 2 goal should have correct childId");
-      assert.ok(child2Goals.every(g => g.childId === child2Id), "All child 2 goals should have child2Id");
+      assert.ok(
+        child2Goals.every((g) => g.childId === child2Id),
+        "All child 2 goals should have child2Id"
+      );
 
       // 6. Switch back to first child, verify G1 visible
-      const child1Goals = storedGoals.filter(goal => goal.childId === child1Id);
+      const child1Goals = storedGoals.filter((goal) => goal.childId === child1Id);
       assert.equal(child1Goals.length, 1, "Child 1 should have exactly 1 goal");
       assert.equal(child1Goals[0]?.rewardName, "Ice Cream", "Child 1's goal should be Ice Cream");
       assert.equal(child1Goals[0]?.childId, child1Id, "Child 1 goal should have correct childId");
-      assert.ok(child1Goals.every(g => g.childId === child1Id), "All child 1 goals should only have goals belonging to child1");
+      assert.ok(
+        child1Goals.every((g) => g.childId === child1Id),
+        "All child 1 goals should only have goals belonging to child1"
+      );
 
       // 7. Delete second child
       const childrenAfterDelete: AppSettings = {
         ...storedSettings,
-        children: storedSettings.children.filter(c => c.id !== child2Id)
+        children: storedSettings.children.filter((c) => c.id !== child2Id)
       };
       await asyncStorage.setItem("settings", JSON.stringify(childrenAfterDelete));
 
@@ -146,12 +148,8 @@ describe("Multiple Children E2E", () => {
       assert.equal(goalsAfterDelete[0]?.childId, child1Id, "Remaining goal should belong to child 1");
 
       // 8. Restart app - simulate loading from storage
-      const restoredSettings = JSON.parse(
-        (await asyncStorage.getItem("settings")) || "{}"
-      ) as AppSettings;
-      const restoredGoals = JSON.parse(
-        (await asyncStorage.getItem("goals")) || "[]"
-      ) as Goal[];
+      const restoredSettings = JSON.parse((await asyncStorage.getItem("settings")) || "{}") as AppSettings;
+      const restoredGoals = JSON.parse((await asyncStorage.getItem("goals")) || "[]") as Goal[];
 
       assert.equal(restoredSettings.children.length, 1, "After restart, should have 1 child");
       assert.equal(restoredGoals.length, 2, "After restart, should still have 2 goals in storage");
@@ -199,14 +197,12 @@ describe("Multiple Children E2E", () => {
       await asyncStorage.setItem("activeChildId", "child-2");
 
       // Simulate app restart
-      const restoredSettings = JSON.parse(
-        (await asyncStorage.getItem("settings")) || "{}"
-      ) as AppSettings;
+      const restoredSettings = JSON.parse((await asyncStorage.getItem("settings")) || "{}") as AppSettings;
       const restoredActiveChildId = await asyncStorage.getItem("activeChildId");
 
       assert.equal(restoredActiveChildId, "child-2", "Should restore active child after restart");
       assert.ok(
-        restoredSettings.children.some(c => c.id === restoredActiveChildId),
+        restoredSettings.children.some((c) => c.id === restoredActiveChildId),
         "Restored activeChildId should be valid"
       );
     });
@@ -259,19 +255,16 @@ describe("Multiple Children E2E", () => {
       await asyncStorage.setItem("activeChildId", "child-99");
 
       // Simulate app hydration with fallback logic
-      const storedSettings = JSON.parse(
-        (await asyncStorage.getItem("settings")) || "{}"
-      ) as AppSettings;
+      const storedSettings = JSON.parse((await asyncStorage.getItem("settings")) || "{}") as AppSettings;
       const storedActiveChildId = await asyncStorage.getItem("activeChildId");
 
       // Fallback logic: if activeChildId is invalid, use first child
-      const shouldRestore =
-        storedActiveChildId && storedSettings.children.some(c => c.id === storedActiveChildId);
+      const shouldRestore = storedActiveChildId && storedSettings.children.some((c) => c.id === storedActiveChildId);
       const finalActiveChildId = shouldRestore ? storedActiveChildId : storedSettings.children[0]?.id;
 
       assert.equal(finalActiveChildId, "child-1", "Should fallback to first child");
       assert.ok(
-        storedSettings.children.some(c => c.id === finalActiveChildId),
+        storedSettings.children.some((c) => c.id === finalActiveChildId),
         "Final activeChildId should be valid"
       );
     });
@@ -327,11 +320,9 @@ describe("Multiple Children E2E", () => {
       const finalActiveChildId = await asyncStorage.getItem("activeChildId");
       assert.equal(finalActiveChildId, "child-2", "Final activeChildId should be last switched child");
 
-      const storedSettings = JSON.parse(
-        (await asyncStorage.getItem("settings")) || "{}"
-      ) as AppSettings;
+      const storedSettings = JSON.parse((await asyncStorage.getItem("settings")) || "{}") as AppSettings;
       assert.ok(
-        storedSettings.children.some(c => c.id === finalActiveChildId),
+        storedSettings.children.some((c) => c.id === finalActiveChildId),
         "Final activeChildId should be valid"
       );
     });
@@ -387,11 +378,11 @@ describe("Multiple Children E2E", () => {
       await asyncStorage.setItem("goals", JSON.stringify(oldGoals));
 
       // Simulate migration - assign childId to goals missing it
-      const storedGoals = JSON.parse(
-        (await asyncStorage.getItem("goals")) || "[]"
-      ) as Array<Omit<Goal, "childId"> & { childId?: string }>;
+      const storedGoals = JSON.parse((await asyncStorage.getItem("goals")) || "[]") as Array<
+        Omit<Goal, "childId"> & { childId?: string }
+      >;
       const defaultChildId = "child-1";
-      const migratedGoals = storedGoals.map(goal => ({
+      const migratedGoals = storedGoals.map((goal) => ({
         ...goal,
         childId: goal.childId || defaultChildId
       }));
@@ -423,16 +414,10 @@ describe("Multiple Children E2E", () => {
 
       await asyncStorage.setItem("settings", JSON.stringify(updatedSettings));
 
-      const stored = JSON.parse(
-        (await asyncStorage.getItem("settings")) || "{}"
-      ) as AppSettings;
+      const stored = JSON.parse((await asyncStorage.getItem("settings")) || "{}") as AppSettings;
       assert.equal(stored.children.length, 2, "Should have 2 children");
       assert.equal(stored.children[1]?.name, "Test Child", "New child should have correct name");
-      assert.equal(
-        stored.children[1]?.settings.tileColorId,
-        "lavender",
-        "New child should have default tile color"
-      );
+      assert.equal(stored.children[1]?.settings.tileColorId, "lavender", "New child should have default tile color");
     });
 
     it("should remove child and all their goals when deleted", async () => {
@@ -510,17 +495,13 @@ describe("Multiple Children E2E", () => {
       // Delete child 2
       const updatedSettings = {
         ...settings,
-        children: settings.children.filter(c => c.id !== child2Id)
+        children: settings.children.filter((c) => c.id !== child2Id)
       };
       await asyncStorage.setItem("settings", JSON.stringify(updatedSettings));
 
       // Verify orphaned goals are removed
-      const storedGoals = JSON.parse(
-        (await asyncStorage.getItem("goals")) || "[]"
-      ) as Goal[];
-      const storedSettings = JSON.parse(
-        (await asyncStorage.getItem("settings")) || "{}"
-      ) as AppSettings;
+      const storedGoals = JSON.parse((await asyncStorage.getItem("goals")) || "[]") as Goal[];
+      const storedSettings = JSON.parse((await asyncStorage.getItem("settings")) || "{}") as AppSettings;
 
       const cleanedGoals = removeOrphanedGoals(storedGoals, storedSettings.children);
       assert.equal(cleanedGoals.length, 1, "Should have 1 goal after deletion");
@@ -568,17 +549,17 @@ describe("Multiple Children E2E", () => {
       ];
 
       // Test filtering
-      const child1Goals = goals.filter(g => g.childId === child1Id);
-      const child2Goals = goals.filter(g => g.childId === child2Id);
+      const child1Goals = goals.filter((g) => g.childId === child1Id);
+      const child2Goals = goals.filter((g) => g.childId === child2Id);
 
       assert.equal(child1Goals.length, 2, "Child 1 should have 2 goals");
       assert.equal(child2Goals.length, 1, "Child 2 should have 1 goal");
       assert.ok(
-        child1Goals.every(g => g.childId === child1Id),
+        child1Goals.every((g) => g.childId === child1Id),
         "All child 1 goals should have correct childId"
       );
       assert.ok(
-        child2Goals.every(g => g.childId === child2Id),
+        child2Goals.every((g) => g.childId === child2Id),
         "All child 2 goals should have correct childId"
       );
     });
@@ -607,13 +588,13 @@ describe("Multiple Children E2E", () => {
 
       // Verify isolation for each child
       for (const childId of childIds) {
-        const childGoals = allGoals.filter(g => g.childId === childId);
+        const childGoals = allGoals.filter((g) => g.childId === childId);
         assert.equal(childGoals.length, goalsPerChild, `${childId} should have ${goalsPerChild} goals`);
 
         // Verify no cross-contamination
         for (const otherChildId of childIds) {
           if (otherChildId !== childId) {
-            const otherGoals = childGoals.filter(g => g.childId === otherChildId);
+            const otherGoals = childGoals.filter((g) => g.childId === otherChildId);
             assert.equal(otherGoals.length, 0, `${childId} should not have goals from ${otherChildId}`);
           }
         }
@@ -688,7 +669,7 @@ describe("Multiple Children E2E", () => {
       assert.deepEqual(goals, [], "Should have empty goals array");
       assert.ok(activeChildId, "Should have active child ID");
       assert.ok(
-        settings.children.some(c => c.id === activeChildId),
+        settings.children.some((c) => c.id === activeChildId),
         "ActiveChildId should be valid"
       );
     });
@@ -731,7 +712,9 @@ describe("Multiple Children E2E", () => {
 
       // Simulate app loading: call real migration functions
       const migratedSettings = migrateSettingsV1ToV2(v0112Settings);
-      const storedGoals = JSON.parse((await asyncStorage.getItem("goals")) || "[]") as Array<Omit<Goal, "childId"> & { childId?: string }>;
+      const storedGoals = JSON.parse((await asyncStorage.getItem("goals")) || "[]") as Array<
+        Omit<Goal, "childId"> & { childId?: string }
+      >;
       const defaultChildId = migratedSettings.children[0]?.id || "child-default";
       const migratedGoals = migrateGoalsV1ToV2(storedGoals, defaultChildId);
       const cleanedGoals = removeOrphanedGoals(migratedGoals, migratedSettings.children);
@@ -833,8 +816,8 @@ describe("Multiple Children E2E", () => {
       // Verify multi-child flow
       assert.equal(normalized.children.length, 2, "Should have 2 children");
       assert.equal(cleanedGoals.length, 2, "Should have 2 goals");
-      assert.equal(cleanedGoals.filter(g => g.childId === "child-1").length, 1, "Should have 1 goal for child 1");
-      assert.equal(cleanedGoals.filter(g => g.childId === "child-2").length, 1, "Should have 1 goal for child 2");
+      assert.equal(cleanedGoals.filter((g) => g.childId === "child-1").length, 1, "Should have 1 goal for child 1");
+      assert.equal(cleanedGoals.filter((g) => g.childId === "child-2").length, 1, "Should have 1 goal for child 2");
       assert.equal(restoredActiveChildId, "child-2", "Should restore active child");
     });
   });

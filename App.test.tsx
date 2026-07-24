@@ -56,8 +56,16 @@ describe("App activeChildId state", () => {
 
     const settings = {
       children: [
-        { id: "child-1", name: "Alex", settings: { parentLabel: "Mom", notificationTime: "18:00", tileColorId: "lavender" as const } },
-        { id: "child-2", name: "Jordan", settings: { parentLabel: "Dad", notificationTime: "18:00", tileColorId: "mint" as const } }
+        {
+          id: "child-1",
+          name: "Alex",
+          settings: { parentLabel: "Mom", notificationTime: "18:00", tileColorId: "lavender" as const }
+        },
+        {
+          id: "child-2",
+          name: "Jordan",
+          settings: { parentLabel: "Dad", notificationTime: "18:00", tileColorId: "mint" as const }
+        }
       ],
       globalSettings: { pin: "1234", isPremium: false, exportData: [], appMode: "singleDevice" as const }
     };
@@ -80,8 +88,16 @@ describe("App activeChildId state", () => {
 
     const settings = {
       children: [
-        { id: "child-1", name: "Alex", settings: { parentLabel: "Mom", notificationTime: "18:00", tileColorId: "lavender" as const } },
-        { id: "child-2", name: "Jordan", settings: { parentLabel: "Dad", notificationTime: "18:00", tileColorId: "mint" as const } }
+        {
+          id: "child-1",
+          name: "Alex",
+          settings: { parentLabel: "Mom", notificationTime: "18:00", tileColorId: "lavender" as const }
+        },
+        {
+          id: "child-2",
+          name: "Jordan",
+          settings: { parentLabel: "Dad", notificationTime: "18:00", tileColorId: "mint" as const }
+        }
       ],
       globalSettings: { pin: "1234", isPremium: false, exportData: [], appMode: "singleDevice" as const }
     };
@@ -89,7 +105,7 @@ describe("App activeChildId state", () => {
     const storedActiveChildId = "child-2";
 
     // Verify restoration logic
-    const shouldRestore = storedActiveChildId && settings?.children?.some(c => c.id === storedActiveChildId);
+    const shouldRestore = storedActiveChildId && settings?.children?.some((c) => c.id === storedActiveChildId);
     assert.ok(shouldRestore);
 
     const restoredId = shouldRestore ? storedActiveChildId : settings.children[0]?.id;
@@ -101,8 +117,16 @@ describe("App activeChildId state", () => {
 
     const settings = {
       children: [
-        { id: "child-1", name: "Alex", settings: { parentLabel: "Mom", notificationTime: "18:00", tileColorId: "lavender" as const } },
-        { id: "child-2", name: "Jordan", settings: { parentLabel: "Dad", notificationTime: "18:00", tileColorId: "mint" as const } }
+        {
+          id: "child-1",
+          name: "Alex",
+          settings: { parentLabel: "Mom", notificationTime: "18:00", tileColorId: "lavender" as const }
+        },
+        {
+          id: "child-2",
+          name: "Jordan",
+          settings: { parentLabel: "Dad", notificationTime: "18:00", tileColorId: "mint" as const }
+        }
       ],
       globalSettings: { pin: "1234", isPremium: false, exportData: [], appMode: "singleDevice" as const }
     };
@@ -110,7 +134,7 @@ describe("App activeChildId state", () => {
     const storedActiveChildId = "child-3"; // No longer exists
 
     // Verify fallback logic
-    const shouldRestore = storedActiveChildId && settings?.children?.some(c => c.id === storedActiveChildId);
+    const shouldRestore = storedActiveChildId && settings?.children?.some((c) => c.id === storedActiveChildId);
     assert.equal(shouldRestore, false);
 
     const finalId = shouldRestore ? storedActiveChildId : settings.children[0]?.id;
@@ -257,9 +281,11 @@ describe("loadSettings v0.1.12 migration integration", () => {
 
     // Load and migrate using real functions
     const migratedSettings = await loadSettings();
-    const storedGoals = JSON.parse((await AsyncStorage.getItem("goals")) || "[]") as Array<Omit<Goal, "childId"> & { childId?: string }>;
+    const storedGoals = JSON.parse((await AsyncStorage.getItem("goals")) || "[]") as Array<
+      Omit<Goal, "childId"> & { childId?: string }
+    >;
     const defaultChildId = migratedSettings.children[0]?.id || "child-default";
-    const migratedGoals = storedGoals.map(goal => ({
+    const migratedGoals = storedGoals.map((goal) => ({
       ...goal,
       childId: goal.childId || defaultChildId
     }));
