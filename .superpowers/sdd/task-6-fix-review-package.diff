@@ -1,0 +1,13 @@
+diff --git a/src/screens/ChildScreen.tsx b/src/screens/ChildScreen.tsx
+index 8d0be55..ba504c9 100644
+--- a/src/screens/ChildScreen.tsx
++++ b/src/screens/ChildScreen.tsx
+@@ -15,7 +15,7 @@ import { defaultAppTheme } from "../ui/appTheme";
+ import { colors, fonts, radii, spacing } from "../ui/theme";
+ 
+ type ChildScreenProps = {
+-  activeChildId?: string;
++  activeChildId: string;
+   canRevealTile: boolean;
+   goal: Goal | null;
+   onAddGoal?: () => void;

@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FlatList, Image, Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import { FlatList, Image, Modal, Pressable, ScrollView, StyleSheet, Text, View } from "react-native";
 
 import { AvatarBadge } from "../components/AvatarBadge";
 import { Button } from "../components/Button";
@@ -18,6 +18,7 @@ import { colors, fonts, radii, spacing } from "../ui/theme";
 const INFO_ICON_SOURCE = require("../../assets/icons/settings-info.png");
 
 type GoalsScreenProps = {
+  activeChildId?: string;
   goals: Goal[];
   isPremium: boolean;
   onAddGoal: () => void;
@@ -25,11 +26,19 @@ type GoalsScreenProps = {
   onEditGoal: (goalId: string) => void;
   onOpenGoal: (goalId: string) => void;
   onOpenSettings: () => void;
+  onSelectChild?: (childId: string) => void;
   parentLabel: string;
+  childrenList?: Array<{
+    id: string;
+    name: string;
+    settings: { parentLabel: string; notificationTime: string; tileColorId: string };
+  }>;
   theme?: AppTheme;
 };
 
 export function GoalsScreen({
+  activeChildId,
+  childrenList = [],
   goals,
   isPremium,
   onAddGoal,
@@ -37,14 +46,24 @@ export function GoalsScreen({
   onEditGoal,
   onOpenGoal,
   onOpenSettings,
+  onSelectChild,
   parentLabel,
   theme = defaultAppTheme
 }: GoalsScreenProps) {
   const [openMenuGoalId, setOpenMenuGoalId] = useState<string | null>(null);
   const [isInfoOpen, setIsInfoOpen] = useState(false);
-  const activeGoalsCount = goals.filter((goal) => !isGoalComplete(goal)).length;
+  const [isChildPickerOpen, setIsChildPickerOpen] = useState(false);
+
+  // Filter goals by activeChildId
+  const filteredGoals = useMemo(
+    () => (activeChildId ? goals.filter((goal) => goal.childId === activeChildId) : goals),
+    [goals, activeChildId]
+  );
+
+  const activeChild = childrenList.find((c) => c.id === activeChildId);
+  const activeGoalsCount = filteredGoals.filter((goal) => !isGoalComplete(goal)).length;
   const hasReachedFreeLimit = !isPremium && activeGoalsCount >= FREE_GOAL_LIMIT;
-  const sortedGoals = useMemo(() => [...goals].sort(compareGoalsByStatus), [goals]);
+  const sortedGoals = useMemo(() => [...filteredGoals].sort(compareGoalsByStatus), [filteredGoals]);
 
   return (
     <View style={[styles.screen, { backgroundColor: theme.parentBackground }]}>
@@ -67,6 +86,20 @@ export function GoalsScreen({
           <Text style={styles.infoSparkle}>✦</Text>
         </Pressable>
       </View>
+
+      {childrenList.length > 1 && (
+        <View style={styles.childSelector}>
+          <Pressable
+            accessibilityLabel={strings.goals.selectChildLabel}
+            accessibilityRole="button"
+            onPress={() => setIsChildPickerOpen(true)}
+            style={styles.childButton}
+          >
+            <Text style={styles.childButtonText}>{activeChild?.name || strings.goals.selectChildFallback}</Text>
+            {childrenList.length > 1 && <Text style={styles.childButtonSubtitle}>{strings.goals.switchChildHint}</Text>}
+          </Pressable>
+        </View>
+      )}
 
       <FlatList
         ListEmptyComponent={
@@ -201,6 +234,18 @@ export function GoalsScreen({
       </View>
 
       <InfoModal onClose={() => setIsInfoOpen(false)} theme={theme} visible={isInfoOpen} />
+
+      <ChildPickerModal
+        activeChildId={activeChildId}
+        childrenList={childrenList}
+        onClose={() => setIsChildPickerOpen(false)}
+        onSelectChild={(childId) => {
+          onSelectChild?.(childId);
+          setIsChildPickerOpen(false);
+        }}
+        theme={theme}
+        visible={isChildPickerOpen}
+      />
     </View>
   );
 }
@@ -573,6 +618,85 @@ const styles = StyleSheet.create({
     color: colors.surface,
     fontSize: 17,
     fontWeight: "800"
+  },
+  childSelector: {
+    paddingVertical: spacing.md,
+    paddingHorizontal: spacing.xl,
+    backgroundColor: colors.surface,
+    borderBottomWidth: 1,
+    borderBottomColor: colors.border,
+    marginHorizontal: -spacing.xl,
+    marginBottom: spacing.md
+  },
+  childButton: {
+    paddingVertical: spacing.sm,
+    paddingHorizontal: spacing.md,
+    borderRadius: radii.md,
+    backgroundColor: colors.surfaceMuted
+  },
+  childButtonText: {
+    fontSize: 18,
+    fontWeight: "600",
+    color: colors.text
+  },
+  childButtonSubtitle: {
+    fontSize: 12,
+    color: colors.textMuted,
+    marginTop: spacing.xs
+  },
+  pickerCard: {
+    backgroundColor: colors.surface,
+    borderRadius: radii.lg,
+    gap: spacing.md,
+    maxHeight: "70%",
+    padding: spacing.lg,
+    shadowColor: colors.primaryDark,
+    shadowOffset: { height: 12, width: 0 },
+    shadowOpacity: 0.16,
+    shadowRadius: 24,
+    width: "100%"
+  },
+  pickerTitle: {
+    color: colors.text,
+    fontFamily: fonts.heading,
+    fontSize: 22,
+    fontWeight: "800",
+    textAlign: "center"
+  },
+  pickerList: {
+    flexGrow: 0
+  },
+  pickerItem: {
+    alignItems: "center",
+    backgroundColor: colors.surfaceMuted,
+    borderColor: colors.border,
+    borderRadius: radii.md,
+    borderWidth: 1,
+    flexDirection: "row",
+    justifyContent: "space-between",
+    marginBottom: spacing.sm,
+    minHeight: 54,
+    paddingHorizontal: spacing.lg,
+    paddingVertical: spacing.md
+  },
+  pickerItemText: {
+    color: colors.text,
+    fontSize: 17,
+    fontWeight: "700"
+  },
+  pickerCheck: {
+    fontSize: 18,
+    fontWeight: "800"
+  },
+  pickerCancel: {
+    alignItems: "center",
+    justifyContent: "center",
+    minHeight: 50
+  },
+  pickerCancelText: {
+    color: colors.textMuted,
+    fontSize: 16,
+    fontWeight: "800"
   }
 });
 
@@ -595,6 +719,56 @@ function InfoModal({ onClose, theme, visible }: { onClose: () => void; theme: Ap
           </Pressable>
         </View>
       </View>
+    </Modal>
+  );
+}
+
+function ChildPickerModal({
+  activeChildId,
+  childrenList,
+  onClose,
+  onSelectChild,
+  theme,
+  visible
+}: {
+  activeChildId?: string;
+  childrenList: Array<{ id: string; name: string }>;
+  onClose: () => void;
+  onSelectChild: (childId: string) => void;
+  theme: AppTheme;
+  visible: boolean;
+}) {
+  return (
+    <Modal animationType="fade" onRequestClose={onClose} transparent visible={visible}>
+      <Pressable onPress={onClose} style={styles.modalOverlay}>
+        <Pressable onPress={() => {}} style={styles.pickerCard}>
+          <Text style={styles.pickerTitle}>{strings.goals.selectChildTitle}</Text>
+          <ScrollView style={styles.pickerList}>
+            {childrenList.map((child) => {
+              const isActive = child.id === activeChildId;
+
+              return (
+                <Pressable
+                  accessibilityRole="button"
+                  accessibilityState={{ selected: isActive }}
+                  key={child.id}
+                  onPress={() => onSelectChild(child.id)}
+                  style={[
+                    styles.pickerItem,
+                    isActive && { backgroundColor: theme.accentSoft, borderColor: theme.accent }
+                  ]}
+                >
+                  <Text style={[styles.pickerItemText, isActive && { color: theme.accentDark }]}>{child.name}</Text>
+                  {isActive ? <Text style={[styles.pickerCheck, { color: theme.accentDark }]}>✓</Text> : null}
+                </Pressable>
+              );
+            })}
+          </ScrollView>
+          <Pressable accessibilityRole="button" onPress={onClose} style={styles.pickerCancel}>
+            <Text style={styles.pickerCancelText}>{strings.goals.selectChildCancel}</Text>
+          </Pressable>
+        </Pressable>
+      </Pressable>
     </Modal>
   );
 }

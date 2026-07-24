@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Modal, Pressable, StyleSheet, Text, View } from "react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { StatusBar } from "expo-status-bar";
 import { SafeAreaProvider, SafeAreaView } from "react-native-safe-area-context";
 
@@ -11,13 +12,26 @@ import { ChildScreen } from "./src/screens/ChildScreen";
 import { GoalsScreen } from "./src/screens/GoalsScreen";
 import { ModeSelectionScreen } from "./src/screens/ModeSelectionScreen";
 import { SettingsScreen } from "./src/screens/SettingsScreen";
-import { completeTask, createGoal, normalizeSettings, updateGoal } from "./src/domain/goal";
+import {
+  completeTask,
+  createGoal,
+  normalizeSettings,
+  resolveReminderTimeForActiveChild,
+  updateGoal
+} from "./src/domain/goal";
 import type { AppSettings, Goal, GoalDraft } from "./src/domain/goal";
 import { strings } from "./src/i18n/strings";
 import type { AppRoute } from "./src/navigation/routes";
-import { cancelDailyReminder } from "./src/notifications/scheduleDaily";
+import { cancelDailyReminder, scheduleDaily } from "./src/notifications/scheduleDaily";
 import { syncPremiumEntitlement } from "./src/premium/premiumPurchase";
-import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
+import {
+  loadGoals,
+  loadSettings,
+  saveGoals,
+  saveSettings,
+  migrateGoalsV1ToV2,
+  removeOrphanedGoals
+} from "./src/storage/appStorage";
 import { getAppTheme } from "./src/ui/appTheme";
 import { colors, fonts, radii, spacing } from "./src/ui/theme";
 import MobileAds from "react-native-google-mobile-ads";
@@ -34,6 +48,10 @@ function AppContent() {
   const [route, setRoute] = useState<AppRoute>("goals");
   const [goals, setGoals] = useState<Goal[]>([]);
   const [settings, setSettings] = useState<AppSettings | null>(null);
+  const [activeChildId, setActiveChildId] = useState<string>(() => {
+    // Initialize to first child; will be overridden by AsyncStorage load
+    return "default";
+  });
   const [selectedGoalId, setSelectedGoalId] = useState<string | null>(null);
   const [pendingRevealGoalId, setPendingRevealGoalId] = useState<string | null>(null);
   const [isResetConfirmOpen, setIsResetConfirmOpen] = useState(false);
@@ -55,25 +73,46 @@ function AppContent() {
   useEffect(() => {
     async function hydrateApp() {
       try {
-        const [storedGoals, storedSettings] = await Promise.all([loadGoals(), loadSettings()]);
+        const [storedGoals, storedSettings, storedActiveChildId] = await Promise.all([
+          loadGoals(),
+          loadSettings(),
+          AsyncStorage.getItem("activeChildId")
+        ]);
 
         const normalizedSettings = normalizeSettings(storedSettings);
 
-        setGoals(storedGoals);
+        // Migrate goals (assign childId if missing)
+        const migratedGoals = migrateGoalsV1ToV2(storedGoals, normalizedSettings.children[0]?.id || "child-default");
+
+        // Remove orphaned goals
+        const cleanedGoals = removeOrphanedGoals(migratedGoals, normalizedSettings.children);
+
+        setGoals(cleanedGoals);
         setSettings(normalizedSettings);
 
-        if (!normalizedSettings.isReminderEnabled) {
+        // Restore activeChildId if valid
+        if (storedActiveChildId && normalizedSettings.children.some((c) => c.id === storedActiveChildId)) {
+          setActiveChildId(storedActiveChildId);
+        } else if (normalizedSettings.children.length > 0) {
+          setActiveChildId(normalizedSettings.children[0]!.id);
+        }
+
+        if (!normalizedSettings.globalSettings.isReminderEnabled) {
           void cancelDailyReminder();
         }
 
         void syncPremiumEntitlement().then((premiumResult) => {
           if (premiumResult.status === "activated") {
             setSettings((currentSettings) =>
-              currentSettings && !currentSettings.isPremium ? { ...currentSettings, isPremium: true } : currentSettings
+              currentSettings && !currentSettings.globalSettings.isPremium
+                ? { ...currentSettings, globalSettings: { ...currentSettings.globalSettings, isPremium: true } }
+                : currentSettings
             );
           } else if (premiumResult.status === "not_active") {
             setSettings((currentSettings) =>
-              currentSettings && currentSettings.isPremium ? { ...currentSettings, isPremium: false } : currentSettings
+              currentSettings && currentSettings.globalSettings.isPremium
+                ? { ...currentSettings, globalSettings: { ...currentSettings.globalSettings, isPremium: false } }
+                : currentSettings
             );
           }
         });
@@ -87,6 +126,31 @@ function AppContent() {
 
     void hydrateApp();
   }, []);
+
+  useEffect(() => {
+    if (activeChildId) {
+      AsyncStorage.setItem("activeChildId", activeChildId).catch((err) =>
+        console.error("Failed to persist activeChildId", err)
+      );
+    }
+  }, [activeChildId]);
+
+  // The OS holds a single "daily-reminder", so keep it in sync with the active
+  // child's notification time. Recomputes whenever the active child changes,
+  // reminders are toggled, or the active child's notification time is edited.
+  const activeReminderTime = settings ? resolveReminderTimeForActiveChild(settings, activeChildId) : null;
+
+  useEffect(() => {
+    if (!isHydrated) {
+      return;
+    }
+
+    if (activeReminderTime) {
+      void scheduleDaily(activeReminderTime);
+    } else {
+      void cancelDailyReminder();
+    }
+  }, [activeReminderTime, isHydrated]);
 
   useEffect(() => {
     if (isHydrated) {
@@ -111,7 +175,7 @@ function AppContent() {
   }, [isHydrated, settings]);
 
   function handleCreateGoal(draft: GoalDraft) {
-    const goal = createGoal(draft);
+    const goal = createGoal(draft, activeChildId);
 
     setGoals((currentGoals) => [goal, ...currentGoals]);
     setSelectedGoalId(goal.id);
@@ -191,12 +255,16 @@ function AppContent() {
     setRoute("goals");
   }
 
-  function handleSelectMode(appMode: AppSettings["appMode"]) {
+  function handleSelectMode(appMode: AppSettings["globalSettings"]["appMode"]) {
     if (!appMode) {
       return;
     }
 
-    setSettings((currentSettings) => (currentSettings ? { ...currentSettings, appMode } : currentSettings));
+    setSettings((currentSettings) =>
+      currentSettings
+        ? { ...currentSettings, globalSettings: { ...currentSettings.globalSettings, appMode } }
+        : currentSettings
+    );
     setRoute("goals");
   }
 
@@ -213,32 +281,36 @@ function AppContent() {
     );
   }
 
-  const appTheme = getAppTheme(settings.tileColorId);
+  const activeChild = settings.children.find((c) => c.id === activeChildId) ?? settings.children[0]!;
+  const appTheme = getAppTheme(activeChild.settings.tileColorId);
   // Mode selection is shown when appMode is null.
   // Users can reset mode via Settings → "Change Mode" button,
   // which sets appMode to null and returns to goals screen.
   // This triggers ModeSelectionScreen on next render.
-  const screen = !settings.appMode ? (
-    <ModeSelectionScreen initialMode={settings.appMode} onSelectMode={handleSelectMode} />
+  const screen = !settings.globalSettings.appMode ? (
+    <ModeSelectionScreen initialMode={settings.globalSettings.appMode} onSelectMode={handleSelectMode} />
   ) : (
     <>
       {route === "goals" ? (
         <GoalsScreen
+          activeChildId={activeChildId}
           goals={goals}
-          isPremium={settings.isPremium}
+          isPremium={settings.globalSettings.isPremium}
           onAddGoal={handleStartAddGoal}
           onDeleteGoal={handleDeleteGoal}
           onEditGoal={handleStartEditGoal}
           onOpenGoal={handleOpenGoal}
           onOpenSettings={() => setRoute("settings")}
-          parentLabel={settings.parentLabel}
+          onSelectChild={setActiveChildId}
+          parentLabel={activeChild.settings.parentLabel}
+          childrenList={settings.children}
           theme={appTheme}
         />
       ) : null}
       {route === "addGoal" ? (
         <AddGoalScreen
           initialGoal={activeGoal ?? null}
-          isPremium={settings.isPremium}
+          isPremium={settings.globalSettings.isPremium}
           onBack={() => setRoute("goals")}
           onSave={handleSaveGoal}
           theme={appTheme}
@@ -252,13 +324,14 @@ function AppContent() {
           }}
           onBack={() => setRoute("goals")}
           onOpenChildView={() => setRoute("child")}
-          parentPin={settings.parentPin}
-          isPremium={settings.isPremium}
+          parentPin={settings.globalSettings.pin}
+          isPremium={settings.globalSettings.isPremium}
           theme={appTheme}
         />
       ) : null}
       {route === "child" && activeGoal ? (
         <ChildScreen
+          activeChildId={activeChildId}
           canRevealTile={pendingRevealGoalId === activeGoal.id}
           goal={activeGoal}
           onAddGoal={handleStartAddGoal}
@@ -272,16 +345,20 @@ function AppContent() {
       ) : null}
       {route === "settings" ? (
         <SettingsScreen
+          activeChildId={activeChildId}
           onBack={() => setRoute("goals")}
           onResetGoals={handleResetGoals}
+          onSelectChild={setActiveChildId}
           onSettingsChange={setSettings}
           settings={settings}
+          childrenList={settings.children}
           theme={appTheme}
         />
       ) : null}
     </>
   );
-  const shouldShowBottomNav = Boolean(settings.appMode) && route !== "addGoal" && route !== "approveTask";
+  const shouldShowBottomNav =
+    Boolean(settings.globalSettings.appMode) && route !== "addGoal" && route !== "approveTask";
   const routeBackground = getRouteBackground(route, appTheme);
 
   return (

@@ -15,8 +15,9 @@ import { defaultAppTheme } from "../ui/appTheme";
 import { colors, fonts, radii, spacing } from "../ui/theme";
 
 type ChildScreenProps = {
+  activeChildId: string;
   canRevealTile: boolean;
-  goal: Goal;
+  goal: Goal | null;
   onAddGoal?: () => void;
   onBack: () => void;
   onCompleteTask: () => void;
@@ -27,6 +28,7 @@ type ChildScreenProps = {
 };
 
 export function ChildScreen({
+  activeChildId,
   canRevealTile,
   goal,
   onAddGoal,
@@ -38,20 +40,20 @@ export function ChildScreen({
   tileColor
 }: ChildScreenProps) {
   const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
-  const isComplete = isGoalComplete(goal);
-  const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
-  const progress = getGoalProgress(goal);
+  const isComplete = goal ? isGoalComplete(goal) : false;
+  const remainingTasks = goal ? Math.max(0, goal.totalTasks - goal.completedTasks) : 0;
+  const progress = goal ? getGoalProgress(goal) : 0;
   const hasPlayedCompletionFeedback = useRef(isComplete);
-  const lastGoalId = useRef(goal.id);
+  const lastGoalId = useRef(goal?.id);
 
-  if (lastGoalId.current !== goal.id) {
+  if (goal && lastGoalId.current !== goal.id) {
     hasPlayedCompletionFeedback.current = isComplete;
     lastGoalId.current = goal.id;
   }
 
   useEffect(() => {
     setIsCelebrationOpen(false);
-  }, [goal.id]);
+  }, [goal?.id]);
 
   useEffect(() => {
     if (isComplete) {
@@ -65,6 +67,16 @@ export function ChildScreen({
       hasPlayedCompletionFeedback.current = false;
     }
   }, [isComplete]);
+
+  // Safety check: ensure goal belongs to active child.
+  // Placed after all hooks so hook order stays stable across renders.
+  if (!goal || goal.childId !== activeChildId) {
+    return (
+      <View style={[styles.errorContainer, { backgroundColor: theme.childBackground }]}>
+        <Text style={styles.errorText}>{strings.child.goalNotFound}</Text>
+      </View>
+    );
+  }
 
   return (
     <>
@@ -163,6 +175,17 @@ export function ChildScreen({
 }
 
 const styles = StyleSheet.create({
+  errorContainer: {
+    alignItems: "center",
+    flex: 1,
+    justifyContent: "center",
+    paddingHorizontal: spacing.lg
+  },
+  errorText: {
+    color: colors.text,
+    fontSize: 18,
+    fontWeight: "600"
+  },
   scroll: {
     backgroundColor: colors.childBackground
   },

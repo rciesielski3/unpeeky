@@ -1,15 +1,7 @@
 import { describe, it } from "node:test";
 import assert from "node:assert/strict";
 
-import {
-  completeTask,
-  createGoal,
-  getGoalProgress,
-  isGoalComplete,
-  normalizeGoal,
-  updateGoal,
-  migrateGoalV1ToV2
-} from "./goal";
+import { completeTask, createGoal, getGoalProgress, isGoalComplete, normalizeGoal, updateGoal } from "./goal";
 import type { Goal, GoalDraft, PersistedGoal } from "./goal";
 import { DEFAULT_AVATAR_ID } from "./avatar";
 
@@ -42,12 +34,10 @@ function completeInput(
 describe("createGoal", () => {
   it("creates a goal with the correct initial state", () => {
     const now = new Date("2026-01-01T12:00:00.000Z");
-    const childId = "child-123";
     const draft = makeDraft();
-    const goal = createGoal(draft, childId, now);
+    const goal = createGoal(draft, now);
 
     assert.equal(goal.id, `${now.getTime()}`);
-    assert.equal(goal.childId, childId);
     assert.equal(goal.childName, draft.childName);
     assert.equal(goal.rewardName, draft.rewardName);
     assert.equal(goal.imageUri, draft.imageUri);
@@ -68,7 +58,6 @@ describe("completeTask", () => {
   function makeGoal(overrides: Partial<Goal> = {}): Goal {
     return {
       id: "1",
-      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -168,7 +157,6 @@ describe("normalizeGoal", () => {
   it("defensively reads well-formed stored data", () => {
     const persisted: PersistedGoal = {
       id: "1",
-      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -190,7 +178,6 @@ describe("normalizeGoal", () => {
   it("falls back to the default avatar when avatarId is missing or unknown", () => {
     const base: PersistedGoal = {
       id: "1",
-      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -207,7 +194,6 @@ describe("normalizeGoal", () => {
   it("repairs a missing or malformed reveal order", () => {
     const base: PersistedGoal = {
       id: "1",
-      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -238,7 +224,6 @@ describe("normalizeGoal", () => {
   it("derives completed from completedTasks/totalTasks when reading legacy data", () => {
     const base: PersistedGoal = {
       id: "1",
-      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -258,7 +243,6 @@ describe("updateGoal", () => {
   function makeGoal(overrides: Partial<Goal> = {}): Goal {
     return {
       id: "1",
-      childId: "child-1",
       childName: "Zosia",
       rewardName: "Ice cream",
       imageUri: "file://reward.png",
@@ -287,44 +271,5 @@ describe("updateGoal", () => {
 
     assert.equal(nextGoal.childName, "Kuba");
     assert.equal(nextGoal.id, goal.id);
-  });
-});
-
-// New childId tests
-describe("Goal", () => {
-  describe("Goal.childId", () => {
-    it("should have childId field", () => {
-      const goal = createGoal(
-        {
-          childName: "Alex",
-          rewardName: "Ice Cream",
-          imageUri: "...",
-          totalTasks: 16,
-          avatarId: "dino"
-        },
-        "child-12345"
-      );
-      assert.ok(Object.hasOwn(goal, "childId"), "goal should have childId property");
-      assert.strictEqual(typeof goal.childId, "string", "childId should be a string");
-      assert.strictEqual(goal.childId, "child-12345", "childId should match provided value");
-    });
-
-    it("migrateGoalV1ToV2 should assign childId to goal", () => {
-      const oldGoal: Omit<Goal, "childId"> = {
-        id: "goal-123",
-        childName: "Alex",
-        rewardName: "Cake",
-        imageUri: "...",
-        totalTasks: 12,
-        completedTasks: 0,
-        revealOrder: [0, 1, 2],
-        avatarId: "dino",
-        createdAt: new Date().toISOString(),
-        completed: false
-      };
-      const migratedGoal = migrateGoalV1ToV2(oldGoal, "child-12345");
-      assert.strictEqual(migratedGoal.childId, "child-12345", "migratedGoal.childId should match provided childId");
-      assert.strictEqual(migratedGoal.id, oldGoal.id, "migratedGoal.id should match oldGoal.id");
-    });
   });
 });

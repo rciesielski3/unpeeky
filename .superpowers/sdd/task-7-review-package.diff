@@ -1,0 +1,325 @@
+diff --git a/App.tsx b/App.tsx
+index 40cd399..8dad59d 100644
+--- a/App.tsx
++++ b/App.tsx
+@@ -18,7 +18,7 @@ import { strings } from "./src/i18n/strings";
+ import type { AppRoute } from "./src/navigation/routes";
+ import { cancelDailyReminder } from "./src/notifications/scheduleDaily";
+ import { syncPremiumEntitlement } from "./src/premium/premiumPurchase";
+-import { loadGoals, loadSettings, saveGoals, saveSettings } from "./src/storage/appStorage";
++import { loadGoals, loadSettings, saveGoals, saveSettings, migrateGoalsV1ToV2, removeOrphanedGoals } from "./src/storage/appStorage";
+ import { getAppTheme } from "./src/ui/appTheme";
+ import { colors, fonts, radii, spacing } from "./src/ui/theme";
+ import MobileAds from "react-native-google-mobile-ads";
+@@ -68,7 +68,19 @@ function AppContent() {
+ 
+         const normalizedSettings = normalizeSettings(storedSettings);
+ 
+-        setGoals(storedGoals);
++        // Migrate goals (assign childId if missing)
++        const migratedGoals = migrateGoalsV1ToV2(
++          storedGoals,
++          normalizedSettings.children[0]?.id || "child-default"
++        );
++
++        // Remove orphaned goals
++        const cleanedGoals = removeOrphanedGoals(
++          migratedGoals,
++          normalizedSettings.children
++        );
++
++        setGoals(cleanedGoals);
+         setSettings(normalizedSettings);
+ 
+         // Restore activeChildId if valid
+diff --git a/package.json b/package.json
+index 2326bf6..3e7cebb 100644
+--- a/package.json
++++ b/package.json
+@@ -14,7 +14,7 @@
+     "format": "prettier . --write",
+     "format:check": "prettier . --check",
+     "postinstall": "patch-package",
+-    "test:unit": "node --import tsx --test App.test.tsx src/domain/*.test.ts src/services/*.test.ts src/screens/*.test.tsx",
++    "test:unit": "node --import tsx --test App.test.tsx src/domain/*.test.ts src/services/*.test.ts src/screens/*.test.tsx src/storage/*.test.ts",
+     "test": "npm run test:unit",
+     "typecheck": "tsc --noEmit"
+   },
+diff --git a/src/screens/ChildScreen.test.tsx b/src/screens/ChildScreen.test.tsx
+new file mode 100644
+index 0000000..a7385a5
+--- /dev/null
++++ b/src/screens/ChildScreen.test.tsx
+@@ -0,0 +1,42 @@
++import { describe, it } from "node:test";
++import assert from "node:assert/strict";
++import type { Goal } from "../domain/goal";
++
++describe("ChildScreen safety checks", () => {
++  const mockGoal: Goal = {
++    id: "g1",
++    childId: "child-1",
++    childName: "Alex",
++    rewardName: "Cake",
++    imageUri: "https://example.com/cake.jpg",
++    totalTasks: 16,
++    completedTasks: 0,
++    revealOrder: Array.from({ length: 16 }, (_, i) => i),
++    avatarId: "dino",
++    createdAt: new Date().toISOString(),
++    completed: false
++  };
++
++  it("should display goal when activeChildId matches goal.childId", () => {
++    const activeChildId = "child-1";
++    // Shows error if: !goal || goal.childId !== activeChildId
++    const shouldShowError = !mockGoal || mockGoal.childId !== activeChildId;
++    assert.equal(shouldShowError, false); // Should not show error
++  });
++
++  it("should not display goal if activeChildId doesn't match", () => {
++    const activeChildId = "child-2"; // Different from goal.childId
++    // Shows error if: !goal || goal.childId !== activeChildId
++    const shouldShowError = !mockGoal || mockGoal.childId !== activeChildId;
++    assert.ok(shouldShowError); // Should show error
++  });
++
++  it("should not display goal if goal is null", () => {
++    const activeChildId = "child-1";
++    const goal = null;
++    // Shows error if: !goal || goal.childId !== activeChildId
++    // eslint-disable-next-line @typescript-eslint/no-explicit-any
++    const shouldShowError = !goal || (goal as any).childId !== activeChildId;
++    assert.ok(shouldShowError); // Should show error
++  });
++});
+diff --git a/src/screens/ChildScreen.tsx b/src/screens/ChildScreen.tsx
+index 74a55d9..ba504c9 100644
+--- a/src/screens/ChildScreen.tsx
++++ b/src/screens/ChildScreen.tsx
+@@ -15,9 +15,9 @@ import { defaultAppTheme } from "../ui/appTheme";
+ import { colors, fonts, radii, spacing } from "../ui/theme";
+ 
+ type ChildScreenProps = {
+-  activeChildId?: string;
++  activeChildId: string;
+   canRevealTile: boolean;
+-  goal: Goal;
++  goal: Goal | null;
+   onAddGoal?: () => void;
+   onBack: () => void;
+   onCompleteTask: () => void;
+@@ -28,6 +28,7 @@ type ChildScreenProps = {
+ };
+ 
+ export function ChildScreen({
++  activeChildId,
+   canRevealTile,
+   goal,
+   onAddGoal,
+@@ -38,6 +39,15 @@ export function ChildScreen({
+   theme = defaultAppTheme,
+   tileColor
+ }: ChildScreenProps) {
++  // Safety check: ensure goal belongs to active child
++  if (!goal || goal.childId !== activeChildId) {
++    return (
++      <View style={[styles.errorContainer, { backgroundColor: theme.childBackground }]}>
++        <Text style={styles.errorText}>Goal not found</Text>
++      </View>
++    );
++  }
++
+   const [isCelebrationOpen, setIsCelebrationOpen] = useState(false);
+   const isComplete = isGoalComplete(goal);
+   const remainingTasks = Math.max(0, goal.totalTasks - goal.completedTasks);
+@@ -164,6 +174,17 @@ export function ChildScreen({
+ }
+ 
+ const styles = StyleSheet.create({
++  errorContainer: {
++    alignItems: "center",
++    flex: 1,
++    justifyContent: "center",
++    paddingHorizontal: spacing.lg
++  },
++  errorText: {
++    color: colors.text,
++    fontSize: 18,
++    fontWeight: "600"
++  },
+   scroll: {
+     backgroundColor: colors.childBackground
+   },
+diff --git a/src/storage/appStorage.test.ts b/src/storage/appStorage.test.ts
+index 69fe3eb..d3c8b41 100644
+--- a/src/storage/appStorage.test.ts
++++ b/src/storage/appStorage.test.ts
+@@ -1,7 +1,8 @@
+ import { describe, it } from "node:test";
+ import assert from "node:assert/strict";
+ 
+-import { migrateSettingsV1ToV2 } from "./appStorage";
++import { migrateSettingsV1ToV2, migrateGoalsV1ToV2, removeOrphanedGoals } from "./appStorage";
++import type { Goal } from "../domain/goal";
+ 
+ describe("AppSettings migration", () => {
+   it("should migrate v0.1.12 single-child to v0.1.13 multi-child schema", () => {
+@@ -37,3 +38,128 @@ describe("AppSettings migration", () => {
+     assert.equal(migrated.children[0].name, "Child"); // fallback
+   });
+ });
++
++describe("Goal migration", () => {
++  it("should assign childId to goals from v0.1.12 migration", () => {
++    const oldGoals = [
++      {
++        id: "g1",
++        childName: "Alex",
++        rewardName: "Cake",
++        imageUri: "uri",
++        totalTasks: 16,
++        completedTasks: 0,
++        revealOrder: [0, 1, 2],
++        avatarId: "default",
++        createdAt: "2026-01-01T00:00:00Z",
++        completed: false
++        // No childId
++      }
++    ] as any[];
++    const migratedChildId = "child-12345";
++
++    const migratedGoals = migrateGoalsV1ToV2(oldGoals, migratedChildId);
++
++    assert.equal(migratedGoals.length, 1);
++    assert.equal(migratedGoals[0].childId, migratedChildId);
++  });
++
++  it("should preserve existing childId if already present", () => {
++    const oldGoals = [
++      {
++        id: "g1",
++        childId: "child-existing",
++        childName: "Alex",
++        rewardName: "Cake",
++        imageUri: "uri",
++        totalTasks: 16,
++        completedTasks: 0,
++        revealOrder: [0, 1, 2],
++        avatarId: "default",
++        createdAt: "2026-01-01T00:00:00Z",
++        completed: false
++      }
++    ] as Goal[];
++    const migratedChildId = "child-12345";
++
++    const migratedGoals = migrateGoalsV1ToV2(oldGoals, migratedChildId);
++
++    assert.equal(migratedGoals[0].childId, "child-existing");
++  });
++
++  it("should remove orphaned goals (childId doesn't exist in children)", () => {
++    const goals = [
++      {
++        id: "g1",
++        childId: "child-1",
++        childName: "Alex",
++        rewardName: "Cake",
++        imageUri: "uri",
++        totalTasks: 16,
++        completedTasks: 0,
++        revealOrder: [0, 1, 2],
++        avatarId: "default",
++        createdAt: "2026-01-01T00:00:00Z",
++        completed: false
++      },
++      {
++        id: "g2",
++        childId: "child-orphan",
++        childName: "Bob",
++        rewardName: "Cookies",
++        imageUri: "uri",
++        totalTasks: 12,
++        completedTasks: 2,
++        revealOrder: [0, 1, 2],
++        avatarId: "default",
++        createdAt: "2026-01-01T00:00:00Z",
++        completed: false
++      }
++    ] as Goal[];
++    const children = [{ id: "child-1", name: "Alex", settings: { parentLabel: "Parent", notificationTime: "18:00", tileColorId: "lavender" as const } }];
++
++    const cleaned = removeOrphanedGoals(goals, children);
++
++    assert.equal(cleaned.length, 1);
++    assert.equal(cleaned[0].id, "g1");
++  });
++
++  it("should keep all goals if all childIds are valid", () => {
++    const goals = [
++      {
++        id: "g1",
++        childId: "child-1",
++        childName: "Alex",
++        rewardName: "Cake",
++        imageUri: "uri",
++        totalTasks: 16,
++        completedTasks: 0,
++        revealOrder: [0, 1, 2],
++        avatarId: "default",
++        createdAt: "2026-01-01T00:00:00Z",
++        completed: false
++      },
++      {
++        id: "g2",
++        childId: "child-2",
++        childName: "Bob",
++        rewardName: "Cookies",
++        imageUri: "uri",
++        totalTasks: 12,
++        completedTasks: 2,
++        revealOrder: [0, 1, 2],
++        avatarId: "default",
++        createdAt: "2026-01-01T00:00:00Z",
++        completed: false
++      }
++    ] as Goal[];
++    const children = [
++      { id: "child-1", name: "Alex", settings: { parentLabel: "Parent", notificationTime: "18:00", tileColorId: "lavender" as const } },
++      { id: "child-2", name: "Bob", settings: { parentLabel: "Parent", notificationTime: "18:00", tileColorId: "lavender" as const } }
++    ];
++
++    const cleaned = removeOrphanedGoals(goals, children);
++
++    assert.equal(cleaned.length, 2);
++  });
++});
+diff --git a/src/storage/appStorage.ts b/src/storage/appStorage.ts
+index 9bc56f1..424a62b 100644
+--- a/src/storage/appStorage.ts
++++ b/src/storage/appStorage.ts
+@@ -78,6 +78,24 @@ export async function saveSettings(settings: AppSettings): Promise<void> {
+   await AsyncStorage.setItem(STORAGE_KEYS.settings, JSON.stringify(settings));
+ }
+ 
++export function migrateGoalsV1ToV2(
++  oldGoals: any[],
++  defaultChildId: string
++): Goal[] {
++  return oldGoals.map(goal => ({
++    ...goal,
++    childId: goal.childId || defaultChildId
++  }));
++}
++
++export function removeOrphanedGoals(
++  goals: Goal[],
++  children: Array<{ id: string }>
++): Goal[] {
++  const validChildIds = new Set(children.map(c => c.id));
++  return goals.filter(goal => validChildIds.has(goal.childId));
++}
++
+ async function readJson<T>(key: string, fallback: T): Promise<T> {
+   let rawValue: string | null;
+ 

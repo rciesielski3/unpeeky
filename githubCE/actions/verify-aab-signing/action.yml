@@ -1,0 +1,94 @@
+name: Verify AAB Signing
+description: >
+  Composite action that verifies an AAB is signed with the correct
+  production certificate by comparing its SHA1 fingerprint. Exits with
+  a non-zero status if the certificate does not match.
+
+inputs:
+  aab-path:
+    description: Path to the AAB file to verify
+    required: true
+  expected-sha1:
+    description: Expected certificate SHA1 fingerprint (colon-separated uppercase hex)
+    required: false
+    default: "AC:F5:2A:DD:61:C8:8B:AA:B7:54:74:F9:B2:D5:6E:7E:9F:00:A4:E3"
+
+runs:
+  using: composite
+  steps:
+    - name: Set up JDK for keytool
+      uses: actions/setup-java@v4
+      with:
+        distribution: temurin
+        java-version: "17"
+
+    - name: Extract AAB and verify signing certificate
+      shell: bash
+      run: |
+        AAB_PATH="${{ inputs.aab-path }}"
+        EXPECTED_SHA1="${{ inputs.expected-sha1 }}"
+
+        echo "Verifying signing certificate for: $AAB_PATH"
+
+        if [ ! -f "$AAB_PATH" ]; then
+          echo "ERROR: AAB file not found at: $AAB_PATH"
+          exit 1
+        fi
+
+        # AABs are ZIP archives — extract to a temp directory
+        EXTRACT_DIR="/tmp/aab_extract"
+        rm -rf "$EXTRACT_DIR"
+        mkdir -p "$EXTRACT_DIR"
+        unzip -q "$AAB_PATH" -d "$EXTRACT_DIR"
+
+        # Look for the signing certificate in META-INF/
+        CERT_FILE=""
+        for candidate in \
+          "$EXTRACT_DIR/META-INF/CERT.RSA" \
+          "$EXTRACT_DIR/META-INF/CERT.DSA"; do
+          if [ -f "$candidate" ]; then
+            CERT_FILE="$candidate"
+            break
+          fi
+        done
+
+        # Fall back to a wildcard search if the standard names weren't found
+        if [ -z "$CERT_FILE" ]; then
+          CERT_FILE=$(find "$EXTRACT_DIR/META-INF/" \
+            \( -name "*.RSA" -o -name "*.DSA" \) 2>/dev/null | head -1)
+        fi
+
+        if [ -z "$CERT_FILE" ]; then
+          echo "ERROR: No signing certificate found in META-INF/"
+          echo "Contents of META-INF/:"
+          ls -la "$EXTRACT_DIR/META-INF/" 2>/dev/null || echo "(directory not found)"
+          exit 1
+        fi
+
+        echo "Certificate found: $CERT_FILE"
+
+        # Extract SHA1 fingerprint with keytool
+        CERT_INFO=$(keytool -printcert -file "$CERT_FILE" 2>&1)
+        echo "$CERT_INFO"
+
+        ACTUAL_SHA1=$(echo "$CERT_INFO" | grep -i "SHA1:" | sed 's/.*SHA1:[[:space:]]*//')
+
+        if [ -z "$ACTUAL_SHA1" ]; then
+          echo "ERROR: Could not extract SHA1 fingerprint from keytool output."
+          exit 1
+        fi
+
+        echo ""
+        echo "Actual SHA1:   $ACTUAL_SHA1"
+        echo "Expected SHA1: $EXPECTED_SHA1"
+
+        if [ "$ACTUAL_SHA1" = "$EXPECTED_SHA1" ]; then
+          echo "Certificate verification PASSED — AAB is signed with the correct production certificate."
+        else
+          echo ""
+          echo "ERROR: Certificate SHA1 mismatch!"
+          echo "  Actual:   $ACTUAL_SHA1"
+          echo "  Expected: $EXPECTED_SHA1"
+          echo "The AAB was NOT signed with the expected production certificate. Aborting upload."
+          exit 1
+        fi

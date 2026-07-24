@@ -22,6 +22,7 @@ export type TileColorId = (typeof TILE_COLOR_OPTIONS)[number]["id"];
 
 export type Goal = {
   id: string;
+  childId: string;
   childName: string;
   rewardName: string;
   imageUri: string;
@@ -33,26 +34,52 @@ export type Goal = {
   completed: boolean;
 };
 
-export type AppSettings = {
-  isPremium: boolean;
-  isReminderEnabled: boolean;
-  notificationTime: string;
-  childName: string;
+export type ChildSettings = {
   parentLabel: string;
-  parentPin: string;
-  appMode: AppMode | null;
+  notificationTime: string;
   tileColorId: TileColorId;
 };
 
-export const DEFAULT_APP_SETTINGS: AppSettings = {
-  isPremium: false,
-  isReminderEnabled: false,
-  notificationTime: "18:00",
-  childName: "",
+export type GlobalSettings = {
+  pin: string;
+  isPremium: boolean;
+  exportData: Goal[];
+  appMode: AppMode | null;
+  isReminderEnabled?: boolean;
+};
+
+export type AppSettings = {
+  children: Array<{
+    id: string;
+    name: string;
+    settings: ChildSettings;
+  }>;
+  globalSettings: GlobalSettings;
+};
+
+export const DEFAULT_CHILD_SETTINGS: ChildSettings = {
   parentLabel: "Rodzicu",
-  parentPin: "",
-  appMode: null,
+  notificationTime: "18:00",
   tileColorId: "lavender"
+};
+
+export const DEFAULT_GLOBAL_SETTINGS: GlobalSettings = {
+  pin: "",
+  isPremium: false,
+  exportData: [],
+  appMode: null,
+  isReminderEnabled: false
+};
+
+export const DEFAULT_APP_SETTINGS: AppSettings = {
+  children: [
+    {
+      id: "child-1",
+      name: "",
+      settings: DEFAULT_CHILD_SETTINGS
+    }
+  ],
+  globalSettings: DEFAULT_GLOBAL_SETTINGS
 };
 
 export type GoalDraft = Pick<Goal, "childName" | "rewardName" | "imageUri" | "totalTasks" | "avatarId">;
@@ -61,14 +88,22 @@ export type PersistedGoal = Omit<Goal, "avatarId" | "revealOrder"> &
     avatarId?: string;
   };
 
-export function createGoal(draft: GoalDraft, now = new Date()): Goal {
+export function createGoal(draft: GoalDraft, childId: string, now = new Date()): Goal {
   return {
     ...draft,
+    childId,
     id: `${now.getTime()}`,
     completedTasks: 0,
     revealOrder: shuffleTileIds(draft.totalTasks),
     createdAt: now.toISOString(),
     completed: false
+  };
+}
+
+export function migrateGoalV1ToV2(oldGoal: Omit<Goal, "childId">, childId: string): Goal {
+  return {
+    ...oldGoal,
+    childId
   };
 }
 
@@ -94,26 +129,59 @@ export function normalizeGoal(goal: PersistedGoal): Goal {
 }
 
 export function normalizeSettings(settings: Partial<AppSettings> | null | undefined): AppSettings {
-  const nextSettings = {
-    ...DEFAULT_APP_SETTINGS,
-    ...settings
-  };
-  const isStoredReminderEnabled = typeof settings?.isReminderEnabled === "boolean";
-  const notificationTime = isNotificationTime(nextSettings.notificationTime)
-    ? nextSettings.notificationTime
-    : DEFAULT_APP_SETTINGS.notificationTime;
+  if (!settings || !settings.children) {
+    return DEFAULT_APP_SETTINGS;
+  }
+
+  // Normalize children array
+  const normalizedChildren = settings.children.map((child) => ({
+    id: child.id || `child-${Date.now()}`,
+    name: typeof child.name === "string" ? child.name : "Child",
+    settings: {
+      parentLabel: normalizeParentLabel(child.settings?.parentLabel),
+      notificationTime: isNotificationTime(child.settings?.notificationTime)
+        ? child.settings.notificationTime
+        : DEFAULT_CHILD_SETTINGS.notificationTime,
+      tileColorId: isTileColorId(child.settings?.tileColorId)
+        ? child.settings.tileColorId
+        : DEFAULT_CHILD_SETTINGS.tileColorId
+    }
+  }));
+
+  // Normalize global settings
+  const globalSettings = settings.globalSettings || DEFAULT_GLOBAL_SETTINGS;
+  const isStoredReminderEnabled = typeof globalSettings?.isReminderEnabled === "boolean";
 
   return {
-    ...nextSettings,
-    appMode: isAppMode(nextSettings.appMode) ? nextSettings.appMode : null,
-    isReminderEnabled: isStoredReminderEnabled
-      ? Boolean(settings?.isReminderEnabled)
-      : DEFAULT_APP_SETTINGS.isReminderEnabled,
-    notificationTime,
-    parentLabel: normalizeParentLabel(nextSettings.parentLabel),
-    parentPin: isParentPinValid(nextSettings.parentPin) ? nextSettings.parentPin : generateParentPin(),
-    tileColorId: isTileColorId(nextSettings.tileColorId) ? nextSettings.tileColorId : DEFAULT_APP_SETTINGS.tileColorId
+    children: normalizedChildren,
+    globalSettings: {
+      pin: isParentPinValid(globalSettings.pin) ? globalSettings.pin : generateParentPin(),
+      isPremium: Boolean(globalSettings.isPremium),
+      exportData: Array.isArray(globalSettings.exportData) ? globalSettings.exportData : [],
+      appMode: isAppMode(globalSettings.appMode) ? globalSettings.appMode : null,
+      isReminderEnabled: isStoredReminderEnabled ? Boolean(globalSettings.isReminderEnabled) : false
+    }
   };
+}
+
+/**
+ * Resolves which notification time the single OS "daily-reminder" should use.
+ *
+ * The OS only holds one scheduled daily reminder, so it must track whichever
+ * child is currently active. Returns the active child's notification time when
+ * reminders are enabled, or `null` when the reminder should be cancelled.
+ */
+export function resolveReminderTimeForActiveChild(
+  settings: AppSettings,
+  activeChildId: string | undefined
+): string | null {
+  if (!settings.globalSettings.isReminderEnabled) {
+    return null;
+  }
+
+  const activeChild = settings.children.find((child) => child.id === activeChildId) ?? settings.children[0];
+
+  return activeChild?.settings.notificationTime ?? null;
 }
 
 export function generateParentPin(): string {
@@ -142,12 +210,12 @@ function isNotificationTime(notificationTime: unknown): notificationTime is stri
 
 function normalizeParentLabel(parentLabel: unknown): string {
   if (typeof parentLabel !== "string") {
-    return DEFAULT_APP_SETTINGS.parentLabel;
+    return DEFAULT_CHILD_SETTINGS.parentLabel;
   }
 
   const normalizedParentLabel = parentLabel.trim().slice(0, 24);
 
-  return normalizedParentLabel || DEFAULT_APP_SETTINGS.parentLabel;
+  return normalizedParentLabel || DEFAULT_CHILD_SETTINGS.parentLabel;
 }
 
 export function getGoalProgress(goal: Pick<Goal, "completedTasks" | "totalTasks">): number {

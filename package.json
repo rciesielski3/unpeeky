@@ -1,6 +1,6 @@
 {
   "name": "unpeeky",
-  "version": "0.1.12",
+  "version": "0.1.13",
   "private": true,
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
@@ -14,7 +14,9 @@
     "format": "prettier . --write",
     "format:check": "prettier . --check",
     "postinstall": "patch-package",
-    "test:unit": "node --import tsx --test src/domain/*.test.ts src/services/*.test.ts",
+    "test:unit": "node --import tsx --test App.test.tsx src/domain/*.test.ts src/services/*.test.ts src/screens/*.test.tsx src/storage/*.test.ts",
+    "test:e2e": "node --import tsx --test e2e/multipleChildren.e2e.ts",
+    "test": "npm run test:unit && npm run test:e2e",
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {

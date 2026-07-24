@@ -1,0 +1,72 @@
+name: Build Android AAB
+description: >
+  Composite action that builds a signed Android App Bundle (AAB).
+  Expects JDK and Android SDK to already be available in the runner
+  environment; pass their paths via java-home and android-home inputs.
+
+inputs:
+  java-home:
+    description: Java home directory (output of actions/setup-java)
+    required: true
+  android-home:
+    description: Android SDK home directory (output of android-actions/setup-android)
+    required: true
+  keystore-base64:
+    description: Base64-encoded release keystore (from secrets)
+    required: true
+  keystore-password:
+    description: Keystore password (from secrets)
+    required: true
+  key-alias:
+    description: Key alias (from secrets)
+    required: true
+  key-password:
+    description: Key password (from secrets)
+    required: true
+  admob-app-id:
+    description: AdMob Android App ID (from secrets)
+    required: true
+
+outputs:
+  aab-path:
+    description: Workspace-relative path to the signed AAB
+    value: ${{ steps.verify-aab.outputs.aab-path }}
+
+runs:
+  using: composite
+  steps:
+    - name: Decode keystore
+      shell: bash
+      run: |
+        echo "${{ inputs.keystore-base64 }}" | base64 -d > /tmp/release.keystore
+        echo "Keystore decoded to /tmp/release.keystore"
+
+    - name: Make gradlew executable
+      shell: bash
+      working-directory: ./android
+      run: chmod +x gradlew
+
+    - name: Build release bundle (AAB)
+      shell: bash
+      working-directory: ./android
+      env:
+        JAVA_HOME: ${{ inputs.java-home }}
+        ANDROID_HOME: ${{ inputs.android-home }}
+        CAREXPLORER_UPLOAD_STORE_FILE: /tmp/release.keystore
+        CAREXPLORER_UPLOAD_STORE_PASSWORD: ${{ inputs.keystore-password }}
+        CAREXPLORER_UPLOAD_KEY_ALIAS: ${{ inputs.key-alias }}
+        CAREXPLORER_UPLOAD_KEY_PASSWORD: ${{ inputs.key-password }}
+        EXPO_PUBLIC_ADMOB_ANDROID_APP_ID: ${{ inputs.admob-app-id }}
+      run: ./gradlew bundleRelease
+
+    - name: Verify AAB exists
+      id: verify-aab
+      shell: bash
+      run: |
+        AAB_PATH="android/app/build/outputs/bundle/release/app-release.aab"
+        if [ ! -f "$AAB_PATH" ]; then
+          echo "ERROR: AAB not found at expected path: $AAB_PATH"
+          exit 1
+        fi
+        echo "AAB verified at: $AAB_PATH"
+        echo "aab-path=${AAB_PATH}" >> "$GITHUB_OUTPUT"
