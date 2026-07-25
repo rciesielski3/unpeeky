@@ -27,6 +27,10 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.inputs.version_tag || github.ref_name }}
+        with:
+          ref: ${{ github.event.inputs.version_tag || github.ref_name }}
 
       - name: Determine version tag and artifact name
         id: version
