@@ -11,7 +11,6 @@ coverage/
 .env.*
 *.keystore
 *.jks
-!android/app/debug.keystore
 google-play-service-account*.json
 play-service-account*.json
 credentials.json
@@ -20,3 +19,6 @@ puzzle-reward-plan.md
 puzzle-reward-codex-prompt.md
 unpeeky_mockup_v3.html
 mockups-colours.png
+
+# AI task briefs
+.superpowers/
